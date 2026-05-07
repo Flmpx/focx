@@ -1,0 +1,173 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #eee;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.backLink {
+    margin-bottom: 20px;
+}
+
+.backLink a {
+    color: #64b5f6;
+    text-decoration: none;
+    font-size: 0.95em;
+}
+
+.backLink a:hover {
+    text-decoration: underline;
+}
+
+.mainTitle {
+    font-size: 2em;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    color: #aaa;
+    font-size: 1.1em;
+    margin-bottom: 30px;
+}
+
+.section {
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+.section h2 {
+    color: #64b5f6;
+    font-size: 1.4em;
+    margin-bottom: 15px;
+    border-bottom: 2px solid rgba(100, 181, 246, 0.3);
+    padding-bottom: 10px;
+}
+
+.section p {
+    color: #ccc;
+    margin-bottom: 15px;
+}
+
+.featureBox {
+    background: rgba(76, 175, 80, 0.1);
+    border-left: 3px solid #4caf50;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 0 8px 8px 0;
+}
+
+.featureBox h4 {
+    color: #81c784;
+    margin-bottom: 10px;
+}
+
+.featureBox ul {
+    list-style: none;
+    padding: 0;
+}
+
+.featureBox li {
+    color: #bbb;
+    padding: 5px 0;
+}
+
+.moduleCard {
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.moduleCard h3 {
+    color: #fff;
+    font-size: 1.2em;
+    margin-bottom: 5px;
+}
+
+.moduleCard > p {
+    color: #888;
+    font-size: 0.9em;
+    margin-bottom: 15px;
+}
+
+.subLinks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.subLinks a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(100, 181, 246, 0.1);
+    color: #ccc;
+    padding: 10px 15px;
+    border-radius: 20px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.subLinks a:hover {
+    background: rgba(100, 181, 246, 0.2);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.typeTag {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: bold;
+}
+
+.typeTag.single {
+    background: rgba(33, 150, 243, 0.3);
+    color: #64b5f6;
+}
+
+.typeTag.multiple {
+    background: rgba(171, 71, 188, 0.3);
+    color: #ce93d8;
+}
+
+.compareTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.compareTable th, .compareTable td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.compareTable th {
+    background: rgba(100, 181, 246, 0.2);
+    color: #fff;
+}
+
+.compareTable tr:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+.compareTable td {
+    color: #ccc;
+}

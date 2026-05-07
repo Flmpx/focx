@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set 集合 - FOCX</title>
+    <link rel="stylesheet" href="index.css">
+    <!-- Prism.js 代码高亮 -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="container">
+        <div class="backLink">
+            <a href="../../index.html">← 函数大全</a>
+        </div>
+
+        <h1 class="mainTitle">🎯 Set 集合</h1>
+        <p class="subtitle">哈希集合数据结构，用于存储唯一键</p>
+
+        <div class="section">
+            <h2>📖 概述</h2>
+            <p>Set 模块提供哈希集合实现，用于存储不重复的键。支持高效的成员检测、插入和删除操作。</p>
+            
+            <div class="featureBox">
+                <h4>📌 可用类型</h4>
+                <ul>
+                    <li><strong>ChainSet</strong> - 链表法哈希集合（适合大数据量）</li>
+                    <li><strong>OASet</strong> - 开放定址法哈希集合（适合小数据量）</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🗂️ 目录结构</h2>
+            
+            <div class="moduleCard">
+                <h3>ChainSet 链表法</h3>
+                <p>采用链表法解决哈希冲突，适合数据量较大且分布不均匀的场景</p>
+                
+                <div class="subLinks">
+                    <a href="ChainSet/Single_Data/index.html">
+                        <span class="typeTag single">ChainSet_S</span>
+                        单一数据类型
+                    </a>
+                    <a href="ChainSet/Multiple_Data/index.html">
+                        <span class="typeTag multiple">ChainSet_M</span>
+                        多种数据类型
+                    </a>
+                </div>
+            </div>
+
+            <div class="moduleCard">
+                <h3>OASet 开放定址法</h3>
+                <p>采用开放定址法解决哈希冲突，内存利用率高，适合小数据量</p>
+                
+                <div class="subLinks">
+                    <a href="OASet/Single_Data/index.html">
+                        <span class="typeTag single">OASet_S</span>
+                        单一数据类型
+                    </a>
+                    <a href="OASet/Multiple_Data/index.html">
+                        <span class="typeTag multiple">OASet_M</span>
+                        多种数据类型
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>💡 选择指南</h2>
+            <table class="compareTable">
+                <tr>
+                    <th>特性</th>
+                    <th>ChainSet</th>
+                    <th>OASet</th>
+                </tr>
+                <tr>
+                    <td>冲突处理</td>
+                    <td>链表法</td>
+                    <td>开放定址法</td>
+                </tr>
+                <tr>
+                    <td>内存使用</td>
+                    <td>较高（含指针）</td>
+                    <td>较低（连续数组）</td>
+                </tr>
+                <tr>
+                    <td>数据量</td>
+                    <td>适合大数据量</td>
+                    <td>适合小数据量</td>
+                </tr>
+                <tr>
+                    <td>查找性能</td>
+                    <td>较稳定</td>
+                    <td>可能退化</td>
+                </tr>
+                <tr>
+                    <td>推荐场景</td>
+                    <td>分布不均匀</td>
+                    <td>分布均匀</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>📊 Set 类型对比</h2>
+            <table class="compareTable">
+                <tr>
+                    <th>后缀</th>
+                    <th>Key 类型</th>
+                    <th>灵活性</th>
+                </tr>
+                <tr>
+                    <td><span class="typeTag single">_S</span></td>
+                    <td>统一类型</td>
+                    <td>中等</td>
+                </tr>
+                <tr>
+                    <td><span class="typeTag multiple">_M</span></td>
+                    <td>任意类型</td>
+                    <td>高</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Prism.js -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="index.js"></script>
+</body>
+</html>

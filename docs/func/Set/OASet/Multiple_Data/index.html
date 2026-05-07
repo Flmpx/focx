@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OASet_M 文档 - FOCX</title>
+    <link rel="stylesheet" href="index.css">
+    <!-- Prism.js 代码高亮 -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="container">
+        <div class="backLink">
+            <a href="../../../../index.html">← 函数大全</a>
+            <span class="separator">|</span>
+            <a href="../../index.html">← Set</a>
+        </div>
+
+        <h1 class="mainTitle">🔶 OASet_M - 开放地址哈希集合（多种数据类型）</h1>
+        <p class="subtitle">采用开放定址法解决哈希冲突的集合存储，键可存储任意类型数据</p>
+
+        <div class="section">
+            <h2>📖 概述</h2>
+            <p>OASet_M (Open Addressing Set Multiple Data) 采用开放定址法（Open Addressing）解决哈希冲突。当发生冲突时，使用线性探测（Linear Probing）寻找下一个可用的槽位。</p>
+        </div>
+
+        <div class="section">
+            <h2>⚙️ 数据类型定义</h2>
+            <div class="codeBlock">
+<pre class="language-c"><code>// 集合条目
+typedef struct Entry_M_inOASet {
+    Data_M key;      // 键
+    int state;       // 状态
+    bool isEmpty;    // 是否为空
+} Entry_M_inOASet;
+
+// 哈希集合
+typedef struct OASet_M {
+    Entry_M_inOASet* arr;    // 哈希表数组
+    int mod;                 // 模数
+    int len;                 // 当前元素数量
+    int size;                // 哈希表容量
+} OASet_M;</code></pre>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🚀 快速开始</h2>
+            <div class="codeBlock">
+<pre class="language-c"><code>#include "base.h"
+#include "Set/OASet/Multiple_Data/oaset_mdata.h"
+#include "Oper/Int_Info/int_info.h"
+#include "Oper/String_Info/string_info.h"
+
+int main() {
+    // 1. 初始化集合
+    OASet_M set;
+    initMOASet(&set);
+
+    // 2. 插入键
+    int num = 1;
+    Data_M key1 = Data_M_OWN(&num, NULL, &Info_Int, 0);
+    insertMKeyInMOASet(&set, key1);
+
+    char str[] = "hello";
+    Data_M key2 = Data_M_OWN(str, NULL, &Info_String, 0);
+    insertMKeyInMOASet(&set, key2);
+
+    // 3. 打印集合
+    printMOASet(&set);
+
+    // 4. 释放集合
+    freeMOASet(&set);
+    return 0;
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📋 函数列表</h2>
+
+            <!-- 初始化与销毁 -->
+            <div class="funcGroup">
+                <h3>🔧 初始化与销毁</h3>
+                
+                <div class="funcItem">
+                    <div class="funcSignature">void initMOASet(OASet_M* pSet)</div>
+                    <p class="funcDesc">初始化多类型开放寻址集合</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>pSet</code> - 集合指针</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="funcItem">
+                    <div class="funcSignature">void freeMKeyInMOASet(Data_M* key)</div>
+                    <p class="funcDesc">释放多类型开放寻址集合中的键</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>key</code> - 待释放的键</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="funcItem">
+                    <div class="funcSignature">void freeMOASet(OASet_M* pSet)</div>
+                    <p class="funcDesc">释放多类型开放寻址集合</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>pSet</code> - 集合指针</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 插入操作 -->
+            <div class="funcGroup">
+                <h3>➕ 插入操作</h3>
+                
+                <div class="funcItem">
+                    <div class="funcSignature">InfoOfReturn insertMKeyInMOASet(OASet_M* pSet, Data_M key)</div>
+                    <p class="funcDesc">在多类型开放寻址集合中插入键</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>pSet</code> - 集合指针</li>
+                            <li><code>key</code> - 待插入的键</li>
+                        </ul>
+                    </div>
+                    <div class="params">
+                        <strong>返回:</strong> 操作结果状态码
+                    </div>
+                </div>
+            </div>
+
+            <!-- 查询操作 -->
+            <div class="funcGroup">
+                <h3>🔍 查询操作</h3>
+                
+                <div class="funcItem">
+                    <div class="funcSignature">Data_M getCopyMKeyByMKeyInMOASet(OASet_M* pSet, Data_M key)</div>
+                    <p class="funcDesc">通过键找到多类型开放寻址集合中的键，使用完后用 freeMKeyInMOASet 函数进行释放</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>pSet</code> - 集合指针</li>
+                            <li><code>key</code> - 待查找的键</li>
+                        </ul>
+                    </div>
+                    <div class="params">
+                        <strong>返回:</strong> 返回找到的键，若没找到，返回空键（用字段 isEmpty 检查）
+                    </div>
+                    <div class="warning">
+                        <strong>警告:</strong> 返回的是复制的数据，使用后需调用 freeMKeyInMOASet 释放
+                    </div>
+                </div>
+
+                <div class="funcItem">
+                    <div class="funcSignature">bool hasMKeyInMOASet(OASet_M* pSet, Data_M key)</div>
+                    <p class="funcDesc">判断多类型开放寻址集合中是否存在当前键</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>pSet</code> - 集合指针</li>
+                            <li><code>key</code> - 待查找的键</li>
+                        </ul>
+                    </div>
+                    <div class="params">
+                        <strong>返回:</strong> 如果存在返回 true，否则 false
+                    </div>
+                </div>
+            </div>
+
+            <!-- 删除操作 -->
+            <div class="funcGroup">
+                <h3>➖ 删除操作</h3>
+                
+                <div class="funcItem">
+                    <div class="funcSignature">InfoOfReturn delMKeyByMKeyInMOASet(OASet_M* pSet, Data_M key)</div>
+                    <p class="funcDesc">删除多类型开放寻址集合中的键</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>pSet</code> - 集合指针</li>
+                            <li><code>key</code> - 待删除的键</li>
+                        </ul>
+                    </div>
+                    <div class="params">
+                        <strong>返回:</strong> 操作结果状态码
+                    </div>
+                </div>
+            </div>
+
+            <!-- 打印操作 -->
+            <div class="funcGroup">
+                <h3>🖨️ 打印操作</h3>
+                
+                <div class="funcItem">
+                    <div class="funcSignature">void printMKeyInMOASet(Data_M key)</div>
+                    <p class="funcDesc">打印多类型开放寻址集合的键</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>key</code> - 待打印的键</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="funcItem">
+                    <div class="funcSignature">void printMOASet(OASet_M* pSet)</div>
+                    <p class="funcDesc">打印多类型开放寻址集合</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>pSet</code> - 集合指针</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>⚠️ 注意事项</h2>
+            <ul class="warningList">
+                <li>Set 只存储唯一键，不允许重复插入</li>
+                <li>通过 getCopy 系列函数获取的数据使用后必须释放</li>
+                <li>每次使用完集合后必须调用 freeMOASet 释放整个集合</li>
+                <li>OASet 使用开放定址法，适合数据量较小且分布均匀的场景</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Prism.js -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="index.js"></script>
+</body>
+</html>

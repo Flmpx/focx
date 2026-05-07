@@ -16,51 +16,33 @@
             <a href="../../index.html">← Map</a>
         </div>
 
-        <h1 class="mainTitle">🔢 OAMap_S - 开放定址法哈希映射（单一数据类型）</h1>
-        <p class="subtitle">采用开放定址法解决哈希冲突的键值对映射表，存储单一类型数据</p>
+        <h1 class="mainTitle">💠 OAMap_S - 开放地址哈希表（单一数据类型）</h1>
+        <p class="subtitle">采用开放定址法解决哈希冲突的键值对存储，需要提供键和值的数据操作集</p>
 
         <div class="section">
             <h2>📖 概述</h2>
-            <p>OAMap_S (Open Addressing Map Single Data) 是一种采用开放定址法（Open Addressing）解决哈希冲突的 Map 数据结构。当发生冲突时，它会探测其他可用的槽位来存储数据。</p>
-            
-            <div class="featureBox">
-                <h4>📌 特点</h4>
-                <ul>
-                    <li>采用开放定址法处理哈希冲突</li>
-                    <li>内存利用率高，不需要额外的链表指针</li>
-                    <li>只能存储单一类型数据</li>
-                    <li>适合数据量较小、分布均匀的场景</li>
-                </ul>
-            </div>
-
-            <div class="infoBox">
-                <h4>💡 何时使用 OAMap vs ChainMap</h4>
-                <ul>
-                    <li><strong>使用 OAMap:</strong> 数据量较小（&lt;10000），数据分布均匀，可接受较高的负载因子</li>
-                    <li><strong>使用 ChainMap:</strong> 数据量较大，分布不均匀，需要更稳定的查找性能</li>
-                </ul>
-            </div>
+            <p>OAMap_S (Open Addressing Map Single Data) 采用开放定址法（Open Addressing）解决哈希冲突。当发生冲突时，使用线性探测（Linear Probing）寻找下一个可用的槽位。</p>
         </div>
 
         <div class="section">
             <h2>⚙️ 数据类型定义</h2>
             <div class="codeBlock">
-<pre class="language-c"><code>// OAMap_S 中的 Entry 类型
+<pre class="language-c"><code>// 键值对条目
 typedef struct Entry_S_inOAMap {
     Data_S key;      // 键
     Data_S val;      // 值
-    int state;       // 状态：存在/已删除/空
+    int state;       // 状态
     bool isEmpty;    // 是否为空
 } Entry_S_inOAMap;
 
-// OAMap_S
+// 哈希表
 typedef struct OAMap_S {
-    Entry_S_inOAMap* arr;      // 哈希槽数组
-    int mod;                    // 取模基数
-    int len;                    // 槽位数量
-    int size;                   // 元素数量
-    InfoOfData* keyInfo;        // key 操作集
-    InfoOfData* valInfo;        // value 操作集
+    Entry_S_inOAMap* arr;    // 哈希表数组
+    int mod;                 // 模数
+    int len;                 // 当前元素数量
+    int size;                // 哈希表容量
+    InfoOfData* keyInfo;     // 键的操作集
+    InfoOfData* valInfo;     // 值的操作集
 } OAMap_S;</code></pre>
             </div>
         </div>
@@ -70,33 +52,25 @@ typedef struct OAMap_S {
             <div class="codeBlock">
 <pre class="language-c"><code>#include "base.h"
 #include "Map/OAMap/Single_Data/oamap_sdata.h"
-#include "Oper/String_Info/string_info.h"
 #include "Oper/Int_Info/int_info.h"
 
 int main() {
-    // 1. 初始化 Map
+    // 1. 初始化哈希表
     OAMap_S map;
-    initSOAMap(&map, &Info_String, &Info_Int);
+    initSOAMap(&map, &Info_Int, &Info_Int);
 
     // 2. 插入键值对
-    insertSkeyAndSValInSOAMap(&map, 
-        Data_S_OWN("id", NULL), 
-        Data_S_OWN(1001, NULL));
+    insertSKeyAndSValInSOAMap(&map, Data_S_OWN(1, NULL), Data_S_OWN(100, NULL));
+    insertSKeyAndSValInSOAMap(&map, Data_S_OWN(2, NULL), Data_S_OWN(200, NULL));
 
-    insertSkeyAndSValInSOAMap(&map,
-        Data_S_OWN("level", NULL),
-        Data_S_OWN(99, NULL));
-
-    // 3. 查找
-    Data_S val = getCopySValBySkeyInSOAMap(&map, Data_S_OWN("id", NULL));
+    // 3. 查找值
+    Data_S val = getCopySValBySKeyInSOAMap(&map, Data_S_OWN(1, NULL));
     if (!val.isEmpty) {
-        printf("id: %d\n", *(int*)val.data);
+        printf("Key 1's value: %d\n", *(int*)val.data);
+        freeSValInSOAMap(&map, &val);
     }
 
-    // 4. 打印
-    printSOAMap(&map);
-
-    // 5. 释放
+    // 4. 释放哈希表
     freeSOAMap(&map);
     return 0;
 }</code></pre>
@@ -112,207 +86,212 @@ int main() {
                 
                 <div class="funcItem">
                     <div class="funcSignature">void initSOAMap(OAMap_S* pMap, InfoOfData* keyInfo, InfoOfData* valInfo)</div>
-                    <p class="funcDesc">初始化 OAMap_S</p>
+                    <p class="funcDesc">初始化单类型开放寻址哈希表</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>pMap</code> - OAMap_S 的指针</li>
-                            <li><code>keyInfo</code> - key 的 InfoOfData 类型指针</li>
-                            <li><code>valInfo</code> - val 的 InfoOfData 类型指针</li>
+                            <li><code>pMap</code> - 哈希表指针</li>
+                            <li><code>keyInfo</code> - 键的数据信息的指针</li>
+                            <li><code>valInfo</code> - 值的数据信息的指针</li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">void freeSValInSOAMap(OAMap_S* pMap, Data_S* inputData)</div>
-                    <p class="funcDesc">释放掉复制来的在 OAMap_S 中的 SVal</p>
+                    <div class="funcSignature">void freeSValInSOAMap(OAMap_S* pMap, Data_S* val)</div>
+                    <p class="funcDesc">释放单类型开放寻址哈希表中的值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>pMap</code> - OAMap_S 的指针</li>
-                            <li><code>inputData</code> - SVal 类型指针 (Data_S 类型)</li>
+                            <li><code>pMap</code> - 哈希表指针</li>
+                            <li><code>val</code> - 待释放的值</li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="funcItem">
                     <div class="funcSignature">void freeSEntryInSOAMap(OAMap_S* pMap, Entry_S_inOAMap* entry)</div>
-                    <p class="funcDesc">释放掉复制来的在 OAMap_S 中的 SEntry (Entry_S_inOAMap 类型)</p>
+                    <p class="funcDesc">释放单类型开放寻址哈希表中的条目</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>pMap</code> - OAMap_S 的指针</li>
-                            <li><code>entry</code> - SEntry 类型 (Entry_S_inOAMap 类型)</li>
+                            <li><code>pMap</code> - 哈希表指针</li>
+                            <li><code>entry</code> - 待释放的条目</li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="funcItem">
                     <div class="funcSignature">void freeSOAMap(OAMap_S* pMap)</div>
-                    <p class="funcDesc">释放掉 OAMap_S</p>
+                    <p class="funcDesc">释放单类型开放寻址哈希表</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>pMap</code> - OAMap_S 的指针</li>
+                            <li><code>pMap</code> - 哈希表指针</li>
                         </ul>
                     </div>
                 </div>
             </div>
 
-            <!-- 插入与查询 -->
+            <!-- 插入操作 -->
             <div class="funcGroup">
-                <h3>➕ 插入与查询</h3>
+                <h3>➕ 插入操作</h3>
                 
                 <div class="funcItem">
-                    <div class="funcSignature">InfoOfReturn insertSkeyAndSValInSOAMap(OAMap_S* pMap, Data_S key, Data_S val)</div>
-                    <p class="funcDesc">插入 key 和 val 到 OAMap_S 类型中去</p>
+                    <div class="funcSignature">InfoOfReturn insertSKeyAndSValInSOAMap(OAMap_S* pMap, Data_S key, Data_S val)</div>
+                    <p class="funcDesc">在单类型开放寻址哈希表中插入键值对</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>pMap</code> - OAMap_S 的指针</li>
-                            <li><code>key</code> - 传入的 key (Data_S 类型数据)</li>
-                            <li><code>val</code> - 传入的 val (Data_S 类型数据)</li>
+                            <li><code>pMap</code> - 哈希表指针</li>
+                            <li><code>key</code> - 待插入的键</li>
+                            <li><code>val</code> - 待插入的值</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 返回 InfoOfReturn 中的枚举类型
+                        <strong>返回:</strong> 操作结果状态码
                     </div>
                 </div>
+            </div>
 
+            <!-- 查询操作 -->
+            <div class="funcGroup">
+                <h3>🔍 查询操作</h3>
+                
                 <div class="funcItem">
-                    <div class="funcSignature">Data_S getCopySValBySkeyInSOAMap(OAMap_S* pMap, Data_S key)</div>
-                    <p class="funcDesc">通过 SKey 得到复制来的 SVal (Data_S 类型)</p>
+                    <div class="funcSignature">Data_S getCopySValBySKeyInSOAMap(OAMap_S* pMap, Data_S key)</div>
+                    <p class="funcDesc">通过键找到单类型开放寻址哈希表中的值，使用完后用 freeSValInSOAMap 函数进行释放</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>pMap</code> - OAMap_S 的指针</li>
-                            <li><code>key</code> - 传入的 key (Data_S 类型数据)</li>
+                            <li><code>pMap</code> - 哈希表指针</li>
+                            <li><code>key</code> - 待查找的键</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 返回 Data_S 类型数据，若没有返回空 Data_S 类型数据，通过 Data.isEmpty 进行查看
+                        <strong>返回:</strong> 返回找到的值，若没找到，返回空值（用字段 isEmpty 检查）
                     </div>
                     <div class="warning">
-                        <strong>注意:</strong> 返回的数据使用后需要调用 freeSValInSOAMap 释放
+                        <strong>警告:</strong> 返回的是复制的数据，使用后需调用 freeSValInSOAMap 释放
                     </div>
                 </div>
 
                 <div class="funcItem">
                     <div class="funcSignature">Data_S getPtrSValBySKeyInSOAMap(OAMap_S* pMap, Data_S key)</div>
-                    <p class="funcDesc">通过 SKey 得到 SVal (Data_S 类型)，可直接修改内部的 void* data 和 void* content 内容</p>
+                    <p class="funcDesc">通过键找到单类型开放寻址哈希表中的值，可以直接修改内部数据</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>pMap</code> - OAMap_S 的指针</li>
-                            <li><code>key</code> - 传入的 key (Data_S 类型数据)</li>
+                            <li><code>pMap</code> - 哈希表指针</li>
+                            <li><code>key</code> - 待查找的键</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 返回 Data_S 类型数据，若没有返回空 Data_S 类型数据，通过 Data.isEmpty 进行查看
+                        <strong>返回:</strong> 返回找到的值，若没找到，返回空值（用字段 isEmpty 检查）
                     </div>
                     <div class="warning">
-                        <strong>警告:</strong> 返回的指针直接指向 Map 内部数据，请勿 free
+                        <strong>警告:</strong> 返回的指针直接指向哈希表内部数据，请勿 free
                     </div>
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">Entry_S_inOAMap getCopySEntryByKeyInSOAMap(OAMap_S* pMap, Data_S key)</div>
-                    <p class="funcDesc">通过 SKey 得到复制来的 SEntry (Entry_S_inOAMap 类型)</p>
+                    <div class="funcSignature">Entry_S_inOAMap getCopySEntryBySKeyInSOAMap(OAMap_S* pMap, Data_S key)</div>
+                    <p class="funcDesc">通过键找到单类型开放寻址哈希表中的条目，使用完后用 freeSEntryInSOAMap 函数进行释放</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>pMap</code> - OAMap_S 的指针</li>
-                            <li><code>key</code> - 传入的 key (Data_S 类型数据)</li>
+                            <li><code>pMap</code> - 哈希表指针</li>
+                            <li><code>key</code> - 待查找的条目的键</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 返回 Entry_S_inOAMap 类型数据，若没有返回空 Entry_S_inOAMap 类型数据，通过 entry.isEmpty 进行查看
+                        <strong>返回:</strong> 返回找到的条目，若没找到，返回空条目（用字段 isEmpty 检查）
                     </div>
                 </div>
-            </div>
 
-            <!-- 判存与删除 -->
-            <div class="funcGroup">
-                <h3>🔍 判存与删除</h3>
-                
                 <div class="funcItem">
                     <div class="funcSignature">bool hasSKeyInSOAMap(OAMap_S* pMap, Data_S key)</div>
-                    <p class="funcDesc">判断 Skey 是否在 OAMap_S 中</p>
+                    <p class="funcDesc">判断单类型开放寻址哈希表中是否存在当前键</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>pMap</code> - OAMap_S 的指针</li>
-                            <li><code>key</code> - 传入的 key (Data_S 类型数据)</li>
+                            <li><code>pMap</code> - 哈希表指针</li>
+                            <li><code>key</code> - 待查找的键</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 如果存在返回 true，否则返回 false
-                    </div>
-                </div>
-
-                <div class="funcItem">
-                    <div class="funcSignature">InfoOfReturn delSEntryBySKeyInSOAMap(OAMap_S* pMap, Data_S key)</div>
-                    <p class="funcDesc">通过 SKey 删除在 OAMap_S 中的元素</p>
-                    <div class="params">
-                        <strong>参数:</strong>
-                        <ul>
-                            <li><code>pMap</code> - OAMap_S 的指针</li>
-                            <li><code>key</code> - 传入的 key (Data_S 类型数据)</li>
-                        </ul>
-                    </div>
-                    <div class="params">
-                        <strong>返回:</strong> 返回 InfoOfReturn 中的枚举类型
+                        <strong>返回:</strong> 如果存在返回 true，否则 false
                     </div>
                 </div>
             </div>
 
-            <!-- 打印 -->
+            <!-- 删除操作 -->
             <div class="funcGroup">
-                <h3>🖨️ 打印</h3>
+                <h3>➖ 删除操作</h3>
                 
                 <div class="funcItem">
-                    <div class="funcSignature">void printSOAMap(OAMap_S* pMap)</div>
-                    <p class="funcDesc">打印 OAMap_S 中的所有数据</p>
+                    <div class="funcSignature">InfoOfReturn delSEntryBySKeyInSOAMap(OAMap_S* pMap, Data_S key)</div>
+                    <p class="funcDesc">删除单类型开放寻址哈希表中的条目</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>pMap</code> - OAMap_S 的指针</li>
+                            <li><code>pMap</code> - 哈希表指针</li>
+                            <li><code>key</code> - 待删除的条目的键</li>
+                        </ul>
+                    </div>
+                    <div class="params">
+                        <strong>返回:</strong> 操作结果状态码
+                    </div>
+                </div>
+            </div>
+
+            <!-- 打印操作 -->
+            <div class="funcGroup">
+                <h3>🖨️ 打印操作</h3>
+                
+                <div class="funcItem">
+                    <div class="funcSignature">void printSKeyInSOAMap(OAMap_S* pMap, Data_S key)</div>
+                    <p class="funcDesc">打印单类型开放寻址哈希表的键</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>pMap</code> - 哈希表指针</li>
+                            <li><code>key</code> - 待打印的键</li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">void printSKeyInSOAMap(OAMap_S* pMap, Data_S keyData)</div>
-                    <p class="funcDesc">打印在 OAMap_S 中的 SKey (Data_S 类型)</p>
+                    <div class="funcSignature">void printSValInSOAMap(OAMap_S* pMap, Data_S val)</div>
+                    <p class="funcDesc">打印单类型开放寻址哈希表的值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>pMap</code> - OAMap_S 的指针</li>
-                            <li><code>keyData</code> - SKey (Data_S 类型)</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="funcItem">
-                    <div class="funcSignature">void printSValInSOAMap(OAMap_S* pMap, Data_S valData)</div>
-                    <p class="funcDesc">打印在 OAMap_S 中的 SVal (Data_S 类型)</p>
-                    <div class="params">
-                        <strong>参数:</strong>
-                        <ul>
-                            <li><code>pMap</code> - OAMap_S 的指针</li>
-                            <li><code>valData</code> - SVal (Data_S 类型)</li>
+                            <li><code>pMap</code> - 哈希表指针</li>
+                            <li><code>val</code> - 待打印的值</li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="funcItem">
                     <div class="funcSignature">void printSEntryInSOAMap(OAMap_S* pMap, Entry_S_inOAMap entry)</div>
-                    <p class="funcDesc">打印在 OAMap_S 中的 SEntry (Entry_S_inOAMap 类型)</p>
+                    <p class="funcDesc">打印单类型开放寻址哈希表的条目</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>pMap</code> - OAMap_S 的指针</li>
-                            <li><code>entry</code> - SEntry (Entry_S_inOAMap 类型)</li>
+                            <li><code>pMap</code> - 哈希表指针</li>
+                            <li><code>entry</code> - 待打印的条目</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="funcItem">
+                    <div class="funcSignature">void printSOAMap(OAMap_S* pMap)</div>
+                    <p class="funcDesc">打印单类型开放寻址哈希表</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>pMap</code> - 哈希表指针</li>
                         </ul>
                     </div>
                 </div>
@@ -320,66 +299,12 @@ int main() {
         </div>
 
         <div class="section">
-            <h2>💡 完整示例</h2>
-            <div class="codeBlock">
-<pre class="language-c"><code>#include &lt;stdio.h&gt;
-#include "base.h"
-#include "Map/OAMap/Single_Data/oamap_sdata.h"
-#include "Oper/String_Info/string_info.h"
-#include "Oper/Int_Info/int_info.h"
-
-int main() {
-    // 初始化 Map
-    OAMap_S map;
-    initSOAMap(&map, &Info_String, &Info_Int);
-
-    // 插入数据
-    printf("=== 插入数据 ===\n");
-    insertSkeyAndSValInSOAMap(&map, 
-        Data_S_OWN("name", NULL), 
-        Data_S_OWN(1, NULL));
-    insertSkeyAndSValInSOAMap(&map, 
-        Data_S_OWN("age", NULL), 
-        Data_S_OWN(25, NULL));
-    insertSkeyAndSValInSOAMap(&map, 
-        Data_S_OWN("city", NULL), 
-        Data_S_OWN(3, NULL));
-
-    printSOAMap(&map);
-
-    // 查询
-    printf("\n=== 查询数据 ===\n");
-    Data_S val = getCopySValBySkeyInSOAMap(&map, Data_S_OWN("age", NULL));
-    if (!val.isEmpty) {
-        printf("age: %d\n", *(int*)val.data);
-        freeSValInSOAMap(&map, &val);
-    }
-
-    // 判断存在
-    printf("\n是否存在 country: %s\n", 
-        hasSKeyInSOAMap(&map, Data_S_OWN("country", NULL)) ? "是" : "否");
-
-    // 删除
-    printf("\n=== 删除数据 ===\n");
-    delSEntryBySKeyInSOAMap(&map, Data_S_OWN("city", NULL));
-    printSOAMap(&map);
-
-    // 释放
-    freeSOAMap(&map);
-    return 0;
-}</code></pre>
-            </div>
-        </div>
-
-        <div class="section">
             <h2>⚠️ 注意事项</h2>
             <ul class="warningList">
-                <li>开放定址法需要保持较低的负载因子（建议 &lt; 0.7）以保证查找效率</li>
-                <li>删除元素时会使用墓碑标记（Tombstone），大量删除后可能需要重建哈希表</li>
                 <li>通过 getCopy 系列函数获取的数据使用后必须释放</li>
-                <li>通过 getPtr 系列函数获取的指针不要释放</li>
-                <li>每次使用完 Map 后必须调用 freeSOAMap 释放</li>
-                <li>如果 Key 已存在，insert 操作会更新 Value</li>
+                <li>通过 getPtr 系列函数获取的数据指针直接指向哈希表内部，不要释放</li>
+                <li>每次使用完哈希表后必须调用 freeSOAMap 释放整个哈希表</li>
+                <li>OAMap 使用开放定址法，适合数据量较小且分布均匀的场景</li>
             </ul>
         </div>
     </div>

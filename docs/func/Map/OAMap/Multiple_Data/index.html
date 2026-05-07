@@ -16,41 +16,31 @@
             <a href="../../index.html">← Map</a>
         </div>
 
-        <h1 class="mainTitle">🔣 OAMap_M - 开放定址法哈希映射（多种数据类型）</h1>
-        <p class="subtitle">采用开放定址法解决哈希冲突的键值对映射表，可存储任意类型数据</p>
+        <h1 class="mainTitle">💎 OAMap_M - 开放地址哈希表（多种数据类型）</h1>
+        <p class="subtitle">采用开放定址法解决哈希冲突的键值对存储，键和值都可存储任意类型数据</p>
 
         <div class="section">
             <h2>📖 概述</h2>
-            <p>OAMap_M (Open Addressing Map Multiple Data) 是一种采用开放定址法解决哈希冲突的 Map 数据结构。与 OAMap_S 不同，它可以存储任意类型的 Key 和 Value，每个数据都自带 InfoOfData 操作集指针。</p>
-            
-            <div class="featureBox">
-                <h4>📌 特点</h4>
-                <ul>
-                    <li>Key 和 Value 可为任意类型</li>
-                    <li>每个数据自带 InfoOfData 操作集</li>
-                    <li>内存利用率高</li>
-                    <li>适合小规模异构数据存储</li>
-                </ul>
-            </div>
+            <p>OAMap_M (Open Addressing Map Multiple Data) 采用开放定址法（Open Addressing）解决哈希冲突。当发生冲突时，使用线性探测（Linear Probing）寻找下一个可用的槽位。</p>
         </div>
 
         <div class="section">
             <h2>⚙️ 数据类型定义</h2>
             <div class="codeBlock">
-<pre class="language-c"><code>// OAMap_M 中的 Entry 类型
+<pre class="language-c"><code>// 键值对条目
 typedef struct Entry_M_inOAMap {
-    Data_M key;       // 键
-    Data_M value;     // 值
-    int state;        // 状态
-    bool isEmpty;     // 是否为空
+    Data_M key;      // 键
+    Data_M val;      // 值
+    int state;       // 状态
+    bool isEmpty;    // 是否为空
 } Entry_M_inOAMap;
 
-// OAMap_M
+// 哈希表
 typedef struct OAMap_M {
-    Entry_M_inOAMap* arr;      // 哈希槽数组
-    int mod;                    // 取模基数
-    int len;                    // 槽位数量
-    int size;                   // 元素数量
+    Entry_M_inOAMap* arr;    // 哈希表数组
+    int mod;                 // 模数
+    int len;                 // 当前元素数量
+    int size;                // 哈希表容量
 } OAMap_M;</code></pre>
             </div>
         </div>
@@ -60,32 +50,22 @@ typedef struct OAMap_M {
             <div class="codeBlock">
 <pre class="language-c"><code>#include "base.h"
 #include "Map/OAMap/Multiple_Data/oamap_mdata.h"
-#include "Oper/String_Info/string_info.h"
 #include "Oper/Int_Info/int_info.h"
+#include "Oper/String_Info/string_info.h"
 
 int main() {
-    // 1. 初始化 Map
+    // 1. 初始化哈希表
     OAMap_M map;
     initMOAMap(&map);
 
-    // 2. 插入不同类型的键值对
-    int age = 30;
-    int id = 1001;
+    // 2. 插入键值对
+    int key1 = 1;
+    char* val1 = "hello";
+    Data_M data1 = Data_M_OWN(&key1, NULL, &Info_Int, 0);
+    Data_M data2 = Data_M_OWN(val1, NULL, &Info_String, 0);
+    insertMKeyAndMValInMOAMap(&map, data1, data2);
 
-    // 字符串 key - 整数 value
-    insertMKeyAndMValInMOAMap(&map,
-        Data_M_OWN("age", NULL, &Info_String, 0),
-        Data_M_OWN(&age, NULL, &Info_Int, 0));
-
-    // 整数 key - 整数 value
-    insertMKeyAndMValInMOAMap(&map,
-        Data_M_OWN(1, NULL, &Info_Int, 0),
-        Data_M_OWN(&id, NULL, &Info_Int, 0));
-
-    // 3. 打印
-    printMOAMap(&map);
-
-    // 4. 释放
+    // 3. 释放哈希表
     freeMOAMap(&map);
     return 0;
 }</code></pre>
@@ -101,200 +81,205 @@ int main() {
                 
                 <div class="funcItem">
                     <div class="funcSignature">void initMOAMap(OAMap_M* pMap)</div>
-                    <p class="funcDesc">初始化 OAMap_M</p>
+                    <p class="funcDesc">初始化多类型开放寻址哈希表</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>pMap</code> - OAMap_M 的指针</li>
+                            <li><code>pMap</code> - 哈希表指针</li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">void freeMValInMOAMap(Data_M* inputData)</div>
-                    <p class="funcDesc">释放掉复制来的在 OAMap_M 中的 MVal</p>
+                    <div class="funcSignature">void freeMValInMOAMap(Data_M* val)</div>
+                    <p class="funcDesc">释放多类型开放寻址哈希表中的值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>inputData</code> - MVal 类型指针 (Data_M 类型)</li>
+                            <li><code>val</code> - 待释放的值</li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="funcItem">
                     <div class="funcSignature">void freeMEntryInMOAMap(Entry_M_inOAMap* entry)</div>
-                    <p class="funcDesc">释放掉复制来的在 OAMap_M 中的 MEntry (Entry_M_inOAMap 类型)</p>
+                    <p class="funcDesc">释放多类型开放寻址哈希表中的条目</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>entry</code> - MEntry 类型 (Entry_M_inOAMap 类型)</li>
+                            <li><code>entry</code> - 待释放的条目</li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="funcItem">
                     <div class="funcSignature">void freeMOAMap(OAMap_M* pMap)</div>
-                    <p class="funcDesc">释放掉 OAMap_M</p>
+                    <p class="funcDesc">释放多类型开放寻址哈希表</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>pMap</code> - OAMap_M 的指针</li>
+                            <li><code>pMap</code> - 哈希表指针</li>
                         </ul>
                     </div>
                 </div>
             </div>
 
-            <!-- 插入与查询 -->
+            <!-- 插入操作 -->
             <div class="funcGroup">
-                <h3>➕ 插入与查询</h3>
+                <h3>➕ 插入操作</h3>
                 
                 <div class="funcItem">
                     <div class="funcSignature">InfoOfReturn insertMKeyAndMValInMOAMap(OAMap_M* pMap, Data_M key, Data_M val)</div>
-                    <p class="funcDesc">插入 key 和 val 到 OAMap_M 类型中去</p>
+                    <p class="funcDesc">在多类型开放寻址哈希表中插入键值对</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>pMap</code> - OAMap_M 的指针</li>
-                            <li><code>key</code> - MKey (Data_M 类型)</li>
-                            <li><code>val</code> - MVal (Data_M 类型)</li>
+                            <li><code>pMap</code> - 哈希表指针</li>
+                            <li><code>key</code> - 待插入的键</li>
+                            <li><code>val</code> - 待插入的值</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 返回 InfoOfReturn 中的枚举类型
+                        <strong>返回:</strong> 操作结果状态码
                     </div>
                 </div>
+            </div>
 
+            <!-- 查询操作 -->
+            <div class="funcGroup">
+                <h3>🔍 查询操作</h3>
+                
                 <div class="funcItem">
                     <div class="funcSignature">Data_M getCopyMValByMKeyInMOAMap(OAMap_M* pMap, Data_M key)</div>
-                    <p class="funcDesc">通过 MKey 得到复制来的 MVal (Data_M 类型)</p>
+                    <p class="funcDesc">通过键找到多类型开放寻址哈希表中的值，使用完后用 freeMValInMOAMap 函数进行释放</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>pMap</code> - OAMap_M 的指针</li>
-                            <li><code>key</code> - MKey (Data_M 类型)</li>
+                            <li><code>pMap</code> - 哈希表指针</li>
+                            <li><code>key</code> - 待查找的键</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 返回 Data_M 类型数据，若没有返回空 Data_M 类型数据，通过 Data.isEmpty 进行查看
+                        <strong>返回:</strong> 返回找到的值，若没找到，返回空值（用字段 isEmpty 检查）
                     </div>
                     <div class="warning">
-                        <strong>注意:</strong> 返回的数据使用后需要调用 freeMValInMOAMap 释放
+                        <strong>警告:</strong> 返回的是复制的数据，使用后需调用 freeMValInMOAMap 释放
                     </div>
                 </div>
 
                 <div class="funcItem">
                     <div class="funcSignature">Data_M getPtrMValByMKeyInMOAMap(OAMap_M* pMap, Data_M key)</div>
-                    <p class="funcDesc">通过 MKey 得到 MVal (Data_M 类型)，可直接修改内部的 void* data 和 void* content 内容</p>
+                    <p class="funcDesc">通过键找到多类型开放寻址哈希表中的值，可以直接修改内部数据</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>pMap</code> - OAMap_M 的指针</li>
-                            <li><code>key</code> - MKey (Data_M 类型)</li>
+                            <li><code>pMap</code> - 哈希表指针</li>
+                            <li><code>key</code> - 待查找的键</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 返回 Data_M 类型数据，若没有返回空 Data_M 类型数据，通过 Data.isEmpty 进行查看
+                        <strong>返回:</strong> 返回找到的值，若没找到，返回空值（用字段 isEmpty 检查）
                     </div>
                     <div class="warning">
-                        <strong>警告:</strong> 返回的指针直接指向 Map 内部数据，请勿 free
+                        <strong>警告:</strong> 返回的指针直接指向哈希表内部数据，请勿 free
                     </div>
                 </div>
 
                 <div class="funcItem">
                     <div class="funcSignature">Entry_M_inOAMap getCopyMEntryByKeyInMOAMap(OAMap_M* pMap, Data_M key)</div>
-                    <p class="funcDesc">通过 MKey 得到复制来的 MEntry (Entry_M_inOAMap 类型)</p>
+                    <p class="funcDesc">通过键找到多类型开放寻址哈希表中的条目，使用完后用 freeMEntryInMOAMap 函数进行释放</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>pMap</code> - OAMap_M 的指针</li>
-                            <li><code>key</code> - MKey (Data_M 类型)</li>
+                            <li><code>pMap</code> - 哈希表指针</li>
+                            <li><code>key</code> - 待查找的条目的键</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 返回 Entry_M_inOAMap 类型数据，若没有返回空 Entry_M_inOAMap 类型数据，通过 entry.isEmpty 进行查看
+                        <strong>返回:</strong> 返回找到的条目，若没找到，返回空条目（用字段 isEmpty 检查）
                     </div>
                 </div>
-            </div>
 
-            <!-- 判存与删除 -->
-            <div class="funcGroup">
-                <h3>🔍 判存与删除</h3>
-                
                 <div class="funcItem">
                     <div class="funcSignature">bool hasKeyInMOAMap(OAMap_M* pMap, Data_M key)</div>
-                    <p class="funcDesc">判断 Mkey 是否在 OAMap_M 中</p>
+                    <p class="funcDesc">判断多类型开放寻址哈希表中是否存在当前键</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>pMap</code> - OAMap_M 的指针</li>
-                            <li><code>key</code> - MKey (Data_M 类型)</li>
+                            <li><code>pMap</code> - 哈希表指针</li>
+                            <li><code>key</code> - 待查找的键</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 如果存在返回 true，否则返回 false
-                    </div>
-                </div>
-
-                <div class="funcItem">
-                    <div class="funcSignature">InfoOfReturn delMEntryByMKeyInMOAMap(OAMap_M* pMap, Data_M key)</div>
-                    <p class="funcDesc">通过 MKey 删除在 OAMap_M 中的元素</p>
-                    <div class="params">
-                        <strong>参数:</strong>
-                        <ul>
-                            <li><code>pMap</code> - OAMap_M 的指针</li>
-                            <li><code>key</code> - MKey (Data_M 类型)</li>
-                        </ul>
-                    </div>
-                    <div class="params">
-                        <strong>返回:</strong> 返回 InfoOfReturn 中的枚举类型
+                        <strong>返回:</strong> 如果存在返回 true，否则 false
                     </div>
                 </div>
             </div>
 
-            <!-- 打印 -->
+            <!-- 删除操作 -->
             <div class="funcGroup">
-                <h3>🖨️ 打印</h3>
+                <h3>➖ 删除操作</h3>
                 
                 <div class="funcItem">
-                    <div class="funcSignature">void printMOAMap(OAMap_M* pMap)</div>
-                    <p class="funcDesc">打印 OAMap_M 中的所有数据</p>
+                    <div class="funcSignature">InfoOfReturn delMEntryByMKeyInMOAMap(OAMap_M* pMap, Data_M key)</div>
+                    <p class="funcDesc">删除多类型开放寻址哈希表中的条目</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>pMap</code> - OAMap_M 的指针</li>
+                            <li><code>pMap</code> - 哈希表指针</li>
+                            <li><code>key</code> - 待删除的条目的键</li>
+                        </ul>
+                    </div>
+                    <div class="params">
+                        <strong>返回:</strong> 操作结果状态码
+                    </div>
+                </div>
+            </div>
+
+            <!-- 打印操作 -->
+            <div class="funcGroup">
+                <h3>🖨️ 打印操作</h3>
+                
+                <div class="funcItem">
+                    <div class="funcSignature">void printMKeyInMOAMap(Data_M key)</div>
+                    <p class="funcDesc">打印多类型开放寻址哈希表的键</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>key</code> - 待打印的键</li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">void printMKeyInMOAMap(Data_M keyData)</div>
-                    <p class="funcDesc">打印在 OAMap_M 中的 MKey (Data_M 类型)</p>
+                    <div class="funcSignature">void printMValInMOAMap(Data_M val)</div>
+                    <p class="funcDesc">打印多类型开放寻址哈希表的值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>keyData</code> - MKey (Data_M 类型)</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="funcItem">
-                    <div class="funcSignature">void printMValInMOAMap(Data_M valData)</div>
-                    <p class="funcDesc">打印在 OAMap_M 中的 MVal (Data_M 类型)</p>
-                    <div class="params">
-                        <strong>参数:</strong>
-                        <ul>
-                            <li><code>valData</code> - MVal (Data_M 类型)</li>
+                            <li><code>val</code> - 待打印的值</li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="funcItem">
                     <div class="funcSignature">void printMEntryInMOAMap(Entry_M_inOAMap entry)</div>
-                    <p class="funcDesc">打印在 OAMap_M 中的 MEntry (Entry_M_inOAMap 类型)</p>
+                    <p class="funcDesc">打印多类型开放寻址哈希表的条目</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>entry</code> - MEntry (Entry_M_inOAMap 类型)</li>
+                            <li><code>entry</code> - 待打印的条目</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="funcItem">
+                    <div class="funcSignature">void printMOAMap(OAMap_M* pMap)</div>
+                    <p class="funcDesc">打印多类型开放寻址哈希表</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>pMap</code> - 哈希表指针</li>
                         </ul>
                     </div>
                 </div>
@@ -302,66 +287,12 @@ int main() {
         </div>
 
         <div class="section">
-            <h2>💡 完整示例</h2>
-            <div class="codeBlock">
-<pre class="language-c"><code>#include &lt;stdio.h&gt;
-#include "base.h"
-#include "Map/OAMap/Multiple_Data/oamap_mdata.h"
-#include "Oper/String_Info/string_info.h"
-#include "Oper/Int_Info/int_info.h"
-#include "Oper/Double_Info/double_info.h"
-
-int main() {
-    // 初始化 Map
-    OAMap_M map;
-    initMOAMap(&map);
-
-    // 准备数据
-    int age = 25;
-    double score = 95.5;
-    char name[] = "Alice";
-
-    // 插入异构数据
-    printf("=== 插入异构数据 ===\n");
-    insertMKeyAndMValInMOAMap(&map,
-        Data_M_OWN("age", NULL, &Info_String, 0),
-        Data_M_OWN(&age, NULL, &Info_Int, 0));
-
-    insertMKeyAndMValInMOAMap(&map,
-        Data_M_OWN("score", NULL, &Info_String, 0),
-        Data_M_OWN(&score, NULL, &Info_Double, 0));
-
-    insertMKeyAndMValInMOAMap(&map,
-        Data_M_OWN("name", NULL, &Info_String, 0),
-        Data_M_OWN(name, NULL, &Info_String, 0));
-
-    printMOAMap(&map);
-
-    // 查询
-    printf("\n=== 查询数据 ===\n");
-    Data_M val = getCopyMValByMKeyInMOAMap(&map, 
-        Data_M_OWN("age", NULL, &Info_String, 0));
-    if (!val.isEmpty) {
-        printf("age: %d\n", *(int*)val.data);
-        freeMValInMOAMap(&val);
-    }
-
-    // 释放
-    freeMOAMap(&map);
-    return 0;
-}</code></pre>
-            </div>
-        </div>
-
-        <div class="section">
             <h2>⚠️ 注意事项</h2>
             <ul class="warningList">
-                <li>OAMap_M 不需要传入操作集，每个数据都自带 InfoOfData</li>
-                <li>开放定址法需要保持较低的负载因子以保证查找效率</li>
                 <li>通过 getCopy 系列函数获取的数据使用后必须释放</li>
-                <li>通过 getPtr 系列函数获取的指针不要释放</li>
-                <li>每次使用完 Map 后必须调用 freeMOAMap 释放</li>
-                <li>Data_M 的 type 字段可用于标识数据类型</li>
+                <li>通过 getPtr 系列函数获取的数据指针直接指向哈希表内部，不要释放</li>
+                <li>每次使用完哈希表后必须调用 freeMOAMap 释放整个哈希表</li>
+                <li>OAMap 使用开放定址法，适合数据量较小且分布均匀的场景</li>
             </ul>
         </div>
     </div>

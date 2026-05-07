@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChainSet_S 文档 - FOCX</title>
+    <link rel="stylesheet" href="index.css">
+    <!-- Prism.js 代码高亮 -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="container">
+        <div class="backLink">
+            <a href="../../../../index.html">← 函数大全</a>
+            <span class="separator">|</span>
+            <a href="../../index.html">← Set</a>
+        </div>
+
+        <h1 class="mainTitle">🔐 ChainSet_S - 链式哈希集合（单一数据类型）</h1>
+        <p class="subtitle">采用链表法解决哈希冲突的集合存储，需要提供键的数据操作集</p>
+
+        <div class="section">
+            <h2>📖 概述</h2>
+            <p>ChainSet_S (Chain Set Single Data) 采用链表法（Separate Chaining）解决哈希冲突。每个哈希桶都是一个链表，可以在同义词冲突时将多个键链接在一起。</p>
+        </div>
+
+        <div class="section">
+            <h2>⚙️ 数据类型定义</h2>
+            <div class="codeBlock">
+<pre class="language-c"><code>// 集合条目
+typedef struct Entry_S_inChainSet {
+    Data_S key;      // 键
+    bool isEmpty;    // 是否为空
+} Entry_S_inChainSet;
+
+// 哈希集合
+typedef struct ChainSet_S {
+    List_S_inChainSet* arr;    // 哈希桶数组
+    InfoOfData* keyInfo;       // 键的操作集
+    int mod;                   // 模数
+    int len;                   // 当前元素数量
+    int size;                  // 哈希表容量
+} ChainSet_S;</code></pre>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🚀 快速开始</h2>
+            <div class="codeBlock">
+<pre class="language-c"><code>#include "base.h"
+#include "Set/ChainSet/Single_Data/chainset_sdata.h"
+#include "Oper/Int_Info/int_info.h"
+
+int main() {
+    // 1. 初始化集合
+    ChainSet_S set;
+    initSChainSet(&set, &Info_Int);
+
+    // 2. 插入键
+    insertSKeyInSChainSet(&set, Data_S_OWN(1, NULL));
+    insertSKeyInSChainSet(&set, Data_S_OWN(2, NULL));
+    insertSKeyInSChainSet(&set, Data_S_OWN(3, NULL));
+
+    // 3. 检查键是否存在
+    if (hasSKeyInSChainSet(&set, Data_S_OWN(2, NULL))) {
+        printf("Key 2 exists!\n");
+    }
+
+    // 4. 删除键
+    delSKeyBySKeyInSChainSet(&set, Data_S_OWN(2, NULL));
+
+    // 5. 打印集合
+    printSChainSet(&set);
+
+    // 6. 释放集合
+    freeSChainSet(&set);
+    return 0;
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📋 函数列表</h2>
+
+            <!-- 初始化与销毁 -->
+            <div class="funcGroup">
+                <h3>🔧 初始化与销毁</h3>
+                
+                <div class="funcItem">
+                    <div class="funcSignature">void initSChainSet(ChainSet_S* pSet, InfoOfData* keyInfo)</div>
+                    <p class="funcDesc">初始化单类型链式集合</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>pSet</code> - 集合指针</li>
+                            <li><code>keyInfo</code> - 键的数据信息的指针</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="funcItem">
+                    <div class="funcSignature">void freeSKeyInSChainSet(ChainSet_S* pSet, Data_S* key)</div>
+                    <p class="funcDesc">释放单类型链式集合中的键</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>pSet</code> - 集合指针</li>
+                            <li><code>key</code> - 待释放的键</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="funcItem">
+                    <div class="funcSignature">void freeSChainSet(ChainSet_S* pSet)</div>
+                    <p class="funcDesc">释放单类型链式集合</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>pSet</code> - 集合指针</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 插入操作 -->
+            <div class="funcGroup">
+                <h3>➕ 插入操作</h3>
+                
+                <div class="funcItem">
+                    <div class="funcSignature">InfoOfReturn insertSKeyInSChainSet(ChainSet_S* pSet, Data_S key)</div>
+                    <p class="funcDesc">在单类型链式集合中插入键</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>pSet</code> - 集合指针</li>
+                            <li><code>key</code> - 待插入的键</li>
+                        </ul>
+                    </div>
+                    <div class="params">
+                        <strong>返回:</strong> 操作结果状态码
+                    </div>
+                </div>
+            </div>
+
+            <!-- 查询操作 -->
+            <div class="funcGroup">
+                <h3>🔍 查询操作</h3>
+                
+                <div class="funcItem">
+                    <div class="funcSignature">Data_S getCopySKeyBySKeyInSChainSet(ChainSet_S* pSet, Data_S key)</div>
+                    <p class="funcDesc">通过键找到单类型链式集合中的键，使用完后用 freeSKeyInSChainSet 函数进行释放</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>pSet</code> - 集合指针</li>
+                            <li><code>key</code> - 待查找的键</li>
+                        </ul>
+                    </div>
+                    <div class="params">
+                        <strong>返回:</strong> 返回找到的键，若没找到，返回空键（用字段 isEmpty 检查）
+                    </div>
+                    <div class="warning">
+                        <strong>警告:</strong> 返回的是复制的数据，使用后需调用 freeSKeyInSChainSet 释放
+                    </div>
+                </div>
+
+                <div class="funcItem">
+                    <div class="funcSignature">bool hasSKeyInSChainSet(ChainSet_S* pSet, Data_S key)</div>
+                    <p class="funcDesc">判断单类型链式集合中是否存在当前键</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>pSet</code> - 集合指针</li>
+                            <li><code>key</code> - 待查找的键</li>
+                        </ul>
+                    </div>
+                    <div class="params">
+                        <strong>返回:</strong> 如果存在返回 true，否则 false
+                    </div>
+                </div>
+            </div>
+
+            <!-- 删除操作 -->
+            <div class="funcGroup">
+                <h3>➖ 删除操作</h3>
+                
+                <div class="funcItem">
+                    <div class="funcSignature">InfoOfReturn delSKeyBySKeyInSChainSet(ChainSet_S* pSet, Data_S key)</div>
+                    <p class="funcDesc">删除单类型链式集合中的键</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>pSet</code> - 集合指针</li>
+                            <li><code>key</code> - 待删除的键</li>
+                        </ul>
+                    </div>
+                    <div class="params">
+                        <strong>返回:</strong> 操作结果状态码
+                    </div>
+                </div>
+            </div>
+
+            <!-- 打印操作 -->
+            <div class="funcGroup">
+                <h3>🖨️ 打印操作</h3>
+                
+                <div class="funcItem">
+                    <div class="funcSignature">void printSKeyInSChainSet(ChainSet_S* pSet, Data_S key)</div>
+                    <p class="funcDesc">打印单类型链式集合的键</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>pSet</code> - 集合指针</li>
+                            <li><code>key</code> - 待打印的键</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="funcItem">
+                    <div class="funcSignature">void printSChainSet(ChainSet_S* pSet)</div>
+                    <p class="funcDesc">打印单类型链式集合</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>pSet</code> - 集合指针</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>⚠️ 注意事项</h2>
+            <ul class="warningList">
+                <li>Set 只存储唯一键，不允许重复插入</li>
+                <li>通过 getCopy 系列函数获取的数据使用后必须释放</li>
+                <li>每次使用完集合后必须调用 freeSChainSet 释放整个集合</li>
+                <li>ChainSet 使用链表法解决冲突，适合数据量较大或分布不均匀的场景</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Prism.js -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="index.js"></script>
+</body>
+</html>

@@ -16,7 +16,7 @@
             <a href="../../index.html">← List</a>
         </div>
 
-        <h1 class="mainTitle">🔣 DList_M - 双向链表（多种数据类型）</h1>
+        <h1 class="mainTitle">🧬 DList_M - 双向链表（多种数据类型）</h1>
         <p class="subtitle">可存储任意类型数据的双向链表，每个数据自带操作函数</p>
 
         <div class="section">
@@ -60,12 +60,12 @@ int main() {
     // 插入整数
     int num = 42;
     Data_M data1 = Data_M_OWN(&num, NULL, &Info_Int, 0);
-    insertMDataAtEndInMDList(&list, data1);
+    insertMValAtEndInMDList(&list, data1);
 
     // 插入字符串
     char str[] = "Hello";
     Data_M data2 = Data_M_OWN(str, NULL, &Info_String, 0);
-    insertMDataAtEndInMDList(&list, data2);
+    insertMValAtEndInMDList(&list, data2);
 
     // 3. 打印链表
     printMDList(&list);
@@ -86,33 +86,33 @@ int main() {
                 
                 <div class="funcItem">
                     <div class="funcSignature">void initMDList(DList_M* plist)</div>
-                    <p class="funcDesc">初始化 DList_M</p>
+                    <p class="funcDesc">初始化多类型双向链表</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>plist</code> - DList_M 类型的指针</li>
+                            <li><code>plist</code> - 链表指针</li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">void freeMDataInMDList(Data_M* inputData)</div>
-                    <p class="funcDesc">释放 MData (Data_M 类型) 的内容</p>
+                    <div class="funcSignature">void freeMValInMDList(Data_M* val)</div>
+                    <p class="funcDesc">释放多类型双向链表中的值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>inputData</code> - MData 类型指针 (Data_M 类型)</li>
+                            <li><code>val</code> - 待释放的值</li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="funcItem">
                     <div class="funcSignature">void freeMDList(DList_M* plist)</div>
-                    <p class="funcDesc">清除 DList_M 链表</p>
+                    <p class="funcDesc">释放多类型双向链表</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>plist</code> - DList_M 链表指针</li>
+                            <li><code>plist</code> - 链表指针</li>
                         </ul>
                     </div>
                 </div>
@@ -123,48 +123,48 @@ int main() {
                 <h3>➕ 插入操作</h3>
                 
                 <div class="funcItem">
-                    <div class="funcSignature">InfoOfReturn insertMDataAtEndInMDList(DList_M* plist, Data_M inputData)</div>
-                    <p class="funcDesc">在 DList_M 链表的尾部插入节点</p>
+                    <div class="funcSignature">InfoOfReturn insertMValAtEndInMDList(DList_M* plist, Data_M val)</div>
+                    <p class="funcDesc">在多类型双向链表尾部插入值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>plist</code> - DList_M 链表指针</li>
-                            <li><code>inputData</code> - Data_M 类型数据</li>
+                            <li><code>plist</code> - 链表指针</li>
+                            <li><code>val</code> - 待插入的值</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 返回 InfoOfReturn 中的枚举类型
+                        <strong>返回:</strong> 操作结果状态码
                     </div>
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">InfoOfReturn insertMDataAtStartInMDList(DList_M* plist, Data_M inputData)</div>
-                    <p class="funcDesc">在 DList_M 链表的头部插入节点</p>
+                    <div class="funcSignature">InfoOfReturn insertMValAtStartInMDList(DList_M* plist, Data_M val)</div>
+                    <p class="funcDesc">在多类型双向链表头部插入值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>plist</code> - DList_M 链表指针</li>
-                            <li><code>inputData</code> - Data_M 类型数据</li>
+                            <li><code>plist</code> - 链表指针</li>
+                            <li><code>val</code> - 待插入的值</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 返回 InfoOfReturn 中的枚举类型
+                        <strong>返回:</strong> 操作结果状态码
                     </div>
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">InfoOfReturn insertMDataAtPosInMDList(DList_M* plist, Data_M inputData, int pos)</div>
-                    <p class="funcDesc">在 DList_M 链表指定位置插入数据</p>
+                    <div class="funcSignature">InfoOfReturn insertMValAtPosInMDList(DList_M* plist, Data_M val, int pos)</div>
+                    <p class="funcDesc">在多类型双向链表指定位置插入值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>plist</code> - DList_M 链表指针</li>
-                            <li><code>inputData</code> - Data_M 类型数据</li>
-                            <li><code>pos</code> - 位置的范围在 [0, DList_M.size]，范围的两端分别代表头插和尾插</li>
+                            <li><code>plist</code> - 链表指针</li>
+                            <li><code>val</code> - 待插入的值</li>
+                            <li><code>pos</code> - 位置的范围在 [0, 链表大小]，范围的两端分别代表头插和尾插</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 返回 InfoOfReturn 中的枚举类型
+                        <strong>返回:</strong> 操作结果状态码
                     </div>
                 </div>
             </div>
@@ -175,59 +175,59 @@ int main() {
                 
                 <div class="funcItem">
                     <div class="funcSignature">InfoOfReturn delStartNodeInMDList(DList_M* plist)</div>
-                    <p class="funcDesc">删除 DList_M 链表头节点</p>
+                    <p class="funcDesc">删除多类型双向链表的头节点</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>plist</code> - DList_M 链表指针</li>
+                            <li><code>plist</code> - 链表指针</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 返回 InfoOfReturn 中的枚举类型
+                        <strong>返回:</strong> 操作结果状态码
                     </div>
                 </div>
 
                 <div class="funcItem">
                     <div class="funcSignature">InfoOfReturn delEndNodeInMDList(DList_M* plist)</div>
-                    <p class="funcDesc">删除 DList_M 链表尾节点</p>
+                    <p class="funcDesc">删除多类型双向链表的尾节点</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>plist</code> - DList_M 链表指针</li>
+                            <li><code>plist</code> - 链表指针</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 返回 InfoOfReturn 中的枚举类型
+                        <strong>返回:</strong> 操作结果状态码
                     </div>
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">InfoOfReturn delNodeByMDataInMDList(DList_M* plist, Data_M inputData)</div>
-                    <p class="funcDesc">通过 MData (Data_M 类型) 数据来删除 DList_M 中的节点</p>
+                    <div class="funcSignature">InfoOfReturn delNodeByMValInMDList(DList_M* plist, Data_M val)</div>
+                    <p class="funcDesc">删除多类型双向链表中指定值（只能删除第一次出现的）</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>plist</code> - DList_M 链表指针</li>
-                            <li><code>inputData</code> - Data_M 类型数据</li>
+                            <li><code>plist</code> - 链表指针</li>
+                            <li><code>val</code> - 待删除的值</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 返回 InfoOfReturn 中的枚举类型
+                        <strong>返回:</strong> 操作结果状态码
                     </div>
                 </div>
 
                 <div class="funcItem">
                     <div class="funcSignature">InfoOfReturn delNodeByPosInMDList(DList_M* plist, int pos)</div>
-                    <p class="funcDesc">通过位置删除 DList_M 的节点</p>
+                    <p class="funcDesc">删除多类型双向链表中指定位置的值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>plist</code> - DList_M 链表指针</li>
-                            <li><code>pos</code> - 要删除的位置（从 0 开始）</li>
+                            <li><code>plist</code> - 链表指针</li>
+                            <li><code>pos</code> - 待删除的位置（从 0 开始）</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 返回 InfoOfReturn 中的枚举类型
+                        <strong>返回:</strong> 操作结果状态码
                     </div>
                 </div>
             </div>
@@ -237,17 +237,17 @@ int main() {
                 <h3>🔍 查询操作</h3>
                 
                 <div class="funcItem">
-                    <div class="funcSignature">Data_M getPtrMDataByPosInMDList(DList_M* plist, int pos)</div>
-                    <p class="funcDesc">通过位置 Pos 返回 MData 的指针 (Data_M 类型)，可直接修改内部的 void* data 和 void* content 内容</p>
+                    <div class="funcSignature">Data_M getPtrMValByPosInMDList(DList_M* plist, int pos)</div>
+                    <p class="funcDesc">查找在多类型双向链表的指定位置的值，可以直接修改内部数据</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>plist</code> - DList_M 类型指针</li>
+                            <li><code>plist</code> - 链表指针</li>
                             <li><code>pos</code> - 位置（从 0 开始）</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 返回 Data_M 类型数据，若没有返回空 Data_M 类型数据，通过 Data.isEmpty 进行查看
+                        <strong>返回:</strong> 返回找到的值，若没找到，返回空值（用字段 isEmpty 检查）
                     </div>
                     <div class="warning">
                         <strong>警告:</strong> 返回的指针直接指向链表内部数据，请勿 free
@@ -255,50 +255,50 @@ int main() {
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">Data_M getCopyMDataByPosInMDList(DList_M* plist, int pos)</div>
-                    <p class="funcDesc">通过 Pos 位置返回 MData (Data_M 类型)，注意这里 MData 中的 void* data 和 void* content 都是复制的，使用完后记得释放</p>
+                    <div class="funcSignature">Data_M getCopyMValByPosInMDList(DList_M* plist, int pos)</div>
+                    <p class="funcDesc">查找在多类型双向链表的指定位置的值，使用完后用 freeMValInMDList 函数进行释放</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>plist</code> - DList_M 类型指针</li>
+                            <li><code>plist</code> - 链表指针</li>
                             <li><code>pos</code> - 位置（从 0 开始）</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 返回 Data_M 类型数据，若没有返回空 Data_M 类型数据，通过 Data.isEmpty 进行查看
+                        <strong>返回:</strong> 返回找到的值，若没找到，返回空值（用字段 isEmpty 检查）
                     </div>
                     <div class="warning">
-                        <strong>警告:</strong> 返回的是复制的数据，使用后需调用 freeMDataInMDList 释放
+                        <strong>警告:</strong> 返回的是复制的数据，使用后需调用 freeMValInMDList 释放
                     </div>
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">Data_M getPtrMDataByMDataInMDList(DList_M* plist, Data_M inputData)</div>
-                    <p class="funcDesc">通过 MData (Data_M 类型) 返回 MData 的指针 (Data_M 类型)，可直接修改内部的 void* data 和 void* content 内容</p>
+                    <div class="funcSignature">Data_M getPtrMValByMValInMDList(DList_M* plist, Data_M val)</div>
+                    <p class="funcDesc">通过值找到多类型双向链表中值，可以直接修改内部数据</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>plist</code> - DList_M 类型指针</li>
-                            <li><code>inputData</code> - 输入的 MData 类型 (Data_M 类型)</li>
+                            <li><code>plist</code> - 链表指针</li>
+                            <li><code>val</code> - 待查找的值</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 返回 Data_M 类型数据，若没有返回空 Data_M 类型数据，通过 Data.isEmpty 进行查看
+                        <strong>返回:</strong> 返回找到的值，若没找到，返回空值（用字段 isEmpty 检查）
                     </div>
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">bool hasMDataInMDList(DList_M* plist, Data_M inputData)</div>
-                    <p class="funcDesc">判断 Data_M 数据是否在 DList_M 里面</p>
+                    <div class="funcSignature">bool hasMValInMDList(DList_M* plist, Data_M val)</div>
+                    <p class="funcDesc">判断多类型双向链表中是否有当前值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>plist</code> - DList_M 类型指针</li>
-                            <li><code>inputData</code> - Data_M 类型数据</li>
+                            <li><code>plist</code> - 链表指针</li>
+                            <li><code>val</code> - 待查找的值</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 有就返回 true，没有就 false
+                        <strong>返回:</strong> 如果存在返回 true，否则 false
                     </div>
                 </div>
             </div>
@@ -309,33 +309,33 @@ int main() {
                 
                 <div class="funcItem">
                     <div class="funcSignature">void reverseMDList(DList_M* plist)</div>
-                    <p class="funcDesc">反转 DList_M 链表</p>
+                    <p class="funcDesc">反转多类型双向链表</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>plist</code> - DList_M 链表指针</li>
+                            <li><code>plist</code> - 链表指针</li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">void printSDataInMDList(Data_M inputData)</div>
-                    <p class="funcDesc">打印 DList_M 链表中的 Data_M 数据</p>
+                    <div class="funcSignature">void printMValInMDList(Data_M val)</div>
+                    <p class="funcDesc">打印多类型双向链表中的值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>inputData</code> - Data_M 类型数据</li>
+                            <li><code>val</code> - 待打印的值</li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="funcItem">
                     <div class="funcSignature">void printMDList(DList_M* plist)</div>
-                    <p class="funcDesc">打印 DList_M 链表数据</p>
+                    <p class="funcDesc">打印多类型双向链表</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
-                            <li><code>plist</code> - DList_M 链表指针</li>
+                            <li><code>plist</code> - 链表指针</li>
                         </ul>
                     </div>
                 </div>
@@ -363,15 +363,15 @@ int main() {
 
     // 插入整数
     Data_M data1 = Data_M_OWN(&num1, NULL, &Info_Int, 0);
-    insertMDataAtEndInMDList(&list, data1);
+    insertMValAtEndInMDList(&list, data1);
 
     // 插入整数
     Data_M data2 = Data_M_OWN(&num2, NULL, &Info_Int, 0);
-    insertMDataAtStartInMDList(&list, data2);
+    insertMValAtStartInMDList(&list, data2);
 
     // 插入浮点数
     Data_M data3 = Data_M_OWN(&val, NULL, &Info_Double, 0);
-    insertMDataAtPosInMDList(&list, data3, 1);
+    insertMValAtPosInMDList(&list, data3, 1);
 
     printf("=== 链表内容 ===\n");
     printMDList(&list);

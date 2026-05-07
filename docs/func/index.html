@@ -17,12 +17,12 @@
 
         <!-- List 模块 -->
         <div class="module">
-            <h2 class="moduleTitle">📋 List 模块 - 双向链表</h2>
-            <p class="moduleDesc">双向链表，支持在任意位置插入、删除和查找数据</p>
+            <h2 class="moduleTitle">📋 List 模块 - 链表</h2>
+            <p class="moduleDesc">链表数据结构，支持在任意位置插入、删除和查找数据</p>
             
             <div class="subModule">
                 <h3>DList - 双向链表</h3>
-                <p class="hint">支持单数据和多数据类型</p>
+                <p class="hint">支持前向和后向遍历</p>
                 <div class="dataType">
                     <a href="List/DList/Single_Data/index.html" class="typeCard">
                         <span class="typeIcon">🔗</span>
@@ -37,6 +37,29 @@
                         <span class="typeIcon">🧬</span>
                         <div class="typeInfo">
                             <h4>DList_M - 多数据类型</h4>
+                            <p>每个节点可存储多个不同类型的数据</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="subModule">
+                <h3>SList - 单向链表</h3>
+                <p class="hint">占用更少内存，仅支持前向遍历</p>
+                <div class="dataType">
+                    <a href="List/SList/Single_Data/index.html" class="typeCard">
+                        <span class="typeIcon">➡️</span>
+                        <div class="typeInfo">
+                            <h4>SList_S - 单数据类型</h4>
+                            <p>使用单个 InfoOfData 管理数据</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="dataType">
+                    <a href="List/SList/Multiple_Data/index.html" class="typeCard">
+                        <span class="typeIcon">🔀</span>
+                        <div class="typeInfo">
+                            <h4>SList_M - 多数据类型</h4>
                             <p>每个节点可存储多个不同类型的数据</p>
                         </div>
                     </a>
@@ -90,6 +113,58 @@
                         <div class="typeInfo">
                             <h4>OAMap_M - 多数据类型</h4>
                             <p>键和值都使用多个 Data_M</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Set 模块 -->
+        <div class="module">
+            <h2 class="moduleTitle">🎯 Set 模块 - 哈希集合</h2>
+            <p class="moduleDesc">集合数据结构，存储唯一键，支持高效的成员检测</p>
+            
+            <div class="subModule">
+                <h3>ChainSet - 链式哈希集合</h3>
+                <p class="hint">使用链表解决哈希冲突</p>
+                <div class="dataType">
+                    <a href="Set/ChainSet/Single_Data/index.html" class="typeCard">
+                        <span class="typeIcon">🔐</span>
+                        <div class="typeInfo">
+                            <h4>ChainSet_S - 单数据类型</h4>
+                            <p>使用单个 InfoOfData 管理键</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="dataType">
+                    <a href="Set/ChainSet/Multiple_Data/index.html" class="typeCard">
+                        <span class="typeIcon">🌀</span>
+                        <div class="typeInfo">
+                            <h4>ChainSet_M - 多数据类型</h4>
+                            <p>每个键可存储多个不同类型的数据</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="subModule">
+                <h3>OASet - 开放地址哈希集合</h3>
+                <p class="hint">使用线性探测解决哈希冲突，占用更少内存</p>
+                <div class="dataType">
+                    <a href="Set/OASet/Single_Data/index.html" class="typeCard">
+                        <span class="typeIcon">✴️</span>
+                        <div class="typeInfo">
+                            <h4>OASet_S - 单数据类型</h4>
+                            <p>使用单个 InfoOfData 管理键</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="dataType">
+                    <a href="Set/OASet/Multiple_Data/index.html" class="typeCard">
+                        <span class="typeIcon">🔶</span>
+                        <div class="typeInfo">
+                            <h4>OASet_M - 多数据类型</h4>
+                            <p>每个键可存储多个不同类型的数据</p>
                         </div>
                     </a>
                 </div>

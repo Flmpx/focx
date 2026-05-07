@@ -15,17 +15,17 @@
         </div>
 
         <h1 class="mainTitle">📋 List 链表</h1>
-        <p class="subtitle">双向链表数据结构</p>
+        <p class="subtitle">链表数据结构</p>
 
         <div class="section">
             <h2>📖 概述</h2>
-            <p>List 模块提供双向链表 (DList) 实现，支持在链表头部、尾部或指定位置插入/删除元素，支持反转等操作。</p>
+            <p>List 模块提供链表实现，支持在链表头部、尾部或指定位置插入/删除元素。</p>
             
             <div class="featureBox">
                 <h4>📌 可用类型</h4>
                 <ul>
-                    <li><strong>DList_S</strong> - 双向链表（单一数据类型）</li>
-                    <li><strong>DList_M</strong> - 双向链表（多种数据类型）</li>
+                    <li><strong>DList</strong> - 双向链表（支持前向和后向遍历）</li>
+                    <li><strong>SList</strong> - 单向链表（内存占用更少）</li>
                 </ul>
             </div>
         </div>
@@ -34,8 +34,8 @@
             <h2>🗂️ 目录结构</h2>
             
             <div class="moduleCard">
-                <h3>DList</h3>
-                <p>双向链表</p>
+                <h3>DList - 双向链表</h3>
+                <p>支持前向和后向遍历，可在任意位置高效插入/删除</p>
                 
                 <div class="subLinks">
                     <a href="DList/Single_Data/index.html">
@@ -48,6 +48,22 @@
                     </a>
                 </div>
             </div>
+
+            <div class="moduleCard">
+                <h3>SList - 单向链表</h3>
+                <p>仅支持前向遍历，占用更少内存</p>
+                
+                <div class="subLinks">
+                    <a href="SList/Single_Data/index.html">
+                        <span class="typeTag single">SList_S</span>
+                        单一数据类型链表
+                    </a>
+                    <a href="SList/Multiple_Data/index.html">
+                        <span class="typeTag multiple">SList_M</span>
+                        多种数据类型链表
+                    </a>
+                </div>
+            </div>
         </div>
 
         <div class="section">
@@ -55,18 +71,45 @@
             <table class="compareTable">
                 <tr>
                     <th>类型</th>
+                    <th>遍历方向</th>
                     <th>适用场景</th>
                     <th>特点</th>
                 </tr>
                 <tr>
-                    <td><span class="typeTag single">DList_S</span></td>
-                    <td>存储同类型数据</td>
-                    <td>需要提供统一操作集，内存效率高</td>
+                    <td><span class="typeTag single">DList</span></td>
+                    <td>双向</td>
+                    <td>需要反向遍历</td>
+                    <td>占用略高，功能更强</td>
                 </tr>
                 <tr>
-                    <td><span class="typeTag multiple">DList_M</span></td>
-                    <td>存储异构数据</td>
-                    <td>每个数据自带操作集，灵活度高</td>
+                    <td><span class="typeTag multiple">SList</span></td>
+                    <td>单向</td>
+                    <td>内存敏感场景</td>
+                    <td>占用更低，简单高效</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>📊 数据类型后缀说明</h2>
+            <table class="compareTable">
+                <tr>
+                    <th>后缀</th>
+                    <th>数据类型</th>
+                    <th>灵活性</th>
+                    <th>内存开销</th>
+                </tr>
+                <tr>
+                    <td><span class="typeTag single">_S</span></td>
+                    <td>统一类型</td>
+                    <td>中等</td>
+                    <td>较低</td>
+                </tr>
+                <tr>
+                    <td><span class="typeTag multiple">_M</span></td>
+                    <td>任意类型</td>
+                    <td>高</td>
+                    <td>较高</td>
                 </tr>
             </table>
         </div>

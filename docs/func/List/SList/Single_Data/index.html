@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DList_S 文档 - FOCX</title>
+    <title>SList_S 文档 - FOCX</title>
     <link rel="stylesheet" href="index.css">
     <!-- Prism.js 代码高亮 -->
     <link href="https://cdn.bootcdn.net/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
@@ -16,31 +16,30 @@
             <a href="../../index.html">← List</a>
         </div>
 
-        <h1 class="mainTitle">🔗 DList_S - 双向链表（单一数据类型）</h1>
-        <p class="subtitle">存储单一类型数据的双向链表，需要提供数据操作集 (InfoOfData)</p>
+        <h1 class="mainTitle">➡️ SList_S - 单向链表（单一数据类型）</h1>
+        <p class="subtitle">存储单一类型数据的单向链表，需要提供数据操作集 (InfoOfData)</p>
 
         <div class="section">
             <h2>📖 概述</h2>
-            <p>DList_S (Double List Single Data) 是一种双向链表数据结构，只能存储单一类型的数据。所有数据都需要提供对应的 InfoOfData 操作集指针，用于执行复制、比较、释放等操作。</p>
+            <p>SList_S (Single List Single Data) 是一种单向链表数据结构，只能存储单一类型的数据。相比 DList，SList 占用更少的内存（仅需保存 next 指针），但只支持前向遍历。</p>
         </div>
 
         <div class="section">
             <h2>⚙️ 数据类型定义</h2>
             <div class="codeBlock">
 <pre class="language-c"><code>// 链表节点
-typedef struct Node_S_inDList {
-    struct Node_S_inDList* prev;  // 前驱节点
-    struct Node_S_inDList* next;   // 后继节点
+typedef struct Node_S_inSList {
+    struct Node_S_inSList* next;  // 后继节点
     Data_S val;                    // 数据
-} Node_S_inDList;
+} Node_S_inSList;
 
-// DList_S 链表
+// SList_S 链表
 typedef struct {
-    Node_S_inDList* head;      // 头节点
-    Node_S_inDList* tail;      // 尾节点
+    Node_S_inSList* head;      // 头节点
+    Node_S_inSList* tail;      // 尾节点
     InfoOfData* valInfo;       // 数据操作集
     int size;                  // 链表长度
-} DList_S;</code></pre>
+} SList_S;</code></pre>
             </div>
         </div>
 
@@ -48,26 +47,26 @@ typedef struct {
             <h2>🚀 快速开始</h2>
             <div class="codeBlock">
 <pre class="language-c"><code>#include "base.h"
-#include "List/DList/Single_Data/dlist_sdata.h"
+#include "List/SList/Single_Data/slist_sdata.h"
 #include "Oper/Int_Info/int_info.h"  // 使用预定义整数操作集
 
 int main() {
     // 1. 初始化链表
-    DList_S list;
-    initSDList(&list, &Info_Int);
+    SList_S list;
+    initSSList(&list, &Info_Int);
 
     // 2. 创建数据并插入
     Data_S data1 = Data_S_OWN(123, NULL);
-    insertSValAtEndInSDList(&list, data1);
+    insertSValAtEndInSSList(&list, data1);
 
     Data_S data2 = Data_S_OWN(456, NULL);
-    insertSValAtEndInSDList(&list, data2);
+    insertSValAtEndInSSList(&list, data2);
 
     // 3. 打印链表
-    printSDList(&list);
+    printSSList(&list);
 
     // 4. 释放链表
-    freeSDList(&list);
+    freeSSList(&list);
     return 0;
 }</code></pre>
             </div>
@@ -81,8 +80,8 @@ int main() {
                 <h3>🔧 初始化与销毁</h3>
                 
                 <div class="funcItem">
-                    <div class="funcSignature">void initSDList(DList_S* plist, InfoOfData* valInfo)</div>
-                    <p class="funcDesc">初始化单类型双向链表</p>
+                    <div class="funcSignature">void initSSList(SList_S* plist, InfoOfData* valInfo)</div>
+                    <p class="funcDesc">初始化单类型单向链表</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
@@ -93,8 +92,8 @@ int main() {
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">void freeSValInSDList(DList_S* plist, Data_S* val)</div>
-                    <p class="funcDesc">释放单类型双向链表中的值</p>
+                    <div class="funcSignature">void freeSValInSSList(SList_S* plist, Data_S* val)</div>
+                    <p class="funcDesc">释放单类型单向链表中的值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
@@ -105,8 +104,8 @@ int main() {
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">void freeSDList(DList_S* plist)</div>
-                    <p class="funcDesc">释放单类型双向链表</p>
+                    <div class="funcSignature">void freeSSList(SList_S* plist)</div>
+                    <p class="funcDesc">释放单类型单向链表</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
@@ -121,8 +120,8 @@ int main() {
                 <h3>➕ 插入操作</h3>
                 
                 <div class="funcItem">
-                    <div class="funcSignature">InfoOfReturn insertSValAtEndInSDList(DList_S* plist, Data_S val)</div>
-                    <p class="funcDesc">在单类型双向链表尾部插入值</p>
+                    <div class="funcSignature">InfoOfReturn insertSValAtEndInSSList(SList_S* plist, Data_S val)</div>
+                    <p class="funcDesc">在单类型单向链表尾部插入值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
@@ -136,8 +135,8 @@ int main() {
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">InfoOfReturn insertSValAtStartInSDList(DList_S* plist, Data_S val)</div>
-                    <p class="funcDesc">在单类型双向链表头部插入值</p>
+                    <div class="funcSignature">InfoOfReturn insertSValAtStartInSSList(SList_S* plist, Data_S val)</div>
+                    <p class="funcDesc">在单类型单向链表头部插入值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
@@ -151,8 +150,8 @@ int main() {
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">InfoOfReturn insertSValAtPosInSDList(DList_S* plist, Data_S val, int pos)</div>
-                    <p class="funcDesc">在单类型双向链表指定位置插入值</p>
+                    <div class="funcSignature">InfoOfReturn insertSValAtPosInSSList(SList_S* plist, Data_S val, int pos)</div>
+                    <p class="funcDesc">在单类型单向链表指定位置插入值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
@@ -172,8 +171,8 @@ int main() {
                 <h3>➖ 删除操作</h3>
                 
                 <div class="funcItem">
-                    <div class="funcSignature">InfoOfReturn delStartNodeInSDList(DList_S* plist)</div>
-                    <p class="funcDesc">删除单类型双向链表的头节点</p>
+                    <div class="funcSignature">InfoOfReturn delStartNodeInSSList(SList_S* plist)</div>
+                    <p class="funcDesc">删除单类型单向链表的头节点</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
@@ -186,8 +185,8 @@ int main() {
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">InfoOfReturn delEndNodeInSDList(DList_S* plist)</div>
-                    <p class="funcDesc">删除单类型双向链表的尾节点</p>
+                    <div class="funcSignature">InfoOfReturn delEndNodeInSSList(SList_S* plist)</div>
+                    <p class="funcDesc">删除单类型单向链表的尾节点</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
@@ -200,8 +199,8 @@ int main() {
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">InfoOfReturn delNodeBySValInSDList(DList_S* plist, Data_S val)</div>
-                    <p class="funcDesc">删除单类型双向链表中指定值（只能删除第一次出现的）</p>
+                    <div class="funcSignature">InfoOfReturn delNodeBySValInSSList(SList_S* plist, Data_S val)</div>
+                    <p class="funcDesc">删除单类型单向链表中指定值（只能删除第一次出现的）</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
@@ -215,8 +214,8 @@ int main() {
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">InfoOfReturn delNodeByPosInSDList(DList_S* plist, int pos)</div>
-                    <p class="funcDesc">删除单类型双向链表中指定位置的值</p>
+                    <div class="funcSignature">InfoOfReturn delNodeByPosInSSList(SList_S* plist, int pos)</div>
+                    <p class="funcDesc">删除单类型单向链表中指定位置的值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
@@ -235,8 +234,8 @@ int main() {
                 <h3>🔍 查询操作</h3>
                 
                 <div class="funcItem">
-                    <div class="funcSignature">Data_S getPtrSValByPosInSDList(DList_S* plist, int pos)</div>
-                    <p class="funcDesc">查找在单类型双向链表的指定位置的值，可以直接修改内部数据</p>
+                    <div class="funcSignature">Data_S getPtrSValByPosInSSList(SList_S* plist, int pos)</div>
+                    <p class="funcDesc">查找在单类型单向链表的指定位置的值，可以直接修改内部数据</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
@@ -253,8 +252,8 @@ int main() {
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">Data_S getCopySValByPosInSDList(DList_S* plist, int pos)</div>
-                    <p class="funcDesc">查找在单类型双向链表的指定位置的值，使用完后用 freeSValInSDList 函数进行释放</p>
+                    <div class="funcSignature">Data_S getCopySValByPosInSSList(SList_S* plist, int pos)</div>
+                    <p class="funcDesc">查找在单类型单向链表的指定位置的值，使用完后用 freeSValInSSList 函数进行释放</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
@@ -266,13 +265,13 @@ int main() {
                         <strong>返回:</strong> 返回找到的值，若没找到，返回空值（用字段 isEmpty 检查）
                     </div>
                     <div class="warning">
-                        <strong>警告:</strong> 返回的是复制的数据，使用后需调用 freeSValInSDList 释放
+                        <strong>警告:</strong> 返回的是复制的数据，使用后需调用 freeSValInSSList 释放
                     </div>
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">Data_S getPtrSValBySValInSDList(DList_S* plist, Data_S val)</div>
-                    <p class="funcDesc">通过值找到单类型双向链表中值，可以直接修改内部数据</p>
+                    <div class="funcSignature">Data_S getPtrSValBySValInSSList(SList_S* plist, Data_S val)</div>
+                    <p class="funcDesc">通过值找到单类型单向链表中值，可以直接修改内部数据</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
@@ -286,8 +285,8 @@ int main() {
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">bool hasSValInSDList(DList_S* plist, Data_S val)</div>
-                    <p class="funcDesc">判断单类型双向链表中是否有当前值</p>
+                    <div class="funcSignature">bool hasSValInSSList(SList_S* plist, Data_S val)</div>
+                    <p class="funcDesc">判断单类型单向链表中是否有当前值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
@@ -306,19 +305,8 @@ int main() {
                 <h3>🔄 其他操作</h3>
                 
                 <div class="funcItem">
-                    <div class="funcSignature">void reverseSDList(DList_S* plist)</div>
-                    <p class="funcDesc">反转单类型双向链表</p>
-                    <div class="params">
-                        <strong>参数:</strong>
-                        <ul>
-                            <li><code>plist</code> - 链表指针</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="funcItem">
-                    <div class="funcSignature">void printSValInSDList(DList_S* plist, Data_S val)</div>
-                    <p class="funcDesc">打印单类型双向链表中的值</p>
+                    <div class="funcSignature">void printSValInSSList(SList_S* plist, Data_S val)</div>
+                    <p class="funcDesc">打印单类型单向链表中的值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
@@ -329,8 +317,8 @@ int main() {
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">void printSDList(DList_S* plist)</div>
-                    <p class="funcDesc">打印单类型双向链表</p>
+                    <div class="funcSignature">void printSSList(SList_S* plist)</div>
+                    <p class="funcDesc">打印单类型单向链表</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
@@ -346,44 +334,39 @@ int main() {
             <div class="codeBlock">
 <pre class="language-c"><code>#include &lt;stdio.h&gt;
 #include "base.h"
-#include "List/DList/Single_Data/dlist_sdata.h"
+#include "List/SList/Single_Data/slist_sdata.h"
 #include "Oper/Int_Info/int_info.h"
 
 int main() {
     // 初始化链表
-    DList_S list;
-    initSDList(&list, &Info_Int);
+    SList_S list;
+    initSSList(&list, &Info_Int);
 
     // 插入数据
     printf("=== 插入数据 ===\n");
-    insertSValAtEndInSDList(&list, Data_S_OWN(100, NULL));
-    insertSValAtEndInSDList(&list, Data_S_OWN(200, NULL));
-    insertSValAtStartInSDList(&list, Data_S_OWN(50, NULL));
-    insertSValAtPosInSDList(&list, Data_S_OWN(150, NULL), 2);
-    printSDList(&list);
+    insertSValAtEndInSSList(&list, Data_S_OWN(100, NULL));
+    insertSValAtEndInSSList(&list, Data_S_OWN(200, NULL));
+    insertSValAtStartInSSList(&list, Data_S_OWN(50, NULL));
+    insertSValAtPosInSSList(&list, Data_S_OWN(150, NULL), 2);
+    printSSList(&list);
 
     // 查找数据
     printf("\n=== 查找数据 ===\n");
-    Data_S found = getPtrSValByPosInSDList(&list, 2);
+    Data_S found = getPtrSValByPosInSSList(&list, 2);
     if (!found.isEmpty) {
         printf("位置 2 的数据: %d\n", *(int*)found.data);
     }
 
     // 判断是否存在
-    printf("\n是否存在 200: %s\n", hasSValInSDList(&list, Data_S_OWN(200, NULL)) ? "是" : "否");
+    printf("\n是否存在 200: %s\n", hasSValInSSList(&list, Data_S_OWN(200, NULL)) ? "是" : "否");
 
     // 删除数据
     printf("\n=== 删除数据 ===\n");
-    delNodeByPosInSDList(&list, 1);
-    printSDList(&list);
-
-    // 反转链表
-    printf("\n=== 反转链表 ===\n");
-    reverseSDList(&list);
-    printSDList(&list);
+    delNodeByPosInSSList(&list, 1);
+    printSSList(&list);
 
     // 释放链表
-    freeSDList(&list);
+    freeSSList(&list);
     return 0;
 }</code></pre>
             </div>
@@ -396,7 +379,8 @@ int main() {
                 <li>使用 REF 模式插入数据时，链表只保存指针，不会复制数据</li>
                 <li>通过 getCopy 系列函数获取的数据使用后必须释放</li>
                 <li>通过 getPtr 系列函数获取的数据指针直接指向链表内部，不要释放</li>
-                <li>每次使用完链表后必须调用 freeSDList 释放整个链表</li>
+                <li>每次使用完链表后必须调用 freeSSList 释放整个链表</li>
+                <li>SList 不支持反向遍历，如果需要反向遍历请使用 DList</li>
             </ul>
         </div>
     </div>
