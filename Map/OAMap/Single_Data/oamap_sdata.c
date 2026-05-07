@@ -203,6 +203,10 @@ static InfoOfReturn freshSOAMap(OAMap_S* pMap) {
     newMap.mod = getLargestPrime(newLen);
     newMap.keyInfo = pMap->keyInfo;
     newMap.valInfo = pMap->valInfo;
+
+    
+    newMap.size = 0;    //再添加函数中会自动加,这里设置为0
+
     newMap.arr = (Entry_S_inOAMap*)malloc(newLen*sizeof(Entry_S_inOAMap));
     if (newMap.arr == NULL) {
         printf("\nMemory allocation failed\n");

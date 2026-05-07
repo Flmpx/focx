@@ -136,6 +136,7 @@ static InfoOfReturn freshSOASet(OASet_S* pSet) {
     newSet.len = newLen;
     newSet.mod = getLargestPrime(newLen);
     newSet.keyInfo = pSet->keyInfo;
+    newSet.size = 0;    //再添加函数中会自动加,这里设置为0
     newSet.arr = (Entry_S_inOASet*)malloc(newLen*sizeof(Entry_S_inOASet));
     if (newSet.arr == NULL) {
         printf("\nMemory allocation failed\n");
