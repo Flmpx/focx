@@ -115,33 +115,34 @@ typedef struct Data_M {
     InfoOfData* dataInfo;   //由于要存储多种类型数据, Data_M自带InfoOfData类型数据指针(Data_S由于存储的是单一类型(比如一个DList_S中只存int), 那完全可以让DList_S结构体来存储InfoOfData, 以达到减少内存的目的)
     int type;   //数据标签(用于区分, 但不是主要区分标志)
     bool isEmpty;   //Data_M是否为空
-    bool hasControl;    //当前Data_M是否具备对自己数据的控制权, 如果具备, 那free的时候会也会释放data和content(对于Map来说, 这个属性只对val有用)
-    bool isOwner;   //数据是否为Data独有, 如果true, 代表数据的生死由Data管理(会复制一份, 以保证是Data中的内容是独有的), 如果false, 代表数据由外部管理, Data只管理指针
+
+    bool isOwner;   //数据是否为Data独有, 如果true, 代表数据的生死由Data管理, 如果false, 代表数据由外部管理, Data只管理指针, 没有释放的权力
 } Data_M;
 
 ```
-- 如何使用数据的独有和借用(宏)(还有一点, 在Map中Key一定是独有的, 即便传入借用的, 也会自动转为独有)
+- 如何使用数据的所有权(宏)(还有一点, 在Map中Key一定是独有的, 即便传入借用的, 也会自动转为独有)
 - 如何使用见上面"快速开始"中的代码
 
 ```c
 
 
-//OWN, 为了保证数据是自己的, 会自动复制一份, data: 数据指针, content: 描述性信息指针, dataInfo: InfoOfData类型指针, type: 数据标签
+//OWN, 数据是自己的, 可以在释放的时候进行释放 data: 数据指针, content: 描述性信息指针, dataInfo: InfoOfData类型指针, type: 数据标签
 #define Data_M_OWN(data, content, dataInfo, type) ((Data_M){(data), (content), (dataInfo), (type), false, true})
 
 
-//REF, 数据不是自己的, 只是传个指针, 不会自动复制, data: 数据指针, content: 描述性信息指针, dataInfo: InfoOfData类型指针, type: 数据标签
+//REF, 数据不是自己的, 只是传个指针, 释放的时候不会释放数据 data: 数据指针, content: 描述性信息指针, dataInfo: InfoOfData类型指针, type: 数据标签
 #define Data_M_REF(data, content, dataInfo, type) ((Data_M){(data), (content), (dataInfo), (type), false, false})
 
-//OWN, 为了保证数据是自己的, 会自动复制一份, data: 数据指针, content: 描述性信息指针
+
+//OWN, 数据是自己的, 可以在释放的时候进行释放, data: 数据指针, content: 描述性信息指针
 #define Data_S_OWN(data, content) ((Data_S){(data), (content), false, true})
-//REF, 数据不是自己的, 只是传个指针, 不会自动复制, data: 数据指针, content: 描述性信息指针
+//REF, 数据不是自己的, 只是传个指针, 释放的时候不会释放数据, data: 数据指针, content: 描述性信息指针
 #define Data_S_REF(data, content) ((Data_S){(data), (content), false, false})
 
 ```
 
 
-- [详细内容以及函数的使用](https://flmpx.github.io/focx/)
+<!-- - [详细内容以及函数的使用](https://flmpx.github.io/focx/) -->
 
 
 

@@ -94,7 +94,7 @@ CmpResult compareMData(Data_M Data_a, Data_M Data_b) {
 
 }
 
-Data_M deepCopyMData(Data_M inputData) {
+Data_M copyMData(Data_M inputData) {
     if (inputData.isEmpty) {
         return getEmptyMData();
     }
@@ -127,7 +127,7 @@ Data_M deepCopyMData(Data_M inputData) {
 }
 
 
-Data_S deepCopySData(Data_S inputData, InfoOfData* info) {
+Data_S copySData(Data_S inputData, InfoOfData* info) {
     if (inputData.isEmpty) {
         return getEmptySData();
     }
@@ -150,37 +150,13 @@ Data_S deepCopySData(Data_S inputData, InfoOfData* info) {
     } else {
         newData.content = NULL;
     }
-    newData.isOwner = true; //复制即代表了所有权是自己的
+    
+
     newData.isEmpty = false;
     return newData;
 }
 
 
-Data_M smartCopyMData(Data_M inputData) {
-    if (inputData.isEmpty) {
-        return getEmptyMData();
-    }
-    //如果对内部数据没有控制权, 直接返回就行, 没必要进行下面的内容
-    if (inputData.isOwner == false) {
-        return inputData;
-    }
-    //如果有控制权, 直接进行深拷贝
-    return deepCopyMData(inputData);
-}
-
-
-Data_S smartCopySData(Data_S inputData, InfoOfData* info) {
-    if (inputData.isEmpty) {
-        return getEmptySData();
-    }
-    
-    //如果对内部数据没有控制权, 直接返回就行, 没必要进行下面的内容
-    if (inputData.isOwner == false) {
-        return inputData;
-    }
-    //如果有控制权, 直接进行深拷贝
-    return deepCopySData(inputData, info);
-}
 
 
 void freeSData(Data_S* inputData, InfoOfData* info) {

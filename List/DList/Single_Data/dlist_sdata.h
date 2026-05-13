@@ -68,22 +68,25 @@ extern bool hasSValInSDList(DList_S* plist, Data_S val);
 /// @brief 在单类型双向链表尾部插入值
 /// @param plist 链表指针
 /// @param val 待插入的值
+/// @param isCopyVal 是否要复制传入的val, 使用selectOfCopy枚举类型
 /// @return 操作结果状态码
-extern InfoOfReturn insertSValAtEndInSDList(DList_S* plist, Data_S val);
+extern InfoOfReturn insertSValAtEndInSDList(DList_S* plist, Data_S val, selectOfCopy isCopyVal);
 
 
 /// @brief 在单类型双向链表头部插入值
 /// @param plist 链表指针
 /// @param val 待插入的值
+/// @param isCopyVal 是否要复制传入的val, 使用selectOfCopy枚举类型
 /// @return 操作结果状态码
-extern InfoOfReturn insertSValAtStartInSDList(DList_S* plist, Data_S val);
+extern InfoOfReturn insertSValAtStartInSDList(DList_S* plist, Data_S val, selectOfCopy isCopyVal);
 
 /// @brief 在单类型双向链表指定位置插入值
 /// @param plist 链表指针
 /// @param val 待插入的值
+/// @param isCopyVal 是否要复制传入的val, 使用selectOfCopy枚举类型
 /// @param pos 位置的范围在[0, 链表大小],范围的两端分别代表头插和尾插
 /// @return 操作结果状态码
-extern InfoOfReturn insertSValAtPosInSDList(DList_S* plist, Data_S val, int pos);
+extern InfoOfReturn insertSValAtPosInSDList(DList_S* plist, Data_S val, selectOfCopy isCopyVal, int pos);
 
 /// @brief 删除单类型双向链表的尾节点
 /// @param plist 链表指针
@@ -114,15 +117,7 @@ extern void reverseSDList(DList_S* plist);
 
 
 
-/// @brief 打印单类型双向链表中的值
-/// @param plist 链表指针
-/// @param val 待打印的值
-extern void printSValInSDList(DList_S* plist, Data_S val);
 
-
-/// @brief 打印单类型双向链表
-/// @param plist 链表指针
-extern void printSDList(DList_S* plist);
 
 /// @brief 释放单类型双向链表
 /// @param plist 链表指针

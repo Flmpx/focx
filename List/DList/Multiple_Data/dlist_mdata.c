@@ -1,13 +1,13 @@
 #define NODE_M_IN_DLIST
 #define DATA_M_OPER
+#include "../../base.h"
 #include "dlist_mdata.h"
+#include "dlist_mdata_private.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 
-//内部函数使用Data类型,外部使用两个void*
-//修改为任意数据类型,这个任意是指整个val都是同一种,但这中可以自定义
 
 
 
@@ -87,9 +87,9 @@ Data_M getCopyMValByPosInMDList(DList_M* plist, int pos) {
         }
     }
     //返回的一定是深拷贝的Data
-    Data_M newVal = deepCopyMData(p->val);
+    Data_M newVal = copyMData(p->val);
     if (newVal.isEmpty) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return getEmptyMData();
     }
     return newVal;
@@ -131,27 +131,32 @@ void freeMValInMDList(Data_M* val) {
 
 
 
-//这个创建创建一个Node,并整合数据,data和content会复制
-/******************* */
-static Node_M_inDList* createNode(Data_M val) {
+//这个创建创建一个Node,并整合数据, 根据isCopyVal判断是否要复制数据
+static Node_M_inDList* createNodeAndVal(Data_M val, selectOfCopy isCopyVal) {
     Node_M_inDList* newNode = (Node_M_inDList*)malloc(sizeof(Node_M_inDList));
     if (newNode == NULL) return NULL; 
-    Data_M newVal = smartCopyMData(val);
-    if (newVal.isEmpty) {
-        printf("\nMemory allocation failed\n");
-        return NULL;
+    if (isCopyVal == Data_Copy) {
+        Data_M newVal = copyMData(val);
+        if (newVal.isEmpty) {
+            //内存分配失败
+            free(newNode);
+            return NULL;
+        }
+        newNode->val = newVal;
+    } else {
+        newNode->val = val;
     }
-    newNode->val = newVal;
     return newNode;
 }
 
-/*********** */
-InfoOfReturn insertMValAtEndInMDList(DList_M* plist, Data_M val) {
+
+
+InfoOfReturn insertMValAtEndInMDList(DList_M* plist, Data_M val, selectOfCopy isCopyVal) {
     
     //创建节点
-    Node_M_inDList* newNode = createNode(val);
+    Node_M_inDList* newNode = createNodeAndVal(val, isCopyVal);
     if (newNode == NULL) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning; 
     }
     //creatNode函函数已经处理了data, content的复制了
@@ -171,12 +176,12 @@ InfoOfReturn insertMValAtEndInMDList(DList_M* plist, Data_M val) {
 }
 
 
-InfoOfReturn insertMValAtStartInMDList(DList_M* plist, Data_M val) {
+InfoOfReturn insertMValAtStartInMDList(DList_M* plist, Data_M val, selectOfCopy isCopyVal) {
     
     //创建节点
-    Node_M_inDList* newNode = createNode(val);
+    Node_M_inDList* newNode = createNodeAndVal(val, isCopyVal);
     if (newNode == NULL) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning; 
     }
     
@@ -196,17 +201,17 @@ InfoOfReturn insertMValAtStartInMDList(DList_M* plist, Data_M val) {
 }
 
 /************ */
-InfoOfReturn insertMValAtPosInMDList(DList_M* plist, Data_M val, int pos) {
+InfoOfReturn insertMValAtPosInMDList(DList_M* plist, Data_M val, selectOfCopy isCopyVal, int pos) {
     if ((pos < 0) || (pos > plist->size)) return Warning;
-    if (pos == 0) return insertMValAtStartInMDList(plist, val);
-    if (pos == plist->size) return insertMValAtEndInMDList(plist, val);
+    if (pos == 0) return insertMValAtStartInMDList(plist, val, isCopyVal);
+    if (pos == plist->size) return insertMValAtEndInMDList(plist, val, isCopyVal);
 
     
     
     //创建节点
-    Node_M_inDList* newNode = createNode(val);
+    Node_M_inDList* newNode = createNodeAndVal(val, isCopyVal);
     if (newNode == NULL) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning; 
     }
     
