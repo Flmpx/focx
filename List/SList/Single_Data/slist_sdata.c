@@ -120,6 +120,8 @@ static Node_S_inSList* createNodeAndVal(SList_S* plist, Data_S val, selectOfCopy
             free(newNode);
             return NULL;
         }
+        //是否有权限由外部决定
+        newVal.isOwner = val.isOwner;
         newNode->val = newVal;
     } else {
         newNode->val = val;

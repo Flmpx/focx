@@ -125,6 +125,8 @@ static Node_M_inSList* createNodeAndVal(Data_M val, selectOfCopy isCopyVal) {
             free(newNode);
             return NULL;
         }
+        //是否有权限由外部决定
+        newVal.isOwner = val.isOwner;
         newNode->val = newVal;
 
     } else {
