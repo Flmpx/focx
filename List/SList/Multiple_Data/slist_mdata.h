@@ -66,7 +66,7 @@ extern bool hasMValInMSList(SList_M* plist, Data_M val);
 /// @brief 在多类型单向链表尾部插入值
 /// @param plist 链表指针
 /// @param val 待插入的值
-/// @param isCopyVal 是否要复制传入的val, 使用selectOfCopy枚举类型
+/// @param isCopyVal 是否要复制传入的val
 /// @return 操作结果状态码
 extern InfoOfReturn insertMValAtEndInMSList(SList_M* plist, Data_M val, selectOfCopy isCopyVal);
 
@@ -74,14 +74,14 @@ extern InfoOfReturn insertMValAtEndInMSList(SList_M* plist, Data_M val, selectOf
 /// @brief 在多类型单向链表头部插入值
 /// @param plist 链表指针
 /// @param val 待插入的值
-/// @param isCopyVal 是否要复制传入的val, 使用selectOfCopy枚举类型
+/// @param isCopyVal 是否要复制传入的val
 /// @return 操作结果状态码
 extern InfoOfReturn insertMValAtStartInMSList(SList_M* plist, Data_M val, selectOfCopy isCopyVal);
 
 /// @brief 在多类型单向链表指定位置插入值
 /// @param plist 链表指针
 /// @param val 待插入的值
-/// @param isCopyVal 是否要复制传入的val, 使用selectOfCopy枚举类型
+/// @param isCopyVal 是否要复制传入的val
 /// @param pos 位置的范围在[0, 链表大小],范围的两端分别代表头插和尾插
 /// @return 操作结果状态码
 extern InfoOfReturn insertMValAtPosInMSList(SList_M* plist, Data_M val, selectOfCopy isCopyVal, int pos);
