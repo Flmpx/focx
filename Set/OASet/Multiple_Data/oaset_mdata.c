@@ -2,6 +2,7 @@
 #define GET_LARGESTPRIME
 #define ENTRY_STATE_IN_OASET
 #define DATA_M_OPER
+#include "oaset_mdata_private.h"
 #include "oaset_mdata.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,7 +10,13 @@
 #include <string.h>
 
 
-
+Entry_M_inOASet getEmptyMEntry() {
+    Entry_M_inOASet entry;
+    entry.key = getEmptyMData();
+    entry.isEmpty = true;
+    entry.state = NONE_IN_SET;
+    return entry;
+}
 
 
 void initMOASet(OASet_M* pSet) {
@@ -53,11 +60,29 @@ void freeMOASet(OASet_M* pSet) {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //添加key类
 
+static Entry_M_inOASet createMEntryByMKey(Data_M key, selectOfCopy isCopyKey) {
+    if (key.isEmpty) {
+        return getEmptyMEntry();
+    }
+
+    Entry_M_inOASet newEntry;
+    if (isCopyKey == Data_Copy) {
+        newEntry.key = copyMData(key);
+        if (newEntry.key.isEmpty) {
+            return getEmptyMEntry();
+        }
+    } else {
+        newEntry.key = key;
+    }
+    newEntry.isEmpty = false;
+    newEntry.key.isOwner = key.isOwner;
+    return newEntry;
+} 
 
 
 
 //这个函数保证可以添加
-static InfoOfReturn addMEntryFunction(OASet_M* pSet, Data_M key) {
+static InfoOfReturn addMEntryFunction(OASet_M* pSet, Data_M key, selectOfCopy isCopyKey) {
     //hash
     ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
 
@@ -72,6 +97,16 @@ static InfoOfReturn addMEntryFunction(OASet_M* pSet, Data_M key) {
         }
         //如果发现是同一个key, 直接退出就行
         if (compareMData(pSet->arr[index].key, key) == SAME) {
+            Entry_M_inOASet newEntry = createMEntryByMKey(key, isCopyKey);
+            if (newEntry.isEmpty) {
+                //内存分配失败
+                return Warning;
+            }
+            newEntry.state = EXIST_IN_SET;
+            freeMEntry(&(pSet->arr[index]));
+            
+            pSet->arr[index] = newEntry;
+
             return None;
         }
         index++;
@@ -82,11 +117,9 @@ static InfoOfReturn addMEntryFunction(OASet_M* pSet, Data_M key) {
         index = firstDelIndex;
     }
 
-    Entry_M_inOASet newEntry;
-    newEntry.isEmpty = false;
-    newEntry.key = deepCopyMData(key);
-    if (newEntry.key.isEmpty) {
-        printf("\nMemory allocation failed\n");
+    Entry_M_inOASet newEntry = createMEntryByMKey(key, isCopyKey);
+    if (newEntry.isEmpty) {
+        //内存分配失败
         return Warning;
     }
     pSet->arr[index].state = EXIST_IN_SET;
@@ -134,7 +167,7 @@ static InfoOfReturn freshMOASet(OASet_M* pSet) {
     OASet_M newSet;
     Entry_M_inOASet* newArray = (Entry_M_inOASet*)malloc(newLen*sizeof(Entry_M_inOASet));
     if (newArray == NULL) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning;
     }
     for (int i = 0; i < newLen; i++) {
@@ -163,10 +196,10 @@ static InfoOfReturn freshMOASet(OASet_M* pSet) {
 
 
 
-InfoOfReturn insertMKeyInMOASet(OASet_M* pSet, Data_M key) {
+InfoOfReturn insertMKeyInMOASet(OASet_M* pSet, Data_M key, selectOfCopy isCopyKey) {
     //当填充因子大于75%时自动扩容
     freshMOASet(pSet);
-    return addMEntryFunction(pSet, key);
+    return addMEntryFunction(pSet, key, isCopyKey);
 }
 
 
@@ -202,10 +235,12 @@ Data_M getCopyMKeyByMKeyInMOASet(OASet_M* pSet, Data_M key) {
         return getEmptyMData();
     } else {
         Data_M newData;
-        newData = deepCopyMData(pSet->arr[index].key);
-        if (newData.isEmpty) {
-            printf("\nMemory allocation failed\n");
-        }
+        newData = copyMData(pSet->arr[index].key);
+        /*
+            由于复制类函数如果复制不成功, 
+            那会自动返回空的Data_M类型,
+            所有这里直接返回就行
+        */
         return newData;
     }
 }

@@ -47,8 +47,9 @@ extern void freeMOASet(OASet_M* pSet);
 /// @brief 在多类型开放寻址集合中插入键
 /// @param pSet 集合指针
 /// @param key 待插入的键
+/// @param isCopyKey 是否要复制传入的key
 /// @return 操作结果状态码
-extern InfoOfReturn insertMKeyInMOASet(OASet_M* pSet, Data_M key);
+extern InfoOfReturn insertMKeyInMOASet(OASet_M* pSet, Data_M key, selectOfCopy isCopyKey);
 
 /// @brief 通过键找到多类型开放寻址集合中的键, 使用完后用freeMKeyInMOASet函数进行释放(你可能会觉得奇怪)
 /// @param pSet 集合指针
@@ -71,12 +72,5 @@ extern bool hasMKeyInMOASet(OASet_M* pSet, Data_M key);
 /// @return 操作结果状态码
 extern InfoOfReturn delMKeyByMKeyInMOASet(OASet_M* pSet, Data_M key);
 
-/// @brief 打印多类型开放寻址集合的键
-/// @param key 待打印的键
-extern void printMKeyInMOASet(Data_M key);
 
-
-/// @brief 打印多类型开放寻址集合
-/// @param pSet 集合指针
-extern void printMOASet(OASet_M* pSet);
 #endif

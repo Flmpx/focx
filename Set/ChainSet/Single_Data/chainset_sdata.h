@@ -75,8 +75,9 @@ extern void freeSChainSet(ChainSet_S* pSet);
 /// @brief 在单类型链式集合中插入键
 /// @param pSet 集合指针
 /// @param key 待插入的键
+/// @param isCopyKey 是否要复制传入的key
 /// @return 操作结果状态码
-extern InfoOfReturn insertSKeyInSChainSet(ChainSet_S* pSet, Data_S key);
+extern InfoOfReturn insertSKeyInSChainSet(ChainSet_S* pSet, Data_S key, selectOfCopy isCopyKey);
 
 /// @brief 通过键找到单类型链式集合中的键, 使用完后用freeSKeyInSChainSet函数进行释放(你可能会觉得奇怪)
 /// @param pSet 集合指针
@@ -98,15 +99,4 @@ extern bool hasSKeyInSChainSet(ChainSet_S* pSet, Data_S key);
 extern InfoOfReturn delSKeyBySKeyInSChainSet(ChainSet_S* pSet, Data_S key);
 
 
-
-/// @brief 打印单类型链式集合的键
-/// @param pSet 集合指针
-/// @param key 待打印的键
-extern void printSKeyInSChainSet(ChainSet_S* pSet, Data_S key);
-
-
-
-/// @brief 打印单类型链式集合
-/// @param pSet 集合指针
-extern void printSChainSet(ChainSet_S* pSet);
 #endif

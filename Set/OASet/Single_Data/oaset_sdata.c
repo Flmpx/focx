@@ -5,6 +5,8 @@
 #define GET_LARGESTPRIME
 
 #define DATA_S_OPER
+
+#include "oaset_sdata_private.h"
 #include "oaset_sdata.h"
 #include <stdio.h>
 #include <string.h>
@@ -20,7 +22,13 @@ void initSOASet(OASet_S* pSet, InfoOfData* keyInfo)  {
 }
 
 
-
+static Entry_S_inOASet getEmptySEntry() {
+    Entry_S_inOASet entry;
+    entry.isEmpty = true;
+    entry.key = getEmptySData();
+    entry.state = NONE_IN_SET;
+    return entry;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////
 //释放类
@@ -58,9 +66,27 @@ void freeSOASet(OASet_S* pSet) {
 /////////////////////////////////////////////////////////////////////////////////
 //添加类
 
+Entry_S_inOASet createSEntryBySkey(OASet_S* pSet, Data_S key, selectOfCopy isCopyKey) {
+    if (key.isEmpty) {
+        return getEmptySEntry();
+    }
+    Entry_S_inOASet newEntry;
+    if (isCopyKey == Data_Copy) {
+        newEntry.key = copySData(key, pSet->keyInfo);
+        if (newEntry.key.isEmpty) {
+            return getEmptySEntry();
+        }
+    } else {
+        newEntry.key = key;
+    }
+    newEntry.key.isOwner = key.isOwner;
+    newEntry.isEmpty = false;
+    return newEntry;
+}
 
 
-static InfoOfReturn addSEntryFunction(OASet_S* pSet, Data_S key) {
+
+static InfoOfReturn addSEntryFunction(OASet_S* pSet, Data_S key, selectOfCopy isCopyKey) {
     //对key进行hash
     ull index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%(pSet->mod);
     int flagFindDel = 0;
@@ -72,7 +98,14 @@ static InfoOfReturn addSEntryFunction(OASet_S* pSet, Data_S key) {
             flagFindDel = 1;
         }
         if (compareSData(pSet->arr[index].key, pSet->keyInfo, key, pSet->keyInfo) == SAME)  {
-            //如果存在直接退出就行了
+            Entry_S_inOASet newEntry = createSEntryBySkey(pSet, key, isCopyKey);
+            if (newEntry.isEmpty) {
+                //内存分配失败
+                return Warning;
+            }
+            newEntry.state = EXIST_IN_SET;
+            freeSEntry(pSet, &(pSet->arr[index]));
+            pSet->arr[index] = newEntry;
             return None;
         }
         index++;
@@ -83,13 +116,12 @@ static InfoOfReturn addSEntryFunction(OASet_S* pSet, Data_S key) {
         index = firstDelIndex;
     }
 
-    Entry_S_inOASet newEntry;
-    newEntry.isEmpty = false;
-    newEntry.key = deepCopySData(key, pSet->keyInfo);
-    if (newEntry.key.isEmpty) {
-        printf("\nMemory allocation failed\n");
+    Entry_S_inOASet newEntry = createSEntryBySkey(pSet, key, isCopyKey);
+    if (newEntry.isEmpty) {
+        //内存分配失败
         return Warning;
     }
+
     pSet->arr[index] = newEntry;
     pSet->arr[index].state = EXIST_IN_SET;
     pSet->size++;
@@ -139,7 +171,7 @@ static InfoOfReturn freshSOASet(OASet_S* pSet) {
     newSet.size = 0;    //再添加函数中会自动加,这里设置为0
     newSet.arr = (Entry_S_inOASet*)malloc(newLen*sizeof(Entry_S_inOASet));
     if (newSet.arr == NULL) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning;
     }
 
@@ -163,16 +195,16 @@ static InfoOfReturn freshSOASet(OASet_S* pSet) {
 
 }
 
-InfoOfReturn insertSKeyInSOASet(OASet_S* pSet, Data_S key) {
+InfoOfReturn insertSKeyInSOASet(OASet_S* pSet, Data_S key, selectOfCopy isCopyKey) {
     // if (4*(pSet->size) >= 3*(pSet->len)) {
     //     if (freshSOASet(pSet) == Warning) {
-    //         printf("\nMemory allocation failed\n");
+    //         //内存分配失败
     //         return Warning;
     //     }
     // }
     //先进行重hash
     freshSOASet(pSet);
-    return addSEntryFunction(pSet, key);
+    return addSEntryFunction(pSet, key, isCopyKey);
 }
 
 
@@ -206,10 +238,12 @@ Data_S getCopySKeyBySKeyInSOASet(OASet_S* pSet, Data_S key) {
         return getEmptySData();
     } else {
         Data_S newData;
-        newData = deepCopySData(pSet->arr[index].key, pSet->keyInfo);
-        if (newData.isEmpty) {
-            printf("\nMemory allocation failed\n");
-        } 
+        newData = copySData(pSet->arr[index].key, pSet->keyInfo);
+        /*
+            由于复制类函数如果复制不成功, 
+            那会自动返回空的Data_M类型,
+            所有这里直接返回就行
+        */
         return newData;
     }
 }

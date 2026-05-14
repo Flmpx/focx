@@ -7,7 +7,7 @@
 
 #define DATA_S_OPER
 
-
+#include "chainset_sdata_private.h"
 #include "chainset_sdata.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,9 +21,16 @@ static void initSList(List_S_inChainSet* plist);
 /////////////////////////////////////////////////////////////////////////////////
 
 
+static Entry_S_inChainSet getEmptySEntry() {
+    Entry_S_inChainSet entry;
+    entry.isEmpty = true;
+    entry.key = getEmptySData();
+    return entry;
+}
 
 
-/************** */
+
+
 void initSChainSet(ChainSet_S* pSet, InfoOfData* keyInfo) {
     pSet->arr = NULL;
     pSet->len = pSet->size = 0;
@@ -88,7 +95,6 @@ static void freeSList(List_S_inChainSet* plist, ChainSet_S* pSet) {
 
 
 
-/**************** */
 void freeSChainSet(ChainSet_S* pSet) {
     for (int i = 0; i < pSet->len; i++) {
         freeSList(&(pSet->arr[i]), pSet);
@@ -117,7 +123,7 @@ static void initSList(List_S_inChainSet* plist) {
 }
 
 
-/************* */
+
 static Node_S_inChainSet* getNodeBySKey(List_S_inChainSet* plist, Data_S key, InfoOfData* keyInfo) {
     if (isEmptySList(plist)) return NULL;
     Node_S_inChainSet* p = plist->head;
@@ -133,7 +139,7 @@ static Node_S_inChainSet* getNodeBySKey(List_S_inChainSet* plist, Data_S key, In
 static int insertSEntryInSList(List_S_inChainSet* plist, Entry_S_inChainSet entry) {
     Node_S_inChainSet* newNode = (Node_S_inChainSet*)malloc(sizeof(Node_S_inChainSet));
     if (newNode == NULL) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning;
     }
     newNode->entry = entry;
@@ -155,7 +161,7 @@ static int insertSEntryInSList(List_S_inChainSet* plist, Entry_S_inChainSet entr
 
 static int delStartNode(List_S_inChainSet* plist, ChainSet_S* pSet) {
     if (isEmptySList(plist)) {
-        printf("\nNot found! Cannot del\n");
+        //没找到
         return None;
     }
     Node_S_inChainSet* p = plist->head;
@@ -178,7 +184,7 @@ static int delStartNode(List_S_inChainSet* plist, ChainSet_S* pSet) {
 
 static int delEndNode(List_S_inChainSet* plist, ChainSet_S* pSet) {
     if (isEmptySList(plist)) {
-        printf("\nNot found! Cannot del\n");
+        //没找到
         return None;
     }
     Node_S_inChainSet* p = plist->tail;
@@ -200,12 +206,12 @@ static int delEndNode(List_S_inChainSet* plist, ChainSet_S* pSet) {
 
 static int delNodeBySKey(List_S_inChainSet* plist, Data_S key, ChainSet_S* pSet) {
     if (isEmptySList(plist)) {
-        printf("\nNot found! Cannot del\n");
+        //没找到
         return None;
     }
     Node_S_inChainSet* p = getNodeBySKey(plist, key, pSet->keyInfo);
     if (p == NULL) {
-        printf("\nNot found! Cannot del\n");
+        //没找到
         return None;
     }
     if (p == plist->head) return delStartNode(plist, pSet);
@@ -231,29 +237,62 @@ static int delNodeBySKey(List_S_inChainSet* plist, Data_S key, ChainSet_S* pSet)
 //添加key类
 
 
+Entry_S_inChainSet createSEntryBySKey(ChainSet_S* pSet, Data_S key, selectOfCopy isCopyKey) {
+    if (key.isEmpty) {
+        return getEmptySEntry();
+    }
+
+    Entry_S_inChainSet newEntry;
+    if (isCopyKey == Data_Copy) {
+        newEntry.key = copySData(key, pSet->keyInfo);
+        if (newEntry.key.isEmpty) {
+            return getEmptySEntry();
+        }
+    } else {
+        newEntry.key = key;
+    }
+    newEntry.key.isOwner = key.isOwner;
+
+    newEntry.isEmpty = false;
+
+    return newEntry;
+}
+
 
 
 //这个函数保证可以添加
-static int addSEntryFunction(ChainSet_S* pSet, Data_S key) {
+static int addSEntryFunction(ChainSet_S* pSet, Data_S key, selectOfCopy isCopyKey) {
     //hash
     ull index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
 
+    /*
+        TODO: 可以先进行复制Key
+    */
+
     Node_S_inChainSet* p = getNodeBySKey(&(pSet->arr[index]), key, pSet->keyInfo);
     if (p) {
+        //完全按照使用者的意思
+        Entry_S_inChainSet newEntry = createSEntryBySKey(pSet, key, isCopyKey);
+        if (newEntry.isEmpty) {
+            //内存分配失败
+            return Warning;
+        }
+        freeSEntry(pSet, &(p->entry));
+
+        p->entry = newEntry;
         return None;
     }
 
 
-    Entry_S_inChainSet newEntry;
-    newEntry.isEmpty = false;
-    newEntry.key = deepCopySData(key, pSet->keyInfo);
-    if (newEntry.key.isEmpty) {
-        printf("\nMemory allocation failed\n");
+    Entry_S_inChainSet newEntry = createSEntryBySKey(pSet, key, isCopyKey);
+    if (newEntry.isEmpty) {
+        //内存分配失败
         return Warning;
     }
+    
 
     if (insertSEntryInSList(&(pSet->arr[index]), newEntry) == Warning) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning;
     }
     pSet->size++;
@@ -270,7 +309,7 @@ static int addSEntryForFreshSChainSet(ChainSet_S* pSet, Data_S key) {
     entry.isEmpty = false;
     entry.key = key;
     if (insertSEntryInSList(&(pSet->arr[index]), entry) == Warning) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning;
     }
     pSet->size++;
@@ -316,7 +355,7 @@ static int freshSChainSet(ChainSet_S* pSet) {
     ChainSet_S newSet;
     List_S_inChainSet* newArray = (List_S_inChainSet*)malloc(newLen*sizeof(List_S_inChainSet));
     if (newArray == NULL) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning;
     }
     for (int i = 0; i < newLen; i++) {
@@ -334,7 +373,7 @@ static int freshSChainSet(ChainSet_S* pSet) {
         Node_S_inChainSet* p = pSet->arr[i].head;
         for (int j = 0; j < pSet->arr[i].size; j++, p = p->next) {
             if (addSEntryForFreshSChainSet(&newSet, p->entry.key) == Warning) {
-                printf("\nMemory allocation failed\n");
+                //内存分配失败
                 return Warning;
             }
         }
@@ -350,10 +389,10 @@ static int freshSChainSet(ChainSet_S* pSet) {
 }
 
 
-int insertSKeyInSChainSet(ChainSet_S* pSet, Data_S key) {
+int insertSKeyInSChainSet(ChainSet_S* pSet, Data_S key, selectOfCopy isCopyKey) {
     //当填充因子大于75%时或者Set为空时自动扩容
     freshSChainSet(pSet);
-    return addSEntryFunction(pSet, key);
+    return addSEntryFunction(pSet, key, isCopyKey);
 }
 
 
@@ -372,10 +411,12 @@ Data_S getCopySKeyBySKeyInSChainSet(ChainSet_S* pSet, Data_S key) {
         return getEmptySData();
     } else {
         Data_S newData;
-        newData = deepCopySData(p->entry.key, pSet->keyInfo);
-        if (newData.isEmpty) {
-            printf("\nMemory allocation failed\n");
-        }
+        newData = copySData(p->entry.key, pSet->keyInfo);
+        /*
+            由于复制类函数如果复制不成功, 
+            那会自动返回空的Data_M类型,
+            所有这里直接返回就行
+        */
         return newData;
     }
 }
@@ -405,7 +446,7 @@ InfoOfReturn delSKeyBySKeyInSChainSet(ChainSet_S* pSet, Data_S key) {
     ull index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
 
     if (delNodeBySKey(&(pSet->arr[index]), key, pSet) ==  None) {
-        printf("\nNot found! Cannot del\n");
+        //没找到
         return None;
     }
     pSet->size--;

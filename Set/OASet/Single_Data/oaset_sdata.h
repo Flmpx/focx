@@ -48,8 +48,9 @@ extern void freeSOASet(OASet_S* pSet);
 /// @brief 在单类型开放寻址集合中插入键
 /// @param pSet 集合指针
 /// @param key 待插入的键
+/// @param isCopyKey 是否要复制传入的key
 /// @return 操作结果状态码
-extern InfoOfReturn insertSKeyInSOASet(OASet_S* pSet, Data_S key);
+extern InfoOfReturn insertSKeyInSOASet(OASet_S* pSet, Data_S key, selectOfCopy isCopyKey);
 
 
 
@@ -74,16 +75,6 @@ extern bool hasSKeyInSOASet(OASet_S* pSet, Data_S key);
 /// @return 操作结果状态码
 extern InfoOfReturn delSKeyBySKeyInSOASet(OASet_S* pSet, Data_S key);
 
-
-/// @brief 打印单类型开放寻址集合的键
-/// @param pSet 集合指针
-/// @param key 待打印的键
-extern void printSKeyInSOASet(OASet_S* pSet, Data_S key);
-
-
-/// @brief 打印单类型开放寻址集合
-/// @param pSet 集合指针
-extern void printSOASet(OASet_S* pSet);
 
 
 

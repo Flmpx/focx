@@ -6,6 +6,7 @@
 
 #define DATA_M_OPER
 
+#include "chainset_mdata_private.h"
 #include "chainset_mdata.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,10 +14,17 @@
 
 static bool isEmptyMList(List_M_inChainSet* plist);
 static void initMList(List_M_inChainSet* plist);
-
+//在Set的内部仍然存在Entry这个东西, 在外部不存在
 
 
 /////////////////////////////////////////////////////////////////////////////////
+
+static Entry_M_inChainSet getEmptyMEntry() {
+    Entry_M_inChainSet entry;
+    entry.key = getEmptyMData();
+    entry.isEmpty = true;
+    return entry;
+}
 
 
 
@@ -125,7 +133,7 @@ static Node_M_inChainSet* getNodeByMKey(List_M_inChainSet* plist, Data_M key) {
 static InfoOfReturn insertMEntryInMList(List_M_inChainSet* plist, Entry_M_inChainSet entry) {
     Node_M_inChainSet* newNode = (Node_M_inChainSet*)malloc(sizeof(Node_M_inChainSet));
     if (newNode == NULL) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning;
     }
     newNode->entry = entry;
@@ -145,7 +153,7 @@ static InfoOfReturn insertMEntryInMList(List_M_inChainSet* plist, Entry_M_inChai
 
 static InfoOfReturn delStartNode(List_M_inChainSet* plist) {
     if (isEmptyMList(plist)) {
-        printf("\nNot found! Cannot del\n");
+        //没找到
         return None;
     }
     Node_M_inChainSet* p = plist->head;
@@ -168,7 +176,7 @@ static InfoOfReturn delStartNode(List_M_inChainSet* plist) {
 
 static InfoOfReturn delEndNode(List_M_inChainSet* plist) {
     if (isEmptyMList(plist)) {
-        printf("\nNot found! Cannot del\n");
+        //没找到
         return None;
     }
     Node_M_inChainSet* p = plist->tail;
@@ -190,12 +198,12 @@ static InfoOfReturn delEndNode(List_M_inChainSet* plist) {
 
 static InfoOfReturn delNodeByMKey(List_M_inChainSet* plist, Data_M key) {
     if (isEmptyMList(plist)) {
-        printf("\nNot found! Cannot del\n");
+        //没找到
         return None;
     }
     Node_M_inChainSet* p = getNodeByMKey(plist, key);
     if (p == NULL) {
-        printf("\nNot found! Cannot del\n");
+        //没找到
         return None;
     }
     if (p == plist->head) return delStartNode(plist);
@@ -218,28 +226,65 @@ static InfoOfReturn delNodeByMKey(List_M_inChainSet* plist, Data_M key) {
 //添加key类
 
 
+Entry_M_inChainSet createMEntryByMKey(Data_M key, selectOfCopy isCopyKey) {
+    if (key.isEmpty) {
+        return getEmptyMEntry();
+    }
+
+    Entry_M_inChainSet newEntry;
+    if (isCopyKey == Data_Copy) {
+        newEntry.key = copyMData(key);
+        if (newEntry.key.isEmpty) {
+            return getEmptyMEntry();
+        }
+    } else {
+        newEntry.key = key;
+    }
+
+    newEntry.key.isOwner = key.isOwner;
+
+    newEntry.isEmpty = false;
+    return newEntry;
+
+}
+
 
 
 //这个函数保证可以添加
-static InfoOfReturn addMEntryFunction(ChainSet_M* pSet, Data_M key) {
+static InfoOfReturn addMEntryFunction(ChainSet_M* pSet, Data_M key, selectOfCopy isCopyKey) {
     //hash
     ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
 
     //在插入之前先进行一次查找
     Node_M_inChainSet* p = getNodeByMKey(&(pSet->arr[index]), key);
     if (p) {
+        //完全按照使用者的意思
+        Entry_M_inChainSet newEntry = createMEntryByMKey(key, isCopyKey);
+
+        if (newEntry.isEmpty) {
+            //内存分配失败
+            return Warning;
+        }
+        freeMEntry(&(p->entry));
+        
+        p->entry = newEntry;
         return None;
     }
 
-    Entry_M_inChainSet newEntry;
-    newEntry.isEmpty = false;
-    newEntry.key = deepCopyMData(key);
-    if (newEntry.key.isEmpty) {
-        printf("\nMemory allocation failed\n");
+    Entry_M_inChainSet newEntry = createMEntryByMKey(key, isCopyKey);
+    if (newEntry.isEmpty) {
+        //内存分配失败
         return Warning;
     }
     if (insertMEntryInMList(&(pSet->arr[index]), newEntry) == Warning) {
-        printf("\nMemory allocation failed\n");
+        // BUG: 节点创建失败导致返回Warning, 但newEntry也是新得到的, 在复制的情况下要释放
+        // BUG: 当为复制的情况下要释放, 其他不复制的情况不需要释放什么, 将Data的isOwner强行设置为true, 然后释放
+
+        if (isCopyKey == Data_Copy) {
+            newEntry.key.isOwner = true;
+            freeMData(&(newEntry.key));
+        }
+        //内存分配失败
         return Warning;
     }
     pSet->size++;
@@ -256,7 +301,7 @@ static InfoOfReturn addMEntryForFreshMChainSet(ChainSet_M* pSet, Data_M key) {
     entry.isEmpty = false;
     entry.key = key;
     if (insertMEntryInMList(&(pSet->arr[index]), entry) == Warning) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning;
     }
     pSet->size++;
@@ -302,7 +347,7 @@ static InfoOfReturn freshMChainSet(ChainSet_M* pSet) {
     ChainSet_M newSet;
     List_M_inChainSet* newArray = (List_M_inChainSet*)malloc(newLen*sizeof(List_M_inChainSet));
     if (newArray == NULL) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning;
     }
     for (int i = 0; i < newLen; i++) {
@@ -314,7 +359,7 @@ static InfoOfReturn freshMChainSet(ChainSet_M* pSet) {
     newSet.arr = newArray;
     newSet.len = newLen;
     newSet.mod = newMod;
-    newSet.size = 0;    //再添加函数中会自动加,这里设置为0
+    newSet.size = 0;    //在添加函数中会自动加,这里设置为0
 
     for (int i = 0; i < pSet->len; i++) {
         Node_M_inChainSet* p = pSet->arr[i].head;
@@ -324,7 +369,9 @@ static InfoOfReturn freshMChainSet(ChainSet_M* pSet) {
         */
         for (int j = 0; j < pSet->arr[i].size; j++, p = p->next) {
             if (addMEntryForFreshMChainSet(&newSet, p->entry.key) == Warning) {
-                printf("\nMemory allocation failed\n");
+                //内存分配失败
+                // freeMChainSet(&newSet);
+                // BUG: 尝试创建一个专门浅释放Set的函数, 顺便将下面的释放也包含了
                 return Warning;
             }
         }
@@ -342,12 +389,12 @@ static InfoOfReturn freshMChainSet(ChainSet_M* pSet) {
 
 
 
-InfoOfReturn insertMKeyInMChainSet(ChainSet_M* pSet, Data_M key) {
+InfoOfReturn insertMKeyInMChainSet(ChainSet_M* pSet, Data_M key, selectOfCopy isCopyKey) {
     
     //在插入之前进行freshSet
     //当填充因子大于75%时或者Set为空时自动扩容
     freshMChainSet(pSet);
-    return addMEntryFunction(pSet, key);
+    return addMEntryFunction(pSet, key, isCopyKey);
 }
 
 
@@ -366,10 +413,12 @@ Data_M getCopyMKeyByMKeyInMChainSet(ChainSet_M* pSet, Data_M key) {
         return getEmptyMData();
     } else {
         Data_M newData;
-        newData = deepCopyMData(p->entry.key);
-        if (newData.isEmpty) {
-            printf("\nMemory allocation failed\n");
-        }
+        newData = copyMData(p->entry.key);
+        /*
+            由于复制类函数如果复制不成功, 
+            那会自动返回空的Data_M类型,
+            所有这里直接返回就行
+        */
         return newData;
     }
 }
@@ -399,7 +448,7 @@ InfoOfReturn delMKeyByMKeyInMChainSet(ChainSet_M* pSet, Data_M key) {
     ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
     
     if (delNodeByMKey(&(pSet->arr[index]), key) == None) {
-        printf("\nNot found! Cannot del\n");
+        //没找到
         return None;
     }
     pSet->size--;
