@@ -46,6 +46,7 @@ extern Data_M getPtrMValByMValInMDList(DList_M* plist, Data_M val);
 /// @param plist 链表指针
 /// @param pos 位置(从0开始)
 /// @return 返回找到的值, 若没找到, 返回空值(用字段isEmpty检查)
+/// @note 返回的值默认对数据具有控制权
 extern Data_M getCopyMValByPosInMDList(DList_M* plist, int pos);
 
 

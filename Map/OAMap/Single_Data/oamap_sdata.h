@@ -64,6 +64,7 @@ extern InfoOfReturn insertSKeyAndSValInSOAMap(OAMap_S* pMap, Data_S key, selectO
 /// @param pMap 哈希表指针
 /// @param key 待查找的键
 /// @return 返回找到的值, 若没找到, 返回空值(用字段isEmpty检查)
+/// @note 返回的值默认对数据具有控制权
 extern Data_S getCopySValBySKeyInSOAMap(OAMap_S* pMap, Data_S key);
 
 /// @brief 通过键找到单类型开放寻址哈希表中的值, 可以直接修改内部数据
@@ -76,6 +77,7 @@ extern Data_S getPtrSValBySKeyInSOAMap(OAMap_S* pMap, Data_S key);
 /// @param pMap 哈希表指针
 /// @param key 待查找的条目的键
 /// @return 返回找到的条目, 若没找到, 返回空条目(用字段isEmpty检查)
+/// @note 返回的键值对默认对数据具有控制权
 extern Entry_S_inOAMap getCopySEntryBySKeyInSOAMap(OAMap_S* pMap, Data_S key);
 
 

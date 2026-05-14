@@ -83,6 +83,7 @@ extern InfoOfReturn insertMKeyAndMValInMChainMap(ChainMap_M* pMap, Data_M key, s
 /// @param pMap 哈希表指针
 /// @param key 待查找的键
 /// @return 返回找到的值, 若没找到, 返回空值(用字段isEmpty检查)
+/// @note 返回的值默认对数据具有控制权
 extern Data_M getCopyMValByMKeyInMChainMap(ChainMap_M* pMap, Data_M key);
 
 /// @brief 通过键找到多类型链式哈希表中的值, 可以直接修改内部数据
@@ -95,6 +96,7 @@ extern Data_M getPtrMValByMKeyInMChainMap(ChainMap_M* pMap, Data_M key);
 /// @param pMap 哈希表指针
 /// @param key 待查找的条目的键
 /// @return 返回找到的条目, 若没找到, 返回空条目(用字段isEmpty检查)
+/// @note 返回的键值对默认对数据具有控制权
 extern Entry_M_inChainMap getCopyMEntryByMKeyInMChainMap(ChainMap_M* pMap, Data_M key);
 
 

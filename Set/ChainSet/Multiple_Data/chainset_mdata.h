@@ -72,6 +72,7 @@ extern InfoOfReturn insertMKeyInMChainSet(ChainSet_M* pSet, Data_M key, selectOf
 /// @param pSet 集合指针
 /// @param key 待查找的键
 /// @return 返回找到的键, 若没找到, 返回空键(用字段isEmpty检查)
+/// @note 返回的键默认对数据具有控制权
 extern Data_M getCopyMKeyByMKeyInMChainSet(ChainSet_M* pSet, Data_M key);
 
 
