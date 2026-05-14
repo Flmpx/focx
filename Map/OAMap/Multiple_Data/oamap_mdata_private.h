@@ -1,6 +1,6 @@
 #ifndef OAMAP_MDATA_PRIVATE_H
 #define OAMAP_MDATA_PRIVATE_H
-#include "oamap_mdata_private.h"
+#include "oamap_mdata.h"
 
 /// @brief 打印多类型开放寻址哈希表的键
 /// @param key 待打印的键
