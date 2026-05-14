@@ -45,9 +45,11 @@ extern void freeMOAMap(OAMap_M* pMap);
 /// @brief 在多类型开放寻址哈希表中插入键值对
 /// @param pMap 哈希表指针
 /// @param key 待插入的键
+/// @param isCopyKey 是否要复制传入的key
 /// @param val 待插入的值
+/// @param isCopyVal 是否要复制传入的val
 /// @return 操作结果状态码
-extern InfoOfReturn insertMKeyAndMValInMOAMap(OAMap_M* pMap, Data_M key, Data_M val);
+extern InfoOfReturn insertMKeyAndMValInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy isCopyKey, Data_M val, selectOfCopy isCopyVal);
 
 /// @brief 通过键找到多类型开放寻址哈希表中的值, 使用完后用freeMValInMOAMap函数进行释放
 /// @param pMap 哈希表指针
@@ -82,20 +84,5 @@ extern bool hasMKeyInMOAMap(OAMap_M* pMap, Data_M key);
 /// @return 操作结果状态码
 extern InfoOfReturn delMEntryByMKeyInMOAMap(OAMap_M* pMap, Data_M key);
 
-/// @brief 打印多类型开放寻址哈希表的键
-/// @param key 待打印的键
-extern void printMKeyInMOAMap(Data_M key);
 
-
-/// @brief 打印多类型开放寻址哈希表的值
-/// @param val 待打印的值
-extern void printMValInMOAMap(Data_M val);
-
-/// @brief 打印多类型开放寻址哈希表的条目
-/// @param entry 待打印的条目
-extern void printMEntryInMOAMap(Entry_M_inOAMap entry);
-
-/// @brief 打印多类型开放寻址哈希表
-/// @param pMap 哈希表指针
-extern void printMOAMap(OAMap_M* pMap);
 #endif

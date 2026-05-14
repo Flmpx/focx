@@ -5,6 +5,8 @@
 #define GET_LARGESTPRIME
 
 #define DATA_M_OPER
+
+#include "chainmap_mdata_private.h"
 #include "chainmap_mdata.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -139,7 +141,7 @@ static Node_M_inChainMap* getNodeByMKey(List_M_inChainMap* plist, Data_M key) {
 static InfoOfReturn insertMEntryInMList(List_M_inChainMap* plist, Entry_M_inChainMap entry) {
     Node_M_inChainMap* newNode = (Node_M_inChainMap*)malloc(sizeof(Node_M_inChainMap));
     if (newNode == NULL) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning;
     }
     newNode->entry = entry;
@@ -159,7 +161,7 @@ static InfoOfReturn insertMEntryInMList(List_M_inChainMap* plist, Entry_M_inChai
 
 static InfoOfReturn delStartNode(List_M_inChainMap* plist) {
     if (isEmptyMList(plist)) {
-        printf("\nNot found! Cannot del\n");
+        //空链表没法删除
         return None;
     }
     Node_M_inChainMap* p = plist->head;
@@ -182,7 +184,7 @@ static InfoOfReturn delStartNode(List_M_inChainMap* plist) {
 
 static InfoOfReturn delEndNode(List_M_inChainMap* plist) {
     if (isEmptyMList(plist)) {
-        printf("\nNot found! Cannot del\n");
+        //没找到
         return None;
     }
     Node_M_inChainMap* p = plist->tail;
@@ -204,12 +206,12 @@ static InfoOfReturn delEndNode(List_M_inChainMap* plist) {
 
 static InfoOfReturn delNodeByMKey(List_M_inChainMap* plist, Data_M key) {
     if (isEmptyMList(plist)) {
-        printf("\nNot found! Cannot del\n");
+        //没找到
         return None;
     }
     Node_M_inChainMap* p = getNodeByMKey(plist, key);
     if (p == NULL) {
-        printf("\nNot found! Cannot del\n");
+        //没找到
         return None;
     }
     if (p == plist->head) return delStartNode(plist);
@@ -235,45 +237,44 @@ static InfoOfReturn delNodeByMKey(List_M_inChainMap* plist, Data_M key) {
 //复制类
 
 
-//复制一个Entry,注意:entry.state不会自动赋值,必须要自己赋值
-static Entry_M_inChainMap deepCopyMEntry(Entry_M_inChainMap oldEntry) {
-    if (oldEntry.isEmpty) {
+//复制一个Entry
+static Entry_M_inChainMap creatMEntryByMKeyAndMVal(Data_M key, selectOfCopy isCopyKey, Data_M val, selectOfCopy isCopyVal) {
+    if (key.isEmpty || val.isEmpty) {
+        //不可以传入空数据
         return getEmptyMEntry();
     }
+    
+
+
     Entry_M_inChainMap newEntry;
-    newEntry.key = deepCopyMData(oldEntry.key);
-    if (newEntry.key.isEmpty) {
-        return getEmptyMEntry();
+
+    if (isCopyKey == Data_Copy) {
+        newEntry.key = copyMData(key);
+        if (newEntry.key.isEmpty) {
+            return getEmptyMEntry();
+        }
+        
+    } else {
+        newEntry.key = key;
     }
-    newEntry.val = deepCopyMData(oldEntry.val);
-    if (newEntry.val.isEmpty) {
-        freeMData(&(newEntry.key));
-        return getEmptyMEntry();
+
+    if (isCopyVal == Data_Copy) {
+        newEntry.val = copyMData(val);
+        if (newEntry.val.isEmpty) {
+            freeMData(&(newEntry.key));
+            return getEmptyMEntry();
+        }
     }
+
+    //设置是否有权限
+    newEntry.key.isOwner = key.isOwner;
+    newEntry.val.isOwner = val.isOwner;
+
     newEntry.isEmpty = false;
+
     return newEntry;
 }
 
-static Entry_M_inChainMap smartCopyMEntry(Entry_M_inChainMap oldEntry) {
-    if (oldEntry.isEmpty) {
-        return getEmptyMEntry();
-    }
-    Entry_M_inChainMap newEntry;
-    //无论如何key必须深拷贝
-    newEntry.key = deepCopyMData(oldEntry.key);
-    if (newEntry.key.isEmpty) {
-        return getEmptyMEntry();
-    }
-
-    //val根据情况进行复制
-    newEntry.val = smartCopyMData(oldEntry.val);
-    if (newEntry.val.isEmpty) {
-        freeMData(&(newEntry.key));
-        return getEmptyMEntry();
-    }
-    newEntry.isEmpty = false;
-    return newEntry;
-}
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //添加keyandval类
 
@@ -281,37 +282,33 @@ static Entry_M_inChainMap smartCopyMEntry(Entry_M_inChainMap oldEntry) {
 
 
 //这个函数保证可以添加
-static InfoOfReturn addMEntryFunction(ChainMap_M* pMap, Data_M key, Data_M val) {
+static InfoOfReturn addMEntryFunction(ChainMap_M* pMap, Data_M key, selectOfCopy isCopyKey, Data_M val, selectOfCopy isCopyVal) {
     //hash
     ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pMap->mod;
 
     //在插入之前先进行一次查找
     Node_M_inChainMap* p = getNodeByMKey(&(pMap->arr[index]), key);
     if (p) {
-        Data_M newVal;
-        //智能复制
-        newVal = smartCopyMData(val);
-        if (newVal.isEmpty) {
-            printf("\nMemory allocation failed\n");
+        //完全按照使用者的意思
+        Entry_M_inChainMap newEntry = creatMEntryByMKeyAndMVal(key, isCopyKey, val, isCopyVal);
+        if (newEntry.isEmpty) {
+            //内存分配失败
             return Warning;
         }
-        freeMData(&(p->entry.val));
-        p->entry.val = newVal;
+        freeMEntryInMChainMap(&(p->entry));
+        p->entry = newEntry;
         return Success;
     }
-    Entry_M_inChainMap oldEntry;
-    oldEntry.isEmpty = false;
-    oldEntry.key = key;
-    oldEntry.val = val;
     
-    //要进行智能拷贝
-    Entry_M_inChainMap newEntry = smartCopyMEntry(oldEntry);
+    
+    
+    Entry_M_inChainMap newEntry = creatMEntryByMKeyAndMVal(key, isCopyKey, val, isCopyVal);
     if (newEntry.isEmpty) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning;
     }
     if (insertMEntryInMList(&(pMap->arr[index]), newEntry) == Warning) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning;
     }
     pMap->size++;
@@ -329,7 +326,7 @@ static InfoOfReturn addMEntryForFreshMChainMap(ChainMap_M* pMap, Data_M key, Dat
     entry.key = key;
     entry.val = val;
     if (insertMEntryInMList(&(pMap->arr[index]), entry) == Warning) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning;
     }
     pMap->size++;
@@ -375,7 +372,7 @@ static InfoOfReturn freshMChainMap(ChainMap_M* pMap) {
     ChainMap_M newMap;
     List_M_inChainMap* newArray = (List_M_inChainMap*)malloc(newLen*sizeof(List_M_inChainMap));
     if (newArray == NULL) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning;
     }
     for (int i = 0; i < newLen; i++) {
@@ -397,7 +394,7 @@ static InfoOfReturn freshMChainMap(ChainMap_M* pMap) {
         */
         for (int j = 0; j < pMap->arr[i].size; j++, p = p->next) {
             if (addMEntryForFreshMChainMap(&newMap, p->entry.key, p->entry.val) == Warning) {
-                printf("\nMemory allocation failed\n");
+                //内存分配失败
                 return Warning;
             }
         }
@@ -415,12 +412,12 @@ static InfoOfReturn freshMChainMap(ChainMap_M* pMap) {
 
 
 
-InfoOfReturn insertMKeyAndMValInMChainMap(ChainMap_M* pMap, Data_M key, Data_M val) {
+InfoOfReturn insertMKeyAndMValInMChainMap(ChainMap_M* pMap, Data_M key, selectOfCopy isCopyKey, Data_M val, selectOfCopy isCopyVal) {
     
     //在插入之前进行freshMap
     //当填充因子大于75%时或者Map为空时自动扩容
     freshMChainMap(pMap);
-    return addMEntryFunction(pMap, key, val);
+    return addMEntryFunction(pMap, key, isCopyKey, val, isCopyVal);
 }
 
 
@@ -439,10 +436,12 @@ Data_M getCopyMValByMKeyInMChainMap(ChainMap_M* pMap, Data_M key) {
         return getEmptyMData();
     } else {
         Data_M newData;
-        newData = deepCopyMData(p->entry.val);
-        if (newData.isEmpty) {
-            printf("\nMemory allocation failed\n");
-        }
+        newData = copyMData(p->entry.val);
+        /*
+            由于复制类函数如果复制不成功, 
+            那会自动返回空的Data_M类型,
+            所有这里直接返回就行
+        */
         return newData;
     }
 }
@@ -469,10 +468,18 @@ Entry_M_inChainMap getCopyMEntryByMKeyInMChainMap(ChainMap_M* pMap, Data_M key) 
         return getEmptyMEntry();
     } else {
         Entry_M_inChainMap newEntry;
-        newEntry = deepCopyMEntry(p->entry);
-        if (newEntry.isEmpty) {
-            printf("\nMemory allocation failed\n");
-        }
+        
+        newEntry = creatMEntryByMKeyAndMVal(p->entry.key, Data_Copy, p->entry.val, Data_Copy);
+        //函数已经说明是会复制的了, 返回的具有权限
+        newEntry.key.isOwner = true;
+        newEntry.val.isOwner = true;
+
+
+        /*
+            由于复制类函数如果复制不成功, 
+            那会自动返回空的Entry_M_inChainMap类型,
+            所有这里直接返回就行
+        */
         return newEntry;
     }
 }
@@ -501,7 +508,7 @@ InfoOfReturn delMEntryByMKeyInMChainMap(ChainMap_M* pMap, Data_M key) {
     ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pMap->mod;
     
     if (delNodeByMKey(&(pMap->arr[index]), key) == None) {
-        printf("\nNot found! Cannot del\n");
+        //没找到
         return None;
     }
     pMap->size--;

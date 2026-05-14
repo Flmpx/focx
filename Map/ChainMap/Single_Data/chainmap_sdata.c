@@ -5,6 +5,7 @@
 #define GET_LARGESTPRIME
 
 #define DATA_S_OPER
+#include "chainmap_sdata_private.h"
 #include "chainmap_sdata.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -141,7 +142,7 @@ static Node_S_inChainMap* getNodeBySKey(List_S_inChainMap* plist, Data_S key, In
 static int insertSEntryInSList(List_S_inChainMap* plist, Entry_S_inChainMap entry) {
     Node_S_inChainMap* newNode = (Node_S_inChainMap*)malloc(sizeof(Node_S_inChainMap));
     if (newNode == NULL) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning;
     }
     newNode->entry = entry;
@@ -163,7 +164,7 @@ static int insertSEntryInSList(List_S_inChainMap* plist, Entry_S_inChainMap entr
 
 static int delStartNode(List_S_inChainMap* plist, ChainMap_S* pMap) {
     if (isEmptySList(plist)) {
-        printf("\nNot found! Cannot del\n");
+        //没找到
         return None;
     }
     Node_S_inChainMap* p = plist->head;
@@ -186,7 +187,7 @@ static int delStartNode(List_S_inChainMap* plist, ChainMap_S* pMap) {
 
 static int delEndNode(List_S_inChainMap* plist, ChainMap_S* pMap) {
     if (isEmptySList(plist)) {
-        printf("\nNot found! Cannot del\n");
+        //没找到
         return None;
     }
     Node_S_inChainMap* p = plist->tail;
@@ -208,12 +209,12 @@ static int delEndNode(List_S_inChainMap* plist, ChainMap_S* pMap) {
 
 static int delNodeBySKey(List_S_inChainMap* plist, Data_S key, ChainMap_S* pMap) {
     if (isEmptySList(plist)) {
-        printf("\nNot found! Cannot del\n");
+        //没找到
         return None;
     }
     Node_S_inChainMap* p = getNodeBySKey(plist, key, pMap->keyInfo);
     if (p == NULL) {
-        printf("\nNot found! Cannot del\n");
+        //没找到
         return None;
     }
     if (p == plist->head) return delStartNode(plist, pMap);
@@ -238,44 +239,46 @@ static int delNodeBySKey(List_S_inChainMap* plist, Data_S key, ChainMap_S* pMap)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //复制类
 
-//复制一个Entry,注意:entry.state不会自动赋值,必须要自己赋值
-static Entry_S_inChainMap deepCopySEntry(Entry_S_inChainMap oldEntry, ChainMap_S* pMap) {
-    if (oldEntry.isEmpty) {
+//复制一个Entry
+static Entry_S_inChainMap createSEntryBySKeyAndMVal(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyKey, Data_S val, selectOfCopy isCopyVal) {
+    if (key.isEmpty || val.isEmpty) {
+        //不可以传入空数据
         return getEmptySEntry();
     }
+    
+
+
     Entry_S_inChainMap newEntry;
-    newEntry.key = deepCopySData(oldEntry.key, pMap->keyInfo);
-    if (newEntry.key.isEmpty) {
-        return getEmptySEntry();
+
+    if (isCopyKey == Data_Copy) {
+        newEntry.key = copySData(key, pMap->keyInfo);
+        if (newEntry.key.isEmpty) {
+            return getEmptySEntry();
+        }
+        
+    } else {
+        newEntry.key = key;
     }
-    newEntry.val = deepCopySData(oldEntry.val, pMap->valInfo);
-    if (newEntry.val.isEmpty) {
-        freeSData(&(newEntry.key), pMap->keyInfo);
-        return getEmptySEntry();
+
+    if (isCopyVal == Data_Copy) {
+        newEntry.val = copySData(val, pMap->valInfo);
+        if (newEntry.val.isEmpty) {
+            freeSData(&(newEntry.key), pMap->keyInfo);
+            return getEmptySEntry();
+        }
     }
+
+    //设置是否有权限
+    newEntry.key.isOwner = key.isOwner;
+    newEntry.val.isOwner = val.isOwner;
+
     newEntry.isEmpty = false;
+
     return newEntry;
 }
 
-static Entry_S_inChainMap smartCopySEntry(Entry_S_inChainMap oldEntry, ChainMap_S* pMap) {
-    if (oldEntry.isEmpty) {
-        return getEmptySEntry();
-    }
-    Entry_S_inChainMap newEntry;
-    //无论如何key必须要进行深拷贝
-    newEntry.key = deepCopySData(oldEntry.key, pMap->keyInfo);
-    if (newEntry.key.isEmpty) {
-        return getEmptySEntry();
-    }
-    //val按需拷贝
-    newEntry.val = smartCopySData(oldEntry.val, pMap->valInfo);
-    if (newEntry.val.isEmpty) {
-        freeSData(&(newEntry.key), pMap->keyInfo);
-        return getEmptySEntry();
-    }
-    newEntry.isEmpty = false;
-    return newEntry;
-}
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //添加keyandval类
 
@@ -283,33 +286,32 @@ static Entry_S_inChainMap smartCopySEntry(Entry_S_inChainMap oldEntry, ChainMap_
 
 
 //这个函数保证可以添加
-static int addSEntryFunction(ChainMap_S* pMap, Data_S key, Data_S val) {
+static int addSEntryFunction(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyKey, Data_S val, selectOfCopy isCopyVal) {
     //hash
     ull index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
 
     Node_S_inChainMap* p = getNodeBySKey(&(pMap->arr[index]), key, pMap->keyInfo);
     if (p) {
-        Data_S newVal = smartCopySData(val, pMap->valInfo);
-        if (newVal.isEmpty) {
-            printf("\nMemory allocation failed\n");
+        //完全按照使用者的意思
+        Entry_S_inChainMap newEntry = createSEntryBySKeyAndMVal(pMap, key, isCopyKey, val, isCopyVal);
+        if (newEntry.isEmpty) {
+            //内存分配失败
             return Warning;
         }
-        freeSData(&(p->entry.val), pMap->valInfo);
-        p->entry.val = newVal;
+        freeSEntryInSChainMap(pMap, &(p->entry));
+
+        p->entry = newEntry;
         return Success;
     }
-    Entry_S_inChainMap oldEntry;
-    oldEntry.isEmpty = false;
-    oldEntry.key = key;
-    oldEntry.val = val;
     
-    Entry_S_inChainMap newEntry = smartCopySEntry(oldEntry, pMap);
+    
+    Entry_S_inChainMap newEntry = createSEntryBySKeyAndMVal(pMap, key, isCopyKey, val, isCopyVal);
     if (newEntry.isEmpty) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning;
     }
     if (insertSEntryInSList(&(pMap->arr[index]), newEntry) == Warning) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning;
     }
     pMap->size++;
@@ -327,7 +329,7 @@ static int addSEntryForFreshSChainMap(ChainMap_S* pMap, Data_S key, Data_S val) 
     entry.key = key;
     entry.val = val;
     if (insertSEntryInSList(&(pMap->arr[index]), entry) == Warning) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning;
     }
     pMap->size++;
@@ -373,7 +375,7 @@ static int freshSChainMap(ChainMap_S* pMap) {
     ChainMap_S newMap;
     List_S_inChainMap* newArray = (List_S_inChainMap*)malloc(newLen*sizeof(List_S_inChainMap));
     if (newArray == NULL) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning;
     }
     for (int i = 0; i < newLen; i++) {
@@ -392,7 +394,7 @@ static int freshSChainMap(ChainMap_S* pMap) {
         Node_S_inChainMap* p = pMap->arr[i].head;
         for (int j = 0; j < pMap->arr[i].size; j++, p = p->next) {
             if (addSEntryForFreshSChainMap(&newMap, p->entry.key, p->entry.val) == Warning) {
-                printf("\nMemory allocation failed\n");
+                //内存分配失败
                 return Warning;
             }
         }
@@ -408,10 +410,10 @@ static int freshSChainMap(ChainMap_S* pMap) {
 }
 
 
-int insertSKeyAndSValInSChainMap(ChainMap_S* pMap, Data_S key, Data_S val) {
+int insertSKeyAndSValInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyKey, Data_S val, selectOfCopy isCopyVal) {
     //当填充因子大于75%时或者Map为空时自动扩容
     freshSChainMap(pMap);
-    return addSEntryFunction(pMap, key, val);
+    return addSEntryFunction(pMap, key, isCopyKey, val, isCopyVal);
 }
 
 
@@ -430,10 +432,12 @@ Data_S getCopySValBySKeyInSChainMap(ChainMap_S* pMap, Data_S key) {
         return getEmptySData();
     } else {
         Data_S newData;
-        newData = deepCopySData(p->entry.val, pMap->valInfo);
-        if (newData.isEmpty) {
-            printf("\nMemory allocation failed\n");
-        }
+        newData = copySData(p->entry.val, pMap->valInfo);
+        /*
+            由于复制类函数如果复制不成功, 
+            那会自动返回空的Data_S类型,
+            所有这里直接返回就行
+        */
         return newData;
     }
 }
@@ -461,10 +465,19 @@ Entry_S_inChainMap getCopySEntryBySKeyInSChainMap(ChainMap_S* pMap, Data_S key) 
         return getEmptySEntry();
     } else {
         Entry_S_inChainMap newEntry;
-        newEntry = deepCopySEntry(p->entry, pMap);
-        if (newEntry.isEmpty) {
-            printf("\nMemory allocation failed\n");
-        }
+        
+        newEntry = createSEntryBySKeyAndMVal(pMap, p->entry.key, Data_Copy, p->entry.val, Data_Copy);
+
+        //函数已经说明是会复制的了, 返回的应当具有权限
+        newEntry.key.isOwner = true;
+        newEntry.val.isOwner = true;
+
+
+        /*
+            由于复制类函数如果复制不成功, 
+            那会自动返回空的Entry_S_inChainMap类型,
+            所有这里直接返回就行
+        */
         return newEntry;
     }
 }
@@ -493,7 +506,7 @@ InfoOfReturn delSEntryBySKeyInSChainMap(ChainMap_S* pMap, Data_S key) {
     ull index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
 
     if (delNodeBySKey(&(pMap->arr[index]), key, pMap) ==  None) {
-        printf("\nNot found! Cannot del\n");
+        //没找到
         return None;
     }
     pMap->size--;

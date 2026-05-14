@@ -1,6 +1,8 @@
 #define GET_LARGESTPRIME
 #define ENTRY_STATE_IN_OAMAP
 #define DATA_M_OPER
+
+#include "oamap_mdata_private.h"
 #include "oamap_mdata.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,7 +42,7 @@ void freeMValInMOAMap(Data_M* val) {
 }
 
 
-//不会自动给entry的state进行赋值, 自己根据情况进行赋值,这个仅仅只会把Entry中的key和value的data和others(不会释放oper,因为同种类型数据是要共用同一个opertion类型的指针)
+/// @note 不会自动给entry的state进行赋值, 自己根据情况进行赋值,这个仅仅只会把Entry中的key和value的data和others(不会释放oper,因为同种类型数据是要共用同一个opertion类型的指针)
 void freeMEntryInMOAMap(Entry_M_inOAMap* entry) {
     if (entry->isEmpty) return;
     freeMData(&(entry->key));
@@ -63,43 +65,44 @@ void freeMOAMap(OAMap_M* pMap) {
 //复制类
 
 //复制一个Entry,注意:entry.state不是自动赋值,必须要自己赋值
+static Entry_M_inOAMap creatMEntryByMKeyAndMVal(Data_M key, selectOfCopy isCopyKey, Data_M val, selectOfCopy isCopyVal) {
+    if (key.isEmpty || val.isEmpty) {
+        //不可以传入空数据
+        return getEmptyMEntry();
+    }
+    
 
-static Entry_M_inOAMap deepCopyMEntry(Entry_M_inOAMap oldEntry) {
-    if (oldEntry.isEmpty) {
-        return getEmptyMEntry();
-    }
+
     Entry_M_inOAMap newEntry;
-    newEntry.key = deepCopyMData(oldEntry.key);
-    if (newEntry.key.isEmpty) {
-        return getEmptyMEntry();
+
+    if (isCopyKey == Data_Copy) {
+        newEntry.key = copyMData(key);
+        if (newEntry.key.isEmpty) {
+            return getEmptyMEntry();
+        }
+        
+    } else {
+        newEntry.key = key;
     }
-    newEntry.val = deepCopyMData(oldEntry.val);
-    if (newEntry.val.isEmpty) {
-        freeMData(&(newEntry.key));
-        return getEmptyMEntry();
+
+    if (isCopyVal == Data_Copy) {
+        newEntry.val = copyMData(val);
+        if (newEntry.val.isEmpty) {
+            freeMData(&(newEntry.key));
+            return getEmptyMEntry();
+        }
     }
+
+    //设置是否有权限
+    newEntry.key.isOwner = key.isOwner;
+    newEntry.val.isOwner = val.isOwner;
+
     newEntry.isEmpty = false;
+
     return newEntry;
 }
-static Entry_M_inOAMap smartCopyMEntry(Entry_M_inOAMap oldEntry) {
-    if (oldEntry.isEmpty) {
-        return getEmptyMEntry();
-    }
-    Entry_M_inOAMap newEntry;
-    //key进行深拷贝
-    newEntry.key = deepCopyMData(oldEntry.key);
-    if (newEntry.key.isEmpty) {
-        return getEmptyMEntry();
-    }
-    //val按需拷贝
-    newEntry.val = smartCopyMData(oldEntry.val);
-    if (newEntry.val.isEmpty) {
-        freeMData(&(newEntry.key));
-        return getEmptyMEntry();
-    }
-    newEntry.isEmpty = false;
-    return newEntry;
-}
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //添加keyandval类
 
@@ -107,7 +110,7 @@ static Entry_M_inOAMap smartCopyMEntry(Entry_M_inOAMap oldEntry) {
 
 
 //这个函数保证可以添加
-static InfoOfReturn addMEntryFunction(OAMap_M* pMap, Data_M key, Data_M val) {
+static InfoOfReturn addMEntryFunction(OAMap_M* pMap, Data_M key, selectOfCopy isCopyKey, Data_M val, selectOfCopy isCopyVal) {
     //hash
     ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pMap->mod;
 
@@ -122,13 +125,18 @@ static InfoOfReturn addMEntryFunction(OAMap_M* pMap, Data_M key, Data_M val) {
         }
         //如果发现是同一个key,则更新数据
         if (compareMData(pMap->arr[index].key, key) == SAME) {
-            Data_M newVal = smartCopyMData(val);
-            if (newVal.isEmpty) {
-                printf("\nMemory allocation failed\n");
+            //完全按照使用者的意思
+            Entry_M_inOAMap newEntry = creatMEntryByMKeyAndMVal(key, isCopyKey, val, isCopyVal);
+            if (newEntry.isEmpty) {
+                //内存分配失败
                 return Warning;
             }
-            freeMData(&(pMap->arr[index].val));
-            pMap->arr[index].val = newVal;
+            //由于creatMEntryByMKeyAndMVal函数不会给state赋值, 所有这里进行赋值
+            newEntry.state = EXIST_IN_MAP;
+            freeMEntryInMOAMap(&(pMap->arr[index]));
+
+            pMap->arr[index] = newEntry;
+
             return Success;
         }
         index++;
@@ -138,15 +146,13 @@ static InfoOfReturn addMEntryFunction(OAMap_M* pMap, Data_M key, Data_M val) {
     if (flagFindDel) {
         index = firstDelIndex;
     }
-    //使用copyEntry函数进行操作
-    Entry_M_inOAMap oldEntry;
-    oldEntry.isEmpty = false;
-    oldEntry.key = key;
-    oldEntry.val = val;
-    pMap->arr[index] = smartCopyMEntry(oldEntry);
+
+
+    
+    pMap->arr[index] = creatMEntryByMKeyAndMVal(key, isCopyKey, val, isCopyVal);
     
     if (pMap->arr[index].isEmpty) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning;
     }
     pMap->arr[index].state = EXIST_IN_MAP;
@@ -195,7 +201,7 @@ static InfoOfReturn freshMOAMap(OAMap_M* pMap) {
     OAMap_M newMap;
     Entry_M_inOAMap* newArray = (Entry_M_inOAMap*)malloc(newLen*sizeof(Entry_M_inOAMap));
     if (newArray == NULL) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return Warning;
     }
     for (int i = 0; i < newLen; i++) {
@@ -224,10 +230,10 @@ static InfoOfReturn freshMOAMap(OAMap_M* pMap) {
 
 
 
-InfoOfReturn insertMKeyAndMValInMOAMap(OAMap_M* pMap, Data_M key, Data_M val) {
+InfoOfReturn insertMKeyAndMValInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy isCopyKey, Data_M val, selectOfCopy isCopyVal) {
     //当填充因子大于75%时自动扩容
     freshMOAMap(pMap);
-    return addMEntryFunction(pMap, key, val);
+    return addMEntryFunction(pMap, key, isCopyKey, val, isCopyVal);
 }
 
 
@@ -259,14 +265,16 @@ static Position getIndexByMKey(OAMap_M* pMap, Data_M key) {
 Data_M getCopyMValByMKeyInMOAMap(OAMap_M* pMap, Data_M key) {
     int index = getIndexByMKey(pMap, key);
     if (index == NOT_FOUND) {
-        printf("\nNot Found\n");
+        //没找到
         return getEmptyMData();
     } else {
         Data_M newData;
-        newData = deepCopyMData(pMap->arr[index].val);
-        if (newData.isEmpty) {
-            printf("\nMemory allocation failed\n");
-        }
+        newData = copyMData(pMap->arr[index].val);
+        /*
+            由于复制类函数如果复制不成功, 
+            那会自动返回空的Data_M类型,
+            所有这里直接返回就行
+        */
         return newData;
     }
 }
@@ -274,7 +282,7 @@ Data_M getCopyMValByMKeyInMOAMap(OAMap_M* pMap, Data_M key) {
 Data_M getPtrMValByMKeyInMOAMap(OAMap_M* pMap, Data_M key) {
     int index = getIndexByMKey(pMap, key);
     if (index == NOT_FOUND) {
-        printf("\nNot Found\n");
+        //没找到
         return getEmptyMData();
     } else {
         return pMap->arr[index].val;
@@ -288,10 +296,17 @@ Entry_M_inOAMap getCopyMEntryByMKeyInMOAMap(OAMap_M* pMap, Data_M key) {
         return getEmptyMEntry();
     } else {
         Entry_M_inOAMap newEntry;
-        newEntry = deepCopyMEntry(pMap->arr[index]);
-        if (newEntry.isEmpty) {
-            printf("\nMemory allocation failed\n");
-        }
+        newEntry = creatMEntryByMKeyAndMVal(pMap->arr[index].key, Data_Copy, pMap->arr[index].val, Data_Copy);
+        //函数已经说明是会复制的了, 返回的具有权限
+        newEntry.key.isOwner = true;
+        newEntry.val.isOwner = true;
+
+
+        /*
+            由于复制类函数如果复制不成功, 
+            那会自动返回空的Entry_M_inChainMap类型,
+            所有这里直接返回就行
+        */
         return newEntry;
     }
 }

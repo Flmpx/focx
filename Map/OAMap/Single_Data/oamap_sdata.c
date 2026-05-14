@@ -1,6 +1,9 @@
 #define ENTRY_STATE_IN_OAMAP
 #define GET_LARGESTPRIME
 #define DATA_S_OPER
+
+
+#include "oamap_sdata_private.h"
 #include "oamap_sdata.h"
 #include <stdio.h>
 #include <string.h>
@@ -69,42 +72,40 @@ void freeSOAMap(OAMap_S* pMap) {
 //复制类
 
 //复制一个Entry,注意:entry.state不是自动赋值,必须要自己赋值
-static Entry_S_inOAMap deepCopySEntry(OAMap_S* pMap, Entry_S_inOAMap inputEntry) {
+static Entry_S_inOAMap createSEntryBySKeyAndMVal(OAMap_S* pMap, Data_S key, selectOfCopy isCopyKey, Data_S val, selectOfCopy isCopyVal) {
+    if (key.isEmpty || val.isEmpty) {
+        //不可以传入空数据
+        return getEmptySEntry();
+    }
+    
+
+
     Entry_S_inOAMap newEntry;
 
-    newEntry.key = deepCopySData(inputEntry.key, pMap->keyInfo);
-
-    if (newEntry.key.isEmpty) {
-        printf("\nMemory allocation failed\n");
-        return getEmptySEntry();
+    if (isCopyKey == Data_Copy) {
+        newEntry.key = copySData(key, pMap->keyInfo);
+        if (newEntry.key.isEmpty) {
+            return getEmptySEntry();
+        }
+        
+    } else {
+        newEntry.key = key;
     }
 
-    newEntry.val = deepCopySData(inputEntry.val, pMap->valInfo);
-    if (newEntry.val.isEmpty) {
-        freeSData(&(newEntry.key), pMap->keyInfo);
-        printf("\nMemory allocation failed\n");
-        return getEmptySEntry();
+    if (isCopyVal == Data_Copy) {
+        newEntry.val = copySData(val, pMap->valInfo);
+        if (newEntry.val.isEmpty) {
+            freeSData(&(newEntry.key), pMap->keyInfo);
+            return getEmptySEntry();
+        }
     }
+
+    //设置是否有权限
+    newEntry.key.isOwner = key.isOwner;
+    newEntry.val.isOwner = val.isOwner;
+
     newEntry.isEmpty = false;
-    return newEntry;
-}
-static Entry_S_inOAMap smartCopySEntry(OAMap_S* pMap, Entry_S_inOAMap inputEntry) {
-    Entry_S_inOAMap newEntry;
 
-    newEntry.key = deepCopySData(inputEntry.key, pMap->keyInfo);
-
-    if (newEntry.key.isEmpty) {
-        printf("\nMemory allocation failed\n");
-        return getEmptySEntry();
-    }
-
-    newEntry.val = smartCopySData(inputEntry.val, pMap->valInfo);
-    if (newEntry.val.isEmpty) {
-        freeSData(&(newEntry.key), pMap->keyInfo);
-        printf("\nMemory allocation failed\n");
-        return getEmptySEntry();
-    }
-    newEntry.isEmpty = false;
     return newEntry;
 }
 
@@ -115,7 +116,7 @@ static Entry_S_inOAMap smartCopySEntry(OAMap_S* pMap, Entry_S_inOAMap inputEntry
 
 
 
-static InfoOfReturn addSEntryFunction(OAMap_S* pMap, Data_S key, Data_S val) {
+static InfoOfReturn addSEntryFunction(OAMap_S* pMap, Data_S key, selectOfCopy isCopyKey, Data_S val, selectOfCopy isCopyVal) {
     //对key进行hash
     ull index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%(pMap->mod);
     int flagFindDel = 0;
@@ -127,13 +128,17 @@ static InfoOfReturn addSEntryFunction(OAMap_S* pMap, Data_S key, Data_S val) {
             flagFindDel = 1;
         }
         if (compareSData(pMap->arr[index].key, pMap->keyInfo, key, pMap->keyInfo) == SAME)  {
-            Data_S newVal = smartCopySData(val, pMap->valInfo);
-            if (newVal.isEmpty) {
-                printf("\nMemory allocation failed\n");
+            //完全按照使用者的意思
+            Entry_S_inOAMap newEntry = createSEntryBySKeyAndMVal(pMap, key, isCopyKey, val, isCopyVal);
+            if (newEntry.isEmpty) {
+                //内存分配失败
                 return Warning;
             }
-            freeSData(&(pMap->arr[index].val), pMap->valInfo);
-            pMap->arr[index].val = newVal;
+            //由于createSEntryBySKeyAndMVal函数不会自动给state赋值
+            newEntry.state = EXIST_IN_MAP;
+            freeSEntryInSOAMap(pMap, &(pMap->arr[index]));
+
+            pMap->arr[index] = newEntry;
             return Success;
         }
         index++;
@@ -144,16 +149,10 @@ static InfoOfReturn addSEntryFunction(OAMap_S* pMap, Data_S key, Data_S val) {
         index = firstDelIndex;
     }
 
-    Entry_S_inOAMap oldEntry;
-    oldEntry.isEmpty = false;
-    oldEntry.key = key;
-    oldEntry.val = val;
-    oldEntry.state = EXIST_IN_MAP;
-
     
-    pMap->arr[index] = smartCopySEntry(pMap, oldEntry);
+    pMap->arr[index] = createSEntryBySKeyAndMVal(pMap, key, isCopyKey, val, isCopyVal);
     if (pMap->arr[index].isEmpty) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败;
         return Warning;
     }
     pMap->arr[index].state = EXIST_IN_MAP;
@@ -209,7 +208,7 @@ static InfoOfReturn freshSOAMap(OAMap_S* pMap) {
 
     newMap.arr = (Entry_S_inOAMap*)malloc(newLen*sizeof(Entry_S_inOAMap));
     if (newMap.arr == NULL) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败;
         return Warning;
     }
 
@@ -232,16 +231,16 @@ static InfoOfReturn freshSOAMap(OAMap_S* pMap) {
 
 }
 
-InfoOfReturn insertSKeyAndSValInSOAMap(OAMap_S* pMap, Data_S key, Data_S val) {
+InfoOfReturn insertSKeyAndSValInSOAMap(OAMap_S* pMap, Data_S key, selectOfCopy isCopyKey, Data_S val, selectOfCopy isCopyVal) {
     // if (4*(pMap->size) >= 3*(pMap->len)) {
     //     if (freshSOAMap(pMap) == Warning) {
-    //         printf("\nMemory allocation failed\n");
+    //         //内存分配失败;
     //         return Warning;
     //     }
     // }
     //先进行重hash
     freshSOAMap(pMap);
-    return addSEntryFunction(pMap, key, val);
+    return addSEntryFunction(pMap, key, isCopyKey, val, isCopyVal);
 }
 
 
@@ -275,10 +274,12 @@ Data_S getCopySValBySKeyInSOAMap(OAMap_S* pMap, Data_S key) {
         return getEmptySData();
     } else {
         Data_S newData;
-        newData = deepCopySData(pMap->arr[index].val, pMap->valInfo);
-        if (newData.isEmpty) {
-            printf("\nMemory allocation failed\n");
-        } 
+        newData = copySData(pMap->arr[index].val, pMap->valInfo);
+        /*
+            由于复制类函数如果复制不成功, 
+            那会自动返回空的Data_S类型,
+            所有这里直接返回就行
+        */
         return newData;
     }
 }
@@ -301,10 +302,18 @@ Entry_S_inOAMap getCopySEntryBySKeyInSOAMap(OAMap_S* pMap, Data_S key) {
         return getEmptySEntry();
     } else {
         Entry_S_inOAMap newEntry;
-        newEntry = deepCopySEntry(pMap, pMap->arr[index]);
-        if (newEntry.isEmpty) {
-            printf("\nMemory allocation failed\n");
-        }
+
+        newEntry = createSEntryBySKeyAndMVal(pMap, pMap->arr[index].key, Data_Copy, pMap->arr[index].val, Data_Copy);
+
+        //函数已经说明是会复制的了, 返回的应当具有权限
+        newEntry.key.isOwner = true;
+        newEntry.val.isOwner = true;
+
+        /*
+            由于复制类函数如果复制不成功, 
+            那会自动返回空的Entry_S_inOAMap类型,
+            所有这里直接返回就行
+        */
         return newEntry;
     }
 }

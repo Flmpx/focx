@@ -52,9 +52,11 @@ extern void freeSOAMap(OAMap_S* pMap);
 /// @brief 在单类型开放寻址哈希表中插入键值对
 /// @param pMap 哈希表指针
 /// @param key 待插入的键
+/// @param isCopyKey 是否要复制传入的key
 /// @param val 待插入的值
+/// @param isCopyVal 是否要复制传入的val
 /// @return 操作结果状态码
-extern InfoOfReturn insertSKeyAndSValInSOAMap(OAMap_S* pMap, Data_S key, Data_S val);
+extern InfoOfReturn insertSKeyAndSValInSOAMap(OAMap_S* pMap, Data_S key, selectOfCopy isCopyKey, Data_S val, selectOfCopy isCopyVal);
 
 
 
@@ -91,25 +93,6 @@ extern bool hasSKeyInSOAMap(OAMap_S* pMap, Data_S key);
 extern InfoOfReturn delSEntryBySKeyInSOAMap(OAMap_S* pMap, Data_S key);
 
 
-/// @brief 打印单类型开放寻址哈希表的键
-/// @param pMap 哈希表指针
-/// @param key 待打印的键
-extern void printSKeyInSOAMap(OAMap_S* pMap, Data_S key);
-
-
-/// @brief 打印单类型开放寻址哈希表的值
-/// @param pMap 哈希表指针
-/// @param val 待打印的值
-extern void printSValInSOAMap(OAMap_S* pMap, Data_S val);
-
-/// @brief 打印单类型开放寻址哈希表的条目
-/// @param pMap 哈希表指针
-/// @param entry 待打印的条目
-extern void printSEntryInSOAMap(OAMap_S* pMap, Entry_S_inOAMap entry);
-
-/// @brief 打印单类型开放寻址哈希表
-/// @param pMap 哈希表指针
-extern void printSOAMap(OAMap_S* pMap);
 
 
 
