@@ -6,7 +6,6 @@
 typedef unsigned long long ull;
 typedef int Position;
 
-
 #ifdef ENTRY_STATE_IN_OAMAP
 
 enum EntryStateInMap {
@@ -32,8 +31,8 @@ enum EntryStateInSet {
 
 /// @brief 数据是否需要复制
 typedef enum {
-    Data_Move = 0,
-    Data_Copy = 1
+    Data_NoCopy = 0,    //不复制数据
+    Data_Copy = 1   //复制数据
 } selectOfCopy;
 
 
@@ -139,17 +138,19 @@ typedef struct Data_M {
     bool isOwner;   //是否管理权, 一般是指可以释放当前的数据(void* content和void* content)吗
 } Data_M;
 
-//OWN, 数据是自己的, 可以在释放的时候进行释放 data: 数据指针, content: 描述性信息指针, dataInfo: InfoOfData类型指针, type: 数据标签
+//OWN, 有权释放数据, 有数据的所有权 data: 数据指针, content: 描述性信息指针, dataInfo: InfoOfData类型指针, type: 数据标签
 #define Data_M_OWN(data, content, dataInfo, type) ((Data_M){(data), (content), (dataInfo), (type), false, true})
 
 
-//REF, 数据不是自己的, 只是传个指针, 释放的时候不会释放数据 data: 数据指针, content: 描述性信息指针, dataInfo: InfoOfData类型指针, type: 数据标签
+//REF, 只是接管指针, 引用数据, 无权释放数据 data: 数据指针, content: 描述性信息指针, dataInfo: InfoOfData类型指针, type: 数据标签
 #define Data_M_REF(data, content, dataInfo, type) ((Data_M){(data), (content), (dataInfo), (type), false, false})
 
 
-//OWN, 数据是自己的, 可以在释放的时候进行释放, data: 数据指针, content: 描述性信息指针
+//OWN, 有权释放数据, 有数据的所有权 data: 数据指针, content: 描述性信息指针
 #define Data_S_OWN(data, content) ((Data_S){(data), (content), false, true})
-//REF, 数据不是自己的, 只是传个指针, 释放的时候不会释放数据, data: 数据指针, content: 描述性信息指针
+
+
+//REF, 只是接管指针, 引用数据, 无权释放数据 data: 数据指针, content: 描述性信息指针
 #define Data_S_REF(data, content) ((Data_S){(data), (content), false, false})
 
 

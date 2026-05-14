@@ -2,45 +2,64 @@
 
 - 注: 
     1. M(Multiple)为一种数据结构中可以插入任意类型, S(Single)为一种数据结构中只能插入一种类型, 但这种类型任意  
-    2. 再所有的数据结构中Key为键, Val为值, 如果不可以重复即为键, 否则值
+    2. 再所有的数据结构中Key为键, Val为值, 如果不可以重复即为键, 否则为值
 ## 🚀快速开始
 
 - 代码
 ```c
-//下载库, 引入(按需引入, 这里方便直接复制)
-#include "List\DList\Multiple_Data\dlist_mdata.h"
-#include "List\DList\Single_Data\dlist_sdata.h"
-#include "Map\ChainMap\Multiple_Data\chainmap_mdata.h"
-#include "Map\ChainMap\Single_Data\chainmap_sdata.h"
-#include "Map\OAMap\Multiple_Data\oamap_mdata.h"
-#include "Map\OAMap\Single_Data\oamap_sdata.h"  //此代码使用
-#include "Oper\Bool_Info\bool_info.h"
-#include "Oper\Double_Info\double_info.h"
-#include "Oper\Int_Info\int_info.h" //此代码使用
-#include "Oper\String_Info\string_info.h"   //此代码使用
+#include "List/DList/Single_Data/dlist_sdata.h"
+
+//方便调试的打印函数
+#include "List/DList/Single_Data/dlist_sdata_private.h"
+
+#include "Oper/Int_Info/int_info.h"
+
 #include "base.h"
+#include <stdlib.h>
+
 int main()
 {
-    OAMap_S map;    //创建一个使用开放寻址法(OA)的存储单一类型数据(S)的Map
-    initSOAMap(&map, &Info_Int, &Info_String);  //初始化Map, 使用库提供的Int和String信息
-    char string[101] = "abcd";
-    for (int i = 0; i < 10; i++) {
-        //插入Key和Val, 使用宏进行将数据的指针转为不同的Data_S类型, REF为数据借用, OWN为数据独有
-        insertSkeyAndSValInSOAMap(&map, Data_S_OWN(&i, NULL), Data_S_REF(string, NULL));
+    DList_S dlist_s;
+    //初始化DList_S, 即将插入int类型数据
+    initSDList(&dlist_s, &Info_Int);
+
+    //1. 情况一
+    int i;
+    for (i = 0; i < 10; i++) {
+        //选择了复制数据, 且具有有数据的所有权, 可以释放数据
+        insertSValAtEndInSDList(&dlist_s, Data_S_OWN(&i, NULL), Data_Copy);
+    }
+    printSDList(&dlist_s);
+    printf("\n");
+    freeSDList(&dlist_s);
+
+
+    //2. 情况二 
+    for (i = 0; i < 10; i++) {
+        //选择不复制数据, 引用数据, 不具备释放权
+        insertSValAtEndInSDList(&dlist_s, Data_S_REF(&i, NULL), Data_NoCopy);
     }
 
-    //打印Map
-    printSOAMap(&map);
-    
-    //所有的val都是借用的, 如果改了借用的, 会发生什么呢?
-    string[2] = 'z';
+    //如果是引用数据, 再不复制数据的情况下, 只要引用的数据被改动, 其他的也会被改动
+    printSDList(&dlist_s);
     printf("\n");
-    
-    //再次打印
-    printSOAMap(&map);
+    freeSDList(&dlist_s);
 
-    //用完后记得释放
-    freeSOAMap(&map);
+    //3. 情况三
+    
+    for (int i = 0; i < 10; i++) {
+        int* temp = (int*)malloc(sizeof(int));
+        *temp = i;
+
+        //选择不复制数据, 但又要它具备所有权, 即有释放权, 一般为外部创建, 然后让容器管理 
+        insertSValAtEndInSDList(&dlist_s, Data_S_OWN(temp, NULL), Data_NoCopy);
+    }
+
+    printSDList(&dlist_s);
+    printf("\n");
+    freeSDList(&dlist_s);
+
+    return 0;
 }
 
 
@@ -48,8 +67,9 @@ int main()
 
 - 运行结果
 ```txt
-[[key:0, value:"abcd"], [key:1, value:"abcd"], [key:2, value:"abcd"], [key:3, value:"abcd"], [key:4, value:"abcd"], [key:5, value:"abcd"], [key:6, value:"abcd"], [key:7, value:"abcd"], [key:8, value:"abcd"], [key:9, value:"abcd"]]                                 
-[[key:0, value:"abzd"], [key:1, value:"abzd"], [key:2, value:"abzd"], [key:3, value:"abzd"], [key:4, value:"abzd"], [key:5, value:"abzd"], [key:6, value:"abzd"], [key:7, value:"abzd"], [key:8, value:"abzd"], [key:9, value:"abzd"]]
+[0-->1-->2-->3-->4-->5-->6-->7-->8-->9]
+[10-->10-->10-->10-->10-->10-->10-->10-->10-->10]
+[0-->1-->2-->3-->4-->5-->6-->7-->8-->9]
 ```
 
 
@@ -104,7 +124,7 @@ typedef struct Data_S {
     void* data; //存储数据的void* 指针
     void* content;  //存储描述性信息的void* 指针(比如描述二维数组的col和row)
     bool isEmpty;   //Data_S是否为空
-    bool isOwner;   //数据是否为Data独有, 如果true, 代表数据的生死由Data管理(会复制一份, 以保证是Data中的内容是独有的), 如果false, 代表数据由外部管理, Data只管理指针
+    bool isOwner;   //数据是否为Data独有, 如果true, 代表数据的生死由Data管理, 如果false, 代表数据由外部管理, Data只管理指针, 没有释放的权力
 } Data_S;
 
 
@@ -126,17 +146,19 @@ typedef struct Data_M {
 ```c
 
 
-//OWN, 数据是自己的, 可以在释放的时候进行释放 data: 数据指针, content: 描述性信息指针, dataInfo: InfoOfData类型指针, type: 数据标签
+//OWN, 有权释放数据, 有数据的所有权 data: 数据指针, content: 描述性信息指针, dataInfo: InfoOfData类型指针, type: 数据标签
 #define Data_M_OWN(data, content, dataInfo, type) ((Data_M){(data), (content), (dataInfo), (type), false, true})
 
 
-//REF, 数据不是自己的, 只是传个指针, 释放的时候不会释放数据 data: 数据指针, content: 描述性信息指针, dataInfo: InfoOfData类型指针, type: 数据标签
+//REF, 只是接管指针, 引用数据, 无权释放数据 data: 数据指针, content: 描述性信息指针, dataInfo: InfoOfData类型指针, type: 数据标签
 #define Data_M_REF(data, content, dataInfo, type) ((Data_M){(data), (content), (dataInfo), (type), false, false})
 
 
-//OWN, 数据是自己的, 可以在释放的时候进行释放, data: 数据指针, content: 描述性信息指针
+//OWN, 有权释放数据, 有数据的所有权 data: 数据指针, content: 描述性信息指针
 #define Data_S_OWN(data, content) ((Data_S){(data), (content), false, true})
-//REF, 数据不是自己的, 只是传个指针, 释放的时候不会释放数据, data: 数据指针, content: 描述性信息指针
+
+
+//REF, 只是接管指针, 引用数据, 无权释放数据 data: 数据指针, content: 描述性信息指针
 #define Data_S_REF(data, content) ((Data_S){(data), (content), false, false})
 
 ```
@@ -152,7 +174,7 @@ typedef struct Data_M {
 - 在List中的数据叫做MData或者SData
 - 在Map中的数据叫做MVal, MKey, SVal, SKey, MEntry, SEntry
 - 具体什么类型, 在括号中解释 -->
-## 2 文件夹结构
+## 2 文件夹结构(只有对外公开的文件)
     ├── base.c
     ├── base.h
     ├── List
@@ -322,3 +344,5 @@ typedef struct Data_M {
     10. reverse-->反转(一般是链表)
 
 ## 🤔如何创建自己的Info_Self呢?
+
+

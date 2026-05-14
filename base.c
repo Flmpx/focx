@@ -2,7 +2,6 @@
 
 
 
-
 //判断是否为质数
 static bool isPrime(int n) {
     if (n < 2) return false;
@@ -118,8 +117,11 @@ Data_M copyMData(Data_M inputData) {
     } else {
         newData.content = NULL;
     }
+    
+    /*默认对数据具有权限*/
+    newData.isOwner = true; 
+    
     //提供的相应操作函数因该是全局的
-    newData.isOwner = true; //复制即代表了所有权是自己的
     newData.dataInfo = inputData.dataInfo;
     newData.type = inputData.type;
     newData.isEmpty = false;
@@ -151,7 +153,7 @@ Data_S copySData(Data_S inputData, InfoOfData* info) {
         newData.content = NULL;
     }
     
-
+    newData.isOwner = true;
     newData.isEmpty = false;
     return newData;
 }
