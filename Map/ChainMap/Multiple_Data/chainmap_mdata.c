@@ -264,6 +264,8 @@ static Entry_M_inChainMap creatMEntryByMKeyAndMVal(Data_M key, selectOfCopy isCo
             freeMData(&(newEntry.key));
             return getEmptyMEntry();
         }
+    } else {
+        newEntry.val = val;
     }
 
     //设置是否有权限

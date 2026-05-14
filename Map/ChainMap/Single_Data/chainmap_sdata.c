@@ -266,6 +266,8 @@ static Entry_S_inChainMap createSEntryBySKeyAndMVal(ChainMap_S* pMap, Data_S key
             freeSData(&(newEntry.key), pMap->keyInfo);
             return getEmptySEntry();
         }
+    } else {
+        newEntry.val = val;
     }
 
     //设置是否有权限

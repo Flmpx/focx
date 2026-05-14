@@ -98,6 +98,8 @@ static Entry_S_inOAMap createSEntryBySKeyAndMVal(OAMap_S* pMap, Data_S key, sele
             freeSData(&(newEntry.key), pMap->keyInfo);
             return getEmptySEntry();
         }
+    } else {
+        newEntry.val = val;
     }
 
     //设置是否有权限
