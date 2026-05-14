@@ -66,6 +66,8 @@ void freeSOASet(OASet_S* pSet) {
 /////////////////////////////////////////////////////////////////////////////////
 //添加类
 
+
+/// @note 复制一个Entry,注意:entry.state不是自动赋值,必须要自己赋值
 Entry_S_inOASet createSEntryBySkey(OASet_S* pSet, Data_S key, selectOfCopy isCopyKey) {
     if (key.isEmpty) {
         return getEmptySEntry();

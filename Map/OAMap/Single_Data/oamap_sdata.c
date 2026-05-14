@@ -71,7 +71,7 @@ void freeSOAMap(OAMap_S* pMap) {
 
 //复制类
 
-//复制一个Entry,注意:entry.state不是自动赋值,必须要自己赋值
+/// @note 复制一个Entry,注意:entry.state不是自动赋值,必须要自己赋值
 static Entry_S_inOAMap createSEntryBySKeyAndMVal(OAMap_S* pMap, Data_S key, selectOfCopy isCopyKey, Data_S val, selectOfCopy isCopyVal) {
     if (key.isEmpty || val.isEmpty) {
         //不可以传入空数据

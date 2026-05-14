@@ -60,6 +60,8 @@ void freeMOASet(OASet_M* pSet) {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //添加key类
 
+
+/// @note 复制一个Entry,注意:entry.state不是自动赋值,必须要自己赋值
 static Entry_M_inOASet createMEntryByMKey(Data_M key, selectOfCopy isCopyKey) {
     if (key.isEmpty) {
         return getEmptyMEntry();
