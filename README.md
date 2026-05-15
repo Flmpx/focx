@@ -359,21 +359,19 @@ typedef enum {
     
     2. get-->得到
     
-    3. Copy/Ptr-->这个数据是复制一份还是传一个指针
+    3. in-->在哪种数据结构中
     
-    4. in-->在哪种数据结构中
+    4. free-->释放
     
-    5. free-->释放
+    5. print-->打印
     
-    6. print-->打印
+    8. has-->有没有
     
-    7. has-->有没有
+    9. insert-->插入
     
-    8. insert-->插入
+    10. del-->删除
     
-    9. del-->删除
-    
-    10. reverse-->反转(一般是链表)
+    11. reverse-->反转(一般是链表)
 
 ## 🤔如何创建自己的Info_Self呢?
 
