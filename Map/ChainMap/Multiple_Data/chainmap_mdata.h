@@ -96,7 +96,7 @@ extern Data_M getMKeyByMKeyInMChainMap(ChainMap_M* pMap, Data_M key, selectOfCop
 
 /// @brief 通过键找到多类型链式哈希表中的值
 /// @param pMap 哈希表指针
-/// @param key 待查找的键
+/// @param key 待查找的值的键
 /// @param isCopyKey 返回的值是否要复制
 /// @return 返回找到的值, 若没找到, 返回空值(用字段isEmpty检查)
 /// @note 如果不复制, 可用于修改内部数据, 如果复制, 会创建副本, 副本默认拥有数据所有权, 使用完后通过freeMValInMChainMap函数释放
@@ -105,7 +105,7 @@ extern Data_M getMValByMKeyInMchainMap(ChainMap_M* pMap, Data_M key, selectOfCop
 
 /// @brief 通过键找到多类型链式哈希表中的条目
 /// @param pMap 哈希表指针
-/// @param key 待查找的键
+/// @param key 待查找的条目的键
 /// @param isCopyEntry 返回的条目是否要复制
 /// @return 返回找到的条目, 若没找到, 返回空条目(用字段isEmpty检查)
 /// @note 如果不复制, 可用于修改内部数据, 如果复制, 会创建副本, 副本默认拥有数据所有权, 使用完后通过freeMEntryInMChainMap函数释放
