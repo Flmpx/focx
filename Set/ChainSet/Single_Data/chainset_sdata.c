@@ -263,7 +263,7 @@ Entry_S_inChainSet createSEntryBySKey(ChainSet_S* pSet, Data_S key, selectOfCopy
 //这个函数保证可以添加
 static int addSEntryFunction(ChainSet_S* pSet, Data_S key, selectOfCopy isCopyKey) {
     //hash
-    ull index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
+    ll index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
 
     /*
         TODO: 可以先进行复制Key
@@ -304,7 +304,7 @@ static int addSEntryFunction(ChainSet_S* pSet, Data_S key, selectOfCopy isCopyKe
 
 //专门为重哈希做的软拷贝方式添加的Entry
 static int addSEntryForFreshSChainSet(ChainSet_S* pSet, Data_S key) {
-    ull index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
+    ll index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
     Entry_S_inChainSet entry;
     entry.isEmpty = false;
     entry.key = key;
@@ -402,7 +402,7 @@ int insertSKeyInSChainSet(ChainSet_S* pSet, Data_S key, selectOfCopy isCopyKey) 
 
 Data_S getSKeyBySKeyInSChainSet(ChainSet_S* pSet, Data_S key, selectOfCopy isCopyKey) {
     if (pSet->len == 0 || pSet->size == 0 || pSet->arr == NULL) return getEmptySData();
-    ull index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
+    ll index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
     
     Node_S_inChainSet* p = getNodeBySKey(&(pSet->arr[index]), key, pSet->keyInfo);
     if (p == NULL) {
@@ -424,7 +424,7 @@ Data_S getSKeyBySKeyInSChainSet(ChainSet_S* pSet, Data_S key, selectOfCopy isCop
 
 bool hasSKeyInSChainSet(ChainSet_S* pSet, Data_S key) {
     if (pSet->len == 0 || pSet->size == 0 || pSet->arr == NULL) return false;
-    ull index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
+    ll index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
     
     Node_S_inChainSet* p = getNodeBySKey(&(pSet->arr[index]), key, pSet->keyInfo);
     if (p == NULL) {
@@ -442,7 +442,7 @@ bool hasSKeyInSChainSet(ChainSet_S* pSet, Data_S key) {
 
 InfoOfReturn delSKeyBySKeyInSChainSet(ChainSet_S* pSet, Data_S key) {
     if (pSet->len == 0 || pSet->size == 0 || pSet->arr == NULL) return Warning;
-    ull index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
+    ll index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
 
     if (delNodeBySKey(&(pSet->arr[index]), key, pSet) ==  None) {
         //没找到

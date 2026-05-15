@@ -6,9 +6,9 @@ static void freedata_Int(void* data, void* content) {
     free(data);
 }
 
-static ull hashdata_Int(void* data, void* content) {
+static ll hashdata_Int(void* data, void* content) {
     int n = *(int*)data;
-    return (ull)n;
+    return (ll)n;
 }
 
 static CmpResult cmpdata_Int(void* data_a, void* content_a, void* data_b, void* content_b) {

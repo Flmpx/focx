@@ -3,17 +3,17 @@
 #include <string.h>
 #include <stdlib.h>
 
-static ull mod = 1000000007;
-static ull base = 131;
+static ll mod = 1000000007;
+static ll base = 131;
 
 static void freedata_String(void* data, void* content) {
     free(data);
 }
 
 
-static ull hashdata_String(void* data, void* content) {
+static ll hashdata_String(void* data, void* content) {
     const char* string = (char*)data;
-    ull result = 0;
+    ll result = 0;
     int len = strlen(string);
     for (int i = 0; i < len; i++) {
         result = (result * base % mod + string[i] + 199)%mod;

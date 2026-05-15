@@ -90,9 +90,9 @@ Entry_S_inOASet createSEntryBySkey(OASet_S* pSet, Data_S key, selectOfCopy isCop
 
 static InfoOfReturn addSEntryFunction(OASet_S* pSet, Data_S key, selectOfCopy isCopyKey) {
     //对key进行hash
-    ull index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%(pSet->mod);
+    ll index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%(pSet->mod);
     int flagFindDel = 0;
-    ull firstDelIndex = pSet->len+10;
+    ll firstDelIndex = pSet->len+10;
 
     while (pSet->arr[index].state != NONE_IN_SET) {
         if (pSet->arr[index].state == DEL_IN_SET && flagFindDel == 0) {
@@ -136,7 +136,7 @@ static InfoOfReturn addSEntryFunction(OASet_S* pSet, Data_S key, selectOfCopy is
 
 //专门为重哈希做的软拷贝方式添加的Entry
 static InfoOfReturn addSEntryForFreshSOASet(OASet_S* pSet, Data_S key) {
-    ull index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
+    ll index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
     while (pSet->arr[index].state != NONE_IN_SET) {
         index++;
         index %= pSet->len;
@@ -216,7 +216,7 @@ InfoOfReturn insertSKeyInSOASet(OASet_S* pSet, Data_S key, selectOfCopy isCopyKe
 
 static Position getIndexBySKey(OASet_S* pSet, Data_S key) {
     if (pSet->arr == NULL || pSet->size == 0 || pSet->len == 0) return NOT_FOUND;
-    ull index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
+    ll index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
 
     for (int i = 0; i < pSet->len; i++) {
         if (pSet->arr[index].state == NONE_IN_SET) {
@@ -234,7 +234,7 @@ static Position getIndexBySKey(OASet_S* pSet, Data_S key) {
 
 
 Data_S getSKeyBySKeyInSOASet(OASet_S* pSet, Data_S key, selectOfCopy isCopyKey) {
-    int index = getIndexBySKey(pSet, key);\
+    Position index = getIndexBySKey(pSet, key);\
     if (index == NOT_FOUND) {
         return getEmptySData();
     } 

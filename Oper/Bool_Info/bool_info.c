@@ -7,7 +7,7 @@ static void freedata_Bool(void* data, void* content) {
     free(data);
 }
 
-static ull hashdata_Bool(void* data, void* content) {
+static ll hashdata_Bool(void* data, void* content) {
     bool num = *(bool*)data;
     return num == true ? 99ull : 100ull;
 }

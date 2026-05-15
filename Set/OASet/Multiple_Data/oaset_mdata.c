@@ -86,11 +86,11 @@ static Entry_M_inOASet createMEntryByMKey(Data_M key, selectOfCopy isCopyKey) {
 //这个函数保证可以添加
 static InfoOfReturn addMEntryFunction(OASet_M* pSet, Data_M key, selectOfCopy isCopyKey) {
     //hash
-    ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
+    ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
 
     //用于记录第一次出现的的Del位置, 这么做的原因是即便碰到Del标记也不能直接插入
     int flagFindDel = 0;
-    ull firstDelIndex = pSet->len+10;
+    ll firstDelIndex = pSet->len+10;
     //找到一个NONE或者DEl标记的位置
     while (pSet->arr[index].state != NONE_IN_SET) {
         if (pSet->arr[index].state == DEL_IN_SET && flagFindDel == 0) {
@@ -134,7 +134,7 @@ static InfoOfReturn addMEntryFunction(OASet_M* pSet, Data_M key, selectOfCopy is
 
 //专门为重哈希做的软拷贝方式添加的Entry
 static InfoOfReturn addMEntryForFreshMOASet(OASet_M* pSet, Data_M key) {
-    ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
+    ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
     while (pSet->arr[index].state != NONE_IN_SET) {
         index++;
         index %= pSet->len;
@@ -212,7 +212,7 @@ InfoOfReturn insertMKeyInMOASet(OASet_M* pSet, Data_M key, selectOfCopy isCopyKe
 //通过key返回key在Set中的位置
 static Position getIndexByMKey(OASet_M* pSet, Data_M key) {
     if (pSet->len == 0 || pSet->size == 0 || pSet->arr == NULL) return NOT_FOUND;
-    ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
+    ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
     for (int i = 0; i < pSet->len; i++) {
         if (pSet->arr[index].state == NONE_IN_SET) {
             return NOT_FOUND;
@@ -231,7 +231,7 @@ static Position getIndexByMKey(OASet_M* pSet, Data_M key) {
 
 
 Data_M getMKeyByMKeyInMOASet(OASet_M* pSet, Data_M key, selectOfCopy isCopyKey) {
-    int index = getIndexByMKey(pSet, key);
+    Position index = getIndexByMKey(pSet, key);
     if (index == NOT_FOUND) {
         return getEmptyMData();
     }

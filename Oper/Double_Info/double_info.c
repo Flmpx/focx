@@ -6,19 +6,19 @@
 static const char* format_Double = "double%.12edouble"; 
 
 
-static const ull mod = 1000000007;
-static const ull base = 131;
+static const ll mod = 1000000007;
+static const ll base = 131;
 
 static void freedata_Double(void* data, void* content) {
     free(data);
 }
 
 
-static ull hashdata_Double(void* data, void* content) {
+static ll hashdata_Double(void* data, void* content) {
     char string[101];
     sprintf(string, format_Double, *(double*)data);
     int len = strlen(string);
-    ull result = 0;
+    ll result = 0;
     for (int i = 0; i < len; i++) {
         result = (result * base % mod + string[i] + 199)%mod;
     }

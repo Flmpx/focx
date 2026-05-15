@@ -292,7 +292,7 @@ static Entry_S_inChainMap createSEntryBySKeyAndMVal(ChainMap_S* pMap, Data_S key
 //这个函数保证可以添加
 static int addSEntryFunction(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyKey, Data_S val, selectOfCopy isCopyVal) {
     //hash
-    ull index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
+    ll index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
 
     Node_S_inChainMap* p = getNodeBySKey(&(pMap->arr[index]), key, pMap->keyInfo);
     if (p) {
@@ -327,7 +327,7 @@ static int addSEntryFunction(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyKe
 
 //专门为重哈希做的软拷贝方式添加的Entry
 static int addSEntryForFreshSChainMap(ChainMap_S* pMap, Data_S key, Data_S val) {
-    ull index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
+    ll index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
     Entry_S_inChainMap entry;
     entry.isEmpty = false;
     entry.key = key;
@@ -427,7 +427,7 @@ int insertSKeyAndSValInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCo
 
 Data_S getSKeyBySKeyInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyKey) {
     if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return getEmptySData();
-    ull index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
+    ll index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
     
     Node_S_inChainMap* p = getNodeBySKey(&(pMap->arr[index]), key, pMap->keyInfo);
     if (p == NULL) {
@@ -450,7 +450,7 @@ Data_S getSKeyBySKeyInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCop
 
 Data_S getSValBySKeyInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyVal) {
     if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return getEmptySData();
-    ull index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
+    ll index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
     
     Node_S_inChainMap* p = getNodeBySKey(&(pMap->arr[index]), key, pMap->keyInfo);
     if (p == NULL) {
@@ -465,7 +465,7 @@ Data_S getSValBySKeyInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCop
 
 Entry_S_inChainMap getSEntryBySKeyInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyEntry) {
     if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return getEmptySEntry();
-    ull index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
+    ll index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
     
     Node_S_inChainMap* p = getNodeBySKey(&(pMap->arr[index]), key, pMap->keyInfo);
     if (p == NULL) {
@@ -495,7 +495,7 @@ Entry_S_inChainMap getSEntryBySKeyInSChainMap(ChainMap_S* pMap, Data_S key, sele
 
 bool hasSKeyInSChainMap(ChainMap_S* pMap, Data_S key) {
     if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return false;
-    ull index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
+    ll index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
     
     Node_S_inChainMap* p = getNodeBySKey(&(pMap->arr[index]), key, pMap->keyInfo);
     if (p == NULL) {
@@ -513,7 +513,7 @@ bool hasSKeyInSChainMap(ChainMap_S* pMap, Data_S key) {
 
 InfoOfReturn delSEntryBySKeyInSChainMap(ChainMap_S* pMap, Data_S key) {
     if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return Warning;
-    ull index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
+    ll index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
 
     if (delNodeBySKey(&(pMap->arr[index]), key, pMap) ==  None) {
         //没找到

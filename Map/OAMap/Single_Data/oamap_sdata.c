@@ -124,9 +124,9 @@ static Entry_S_inOAMap createSEntryBySKeyAndMVal(OAMap_S* pMap, Data_S key, sele
 
 static InfoOfReturn addSEntryFunction(OAMap_S* pMap, Data_S key, selectOfCopy isCopyKey, Data_S val, selectOfCopy isCopyVal) {
     //对key进行hash
-    ull index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%(pMap->mod);
+    ll index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%(pMap->mod);
     int flagFindDel = 0;
-    ull firstDelIndex = pMap->len+10;
+    ll firstDelIndex = pMap->len+10;
 
     while (pMap->arr[index].state != NONE_IN_MAP) {
         if (pMap->arr[index].state == DEL_IN_MAP && flagFindDel == 0) {
@@ -172,7 +172,7 @@ static InfoOfReturn addSEntryFunction(OAMap_S* pMap, Data_S key, selectOfCopy is
 
 //专门为重哈希做的软拷贝方式添加的Entry
 static InfoOfReturn addSEntryForFreshSOAMap(OAMap_S* pMap, Data_S key, Data_S val) {
-    ull index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
+    ll index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
     while (pMap->arr[index].state != NONE_IN_MAP) {
         index++;
         index %= pMap->len;
@@ -256,7 +256,7 @@ InfoOfReturn insertSKeyAndSValInSOAMap(OAMap_S* pMap, Data_S key, selectOfCopy i
 
 static Position getIndexBySKey(OAMap_S* pMap, Data_S key) {
     if (pMap->arr == NULL || pMap->size == 0 || pMap->len == 0) return NOT_FOUND;
-    ull index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
+    ll index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
 
     for (int i = 0; i < pMap->len; i++) {
         if (pMap->arr[index].state == NONE_IN_MAP) {
@@ -274,7 +274,7 @@ static Position getIndexBySKey(OAMap_S* pMap, Data_S key) {
 
 
 Data_S getSKeyBySKeyInSOAMap(OAMap_S* pMap, Data_S key, selectOfCopy isCopyKey) {
-    int index = getIndexBySKey(pMap, key);
+    Position index = getIndexBySKey(pMap, key);
     if (index == NOT_FOUND) {
         //没找到
         return getEmptySData();
@@ -293,7 +293,7 @@ Data_S getSKeyBySKeyInSOAMap(OAMap_S* pMap, Data_S key, selectOfCopy isCopyKey) 
 
 
 Data_S getSValBySKeyInSOAMap(OAMap_S* pMap, Data_S key, selectOfCopy isCopyVal) {
-    int index = getIndexBySKey(pMap, key);
+    Position index = getIndexBySKey(pMap, key);
     if (index == NOT_FOUND) {
         return getEmptySData();
     }
@@ -306,7 +306,7 @@ Data_S getSValBySKeyInSOAMap(OAMap_S* pMap, Data_S key, selectOfCopy isCopyVal) 
 }
 
 Entry_S_inOAMap getSEntryBySKeyInSOAMap(OAMap_S* pMap, Data_S key, selectOfCopy isCopyEntry) {
-    int index = getIndexBySKey(pMap, key);
+    Position index = getIndexBySKey(pMap, key);
     if (index == NOT_FOUND) {
         return getEmptySEntry();
     }

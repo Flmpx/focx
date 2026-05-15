@@ -3,8 +3,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 #define NOT_FOUND -1
-typedef unsigned long long ull;
-typedef int Position;
+typedef long long ll;
+typedef ll Position;
 
 #ifdef ENTRY_STATE_IN_OAMAP
 
@@ -80,7 +80,7 @@ typedef enum info {
 typedef void (*_freedata)(void* data, void* content);
 
 /// @brief 对void* data的内容进行hash的函数(hash函数必须返回ull类型的数据)
-typedef ull (*_hashdata)(void* data, void* content);
+typedef ll (*_hashdata)(void* data, void* content);
 
 /// @brief 对void* data进行比较的函数
 typedef CmpResult (*_cmpdata)(void* data_a, void* content_a, void* data_b, void* content_b);

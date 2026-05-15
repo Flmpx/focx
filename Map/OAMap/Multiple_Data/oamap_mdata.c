@@ -118,11 +118,11 @@ static Entry_M_inOAMap creatMEntryByMKeyAndMVal(Data_M key, selectOfCopy isCopyK
 //这个函数保证可以添加
 static InfoOfReturn addMEntryFunction(OAMap_M* pMap, Data_M key, selectOfCopy isCopyKey, Data_M val, selectOfCopy isCopyVal) {
     //hash
-    ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pMap->mod;
+    ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pMap->mod;
 
     //用于记录第一次出现的的Del位置, 这么做的原因是即便碰到Del标记也不能直接插入
     int flagFindDel = 0;
-    ull firstDelIndex = pMap->len+10;
+    ll firstDelIndex = pMap->len+10;
     //找到一个NONE或者DEl标记的位置
     while (pMap->arr[index].state != NONE_IN_MAP) {
         if (pMap->arr[index].state == DEL_IN_MAP && flagFindDel == 0) {
@@ -171,7 +171,7 @@ static InfoOfReturn addMEntryFunction(OAMap_M* pMap, Data_M key, selectOfCopy is
 
 //专门为重哈希做的软拷贝方式添加的Entry
 static InfoOfReturn addMEntryForFreshMOAMap(OAMap_M* pMap, Data_M key, Data_M val) {
-    ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pMap->mod;
+    ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pMap->mod;
     while (pMap->arr[index].state != NONE_IN_MAP) {
         index++;
         index %= pMap->len;
@@ -250,7 +250,7 @@ InfoOfReturn insertMKeyAndMValInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy i
 //通过key返回key在Map中的位置
 static Position getIndexByMKey(OAMap_M* pMap, Data_M key) {
     if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return NOT_FOUND;
-    ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pMap->mod;
+    ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pMap->mod;
     for (int i = 0; i < pMap->len; i++) {
         if (pMap->arr[index].state == NONE_IN_MAP) {
             return NOT_FOUND;
@@ -267,7 +267,7 @@ static Position getIndexByMKey(OAMap_M* pMap, Data_M key) {
 }
 
 Data_M getMKeyByMKeyInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy isCopyKey) {
-    int index = getIndexByMKey(pMap, key);
+    Position index = getIndexByMKey(pMap, key);
     if (index == NOT_FOUND) {
         //没找到
         return getEmptyMData();
@@ -285,7 +285,7 @@ Data_M getMKeyByMKeyInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy isCopyKey) 
 }
 
 Data_M getMValByMKeyInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy isCopyVal) {
-    int index = getIndexByMKey(pMap, key);
+    Position index = getIndexByMKey(pMap, key);
     if (index == NOT_FOUND) {
         return getEmptyMData();
     } 
@@ -297,7 +297,7 @@ Data_M getMValByMKeyInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy isCopyVal) 
 }
 
 Entry_M_inOAMap getMEntryByMKeyInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy isCopyEntry) {
-    int index = getIndexByMKey(pMap, key);
+    Position index = getIndexByMKey(pMap, key);
     if (index == NOT_FOUND) {
         return getEmptyMEntry();
     }

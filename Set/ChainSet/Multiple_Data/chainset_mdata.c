@@ -253,7 +253,7 @@ Entry_M_inChainSet createMEntryByMKey(Data_M key, selectOfCopy isCopyKey) {
 //这个函数保证可以添加
 static InfoOfReturn addMEntryFunction(ChainSet_M* pSet, Data_M key, selectOfCopy isCopyKey) {
     //hash
-    ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
+    ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
 
     //在插入之前先进行一次查找
     Node_M_inChainSet* p = getNodeByMKey(&(pSet->arr[index]), key);
@@ -296,7 +296,7 @@ static InfoOfReturn addMEntryFunction(ChainSet_M* pSet, Data_M key, selectOfCopy
 
 //专门为重哈希做的软拷贝方式添加的Entry
 static InfoOfReturn addMEntryForFreshMChainSet(ChainSet_M* pSet, Data_M key) {
-    ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
+    ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
     Entry_M_inChainSet entry;
     entry.isEmpty = false;
     entry.key = key;
@@ -403,7 +403,7 @@ InfoOfReturn insertMKeyInMChainSet(ChainSet_M* pSet, Data_M key, selectOfCopy is
 
 Data_M getMKeyByMKeyInMChainSet(ChainSet_M* pSet, Data_M key, selectOfCopy isCopyKey) {
     if (pSet->len == 0 || pSet->size == 0 || pSet->arr == NULL) return getEmptyMData();
-    ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
+    ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
     
     Node_M_inChainSet* p = getNodeByMKey(&(pSet->arr[index]), key);
     if (p == NULL) {
@@ -424,7 +424,7 @@ Data_M getMKeyByMKeyInMChainSet(ChainSet_M* pSet, Data_M key, selectOfCopy isCop
 
 bool hasMKeyInMChainSet(ChainSet_M* pSet, Data_M key) {
     if (pSet->len == 0 || pSet->size == 0 || pSet->arr == NULL) return false;
-    ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
+    ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
     
     Node_M_inChainSet* p = getNodeByMKey(&(pSet->arr[index]), key);
     if (p == NULL) {
@@ -442,7 +442,7 @@ bool hasMKeyInMChainSet(ChainSet_M* pSet, Data_M key) {
 
 InfoOfReturn delMKeyByMKeyInMChainSet(ChainSet_M* pSet, Data_M key) {
     if (pSet->len == 0 || pSet->size == 0 || pSet->arr == NULL) return Warning;
-    ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
+    ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
     
     if (delNodeByMKey(&(pSet->arr[index]), key) == None) {
         //没找到
