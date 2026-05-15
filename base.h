@@ -200,6 +200,8 @@ extern Data_S copySData(Data_S inputData, InfoOfData* info);
 
 
 
+
+
 ///////////////////////////////////
 //数据的释放
 
@@ -207,6 +209,16 @@ extern Data_S copySData(Data_S inputData, InfoOfData* info);
 /// @param inputData 输入的Data_S类型数据
 /// @param info InfoOfData类型数据指针
 extern void freeSData(Data_S* inputData, InfoOfData* info);
+
+/// @brief 改变数据的所有权为拥有所有权
+/// @param inputData 输入的数据指针
+void setSDataToOwner(Data_S* inputData);
+
+
+/// @brief 改变数据的所有权为不具备所有权
+/// @param inputData 输入的数据指针
+void setSDataToNoOwner(Data_S* inputData);
+
 
 #endif
 
@@ -247,7 +259,18 @@ extern Data_M copyMData(Data_M inputData);
 /// @param inputData 输入的Data_M类型数据
 extern void freeMData(Data_M* inputData);
 
+/// @brief 改变数据的所有权为拥有所有权
+/// @param inputData 输入的数据指针
+void setMDataToOwner(Data_M* inputData);
+
+/// @brief 改变数据的所有权为不具备所有权
+/// @param inputData 输入的数据指针
+extern void setMDataToNoOwner(Data_M* inputData);
+
 #endif
+
+
+
 
 
 

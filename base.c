@@ -196,6 +196,21 @@ void freeMData(Data_M* inputData) {
 }
 
 
+void setSDataToOwner(Data_S* inputData) {
+    inputData->isOwner = true;
+}
+
+void setSDataToNoOwner(Data_S* inputData) {
+    inputData->isOwner = false;
+}
+
+void setMDataToOwner(Data_M* inputData) {
+    inputData->isOwner = true;
+}
+void setMDataToNoOwner(Data_M* inputData) {
+    inputData->isOwner = false;
+}
+
 
 
 
