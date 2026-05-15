@@ -53,7 +53,10 @@ extern void initSChainMap(ChainMap_S* pMap, InfoOfData* keyInfo, InfoOfData* val
 
 
 
-
+/// @brief 释放单类型链式哈希表中的键
+/// @param pMap 哈希表指针
+/// @param val 待释放的键
+extern void freeSKeyInSChainMap(ChainMap_S* pMap, Data_S* key);
 
 
 /// @brief 释放单类型链式哈希表中的值
@@ -80,26 +83,35 @@ extern void freeSChainMap(ChainMap_S* pMap);
 /// @return 操作结果状态码
 extern InfoOfReturn insertSKeyAndSValInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyKey, Data_S val, selectOfCopy isCopyVal);
 
-/// @brief 通过键找到单类型链式哈希表中的值, 使用完后用freeSValInSChainMap函数进行释放
+
+/// @brief 通过键找到单类型链式哈希表中的键
 /// @param pMap 哈希表指针
 /// @param key 待查找的键
-/// @return 返回找到的值, 若没找到, 返回空值(用字段isEmpty检查)
-/// @note 返回的值默认对数据具有控制权
-extern Data_S getCopySValBySKeyInSChainMap(ChainMap_S* pMap, Data_S key);
+/// @param isCopyKey 返回的键是否要复制
+/// @return 返回找到的键, 若没找到, 返回空键(用字段isEmpty检查)
+/// @note 如果不复制, 可用于修改内部数据, 如果复制, 会创建副本, 副本默认拥有数据所有权, 使用完后通过freeSKeyInSChainMap函数释放
+extern Data_S getSKeyBySKeyInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyKey);
 
 
-/// @brief 通过键找到单类型链式哈希表中的值, 可以直接修改内部数据
+
+/// @brief 通过键找到单类型链式哈希表中的值
 /// @param pMap 哈希表指针
 /// @param key 待查找的键
+/// @param isCopyKey 返回的值是否要复制
 /// @return 返回找到的值, 若没找到, 返回空值(用字段isEmpty检查)
-extern Data_S getPtrSValBySKeyInSChainMap(ChainMap_S* pMap, Data_S key);
+/// @note 如果不复制, 可用于修改内部数据, 如果复制, 会创建副本, 副本默认拥有数据所有权, 使用完后通过freeSValInSChainMap函数释放
+extern Data_S getSValBySKeyInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyVal);
 
-/// @brief 通过键找到单类型链式哈希表中的条目, 使用完后用freeSEntryInSChainMap函数进行释放
+
+
+/// @brief 通过键找到单类型链式哈希表中的条目
 /// @param pMap 哈希表指针
-/// @param key 待查找的条目的键
+/// @param key 待查找的键
+/// @param isCopyEntry 返回的条目是否要复制
 /// @return 返回找到的条目, 若没找到, 返回空条目(用字段isEmpty检查)
-/// @note 返回的键值对默认对数据具有控制权
-extern Entry_S_inChainMap getCopySEntryBySKeyInSChainMap(ChainMap_S* pMap, Data_S key);
+/// @note 如果不复制, 可用于修改内部数据, 如果复制, 会创建副本, 副本默认拥有数据所有权, 使用完后通过freeSEntryInMChainMap函数释放
+extern Entry_S_inChainMap getSEntryBySKeyInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyEntry);
+
 
 /// @brief 判断单类型链式哈希表中是否存在当前键
 /// @param pMap 哈希表指针

@@ -42,6 +42,10 @@ void freeMValInMOAMap(Data_M* val) {
 }
 
 
+void freeMKeyInMOAMap(Data_M* key) {
+    freeMData(key);
+}
+
 /// @note 不会自动给entry的state进行赋值, 自己根据情况进行赋值,这个仅仅只会把Entry中的key和value的data和others(不会释放oper,因为同种类型数据是要共用同一个opertion类型的指针)
 void freeMEntryInMOAMap(Entry_M_inOAMap* entry) {
     if (entry->isEmpty) return;
@@ -262,54 +266,57 @@ static Position getIndexByMKey(OAMap_M* pMap, Data_M key) {
     return NOT_FOUND;
 }
 
-
-//返回的Data数据为新建,用完后记得释放
-Data_M getCopyMValByMKeyInMOAMap(OAMap_M* pMap, Data_M key) {
+Data_M getMKeyByMKeyInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy isCopyKey) {
     int index = getIndexByMKey(pMap, key);
     if (index == NOT_FOUND) {
         //没找到
         return getEmptyMData();
-    } else {
-        Data_M newData;
-        newData = copyMData(pMap->arr[index].val);
+    } 
+    if (isCopyKey == Data_Copy) {
         /*
             由于复制类函数如果复制不成功, 
             那会自动返回空的Data_M类型,
             所有这里直接返回就行
         */
-        return newData;
+        return copyMData(pMap->arr[index].key);
+    } else {
+        return pMap->arr[index].key;
     }
 }
 
-Data_M getPtrMValByMKeyInMOAMap(OAMap_M* pMap, Data_M key) {
+Data_M getMValByMKeyInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy isCopyVal) {
     int index = getIndexByMKey(pMap, key);
     if (index == NOT_FOUND) {
-        //没找到
         return getEmptyMData();
+    } 
+    if (isCopyVal == Data_Copy) {
+        return copyMData(pMap->arr[index].val);
     } else {
         return pMap->arr[index].val;
     }
 }
 
-
-Entry_M_inOAMap getCopyMEntryByMKeyInMOAMap(OAMap_M* pMap, Data_M key) {
+Entry_M_inOAMap getMEntryByMKeyInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy isCopyEntry) {
     int index = getIndexByMKey(pMap, key);
     if (index == NOT_FOUND) {
         return getEmptyMEntry();
-    } else {
+    }
+    if (isCopyEntry == Data_Copy) {
         Entry_M_inOAMap newEntry;
         newEntry = creatMEntryByMKeyAndMVal(pMap->arr[index].key, Data_Copy, pMap->arr[index].val, Data_Copy);
         //函数已经说明是会复制的了, 返回的具有权限
         newEntry.key.isOwner = true;
         newEntry.val.isOwner = true;
-
-
+        
+        
         /*
             由于复制类函数如果复制不成功, 
             那会自动返回空的Entry_M_inChainMap类型,
             所有这里直接返回就行
         */
         return newEntry;
+    } else {
+        return pMap->arr[index];
     }
 }
 

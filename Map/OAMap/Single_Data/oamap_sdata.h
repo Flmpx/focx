@@ -34,6 +34,13 @@ extern void initSOAMap(OAMap_S* pMap, InfoOfData* keyInfo, InfoOfData* valInfo);
 
 
 
+
+/// @brief 释放单类型开放寻址哈希表中的键
+/// @param pMap 哈希表指针
+/// @param val 待释放的键
+extern void freeSKeyInSOAMap(OAMap_S* pMap, Data_S* key);
+
+
 /// @brief 释放单类型开放寻址哈希表中的值
 /// @param pMap 哈希表指针
 /// @param val 待释放的值
@@ -60,25 +67,34 @@ extern InfoOfReturn insertSKeyAndSValInSOAMap(OAMap_S* pMap, Data_S key, selectO
 
 
 
-/// @brief 通过键找到单类型开放寻址哈希表中的值, 使用完后用freeSValInSOAMap函数进行释放
+/// @brief 通过键找到单类型开放寻址哈希表中的键
 /// @param pMap 哈希表指针
 /// @param key 待查找的键
-/// @return 返回找到的值, 若没找到, 返回空值(用字段isEmpty检查)
-/// @note 返回的值默认对数据具有控制权
-extern Data_S getCopySValBySKeyInSOAMap(OAMap_S* pMap, Data_S key);
+/// @param isCopyKey 返回的键是否要复制
+/// @return 返回找到的键, 若没找到, 返回空键(用字段isEmpty检查)
+/// @note 如果不复制, 可用于修改内部数据, 如果复制, 会创建副本, 副本默认拥有数据所有权, 使用完后通过freeSKeyInSOAMap函数释放
+extern Data_S getSKeyBySKeyInSOAMap(OAMap_S* pMap, Data_S key, selectOfCopy isCopyKey);
 
-/// @brief 通过键找到单类型开放寻址哈希表中的值, 可以直接修改内部数据
+
+
+/// @brief 通过键找到单类型开放寻址哈希表中的值
 /// @param pMap 哈希表指针
 /// @param key 待查找的键
+/// @param isCopyKey 返回的值是否要复制
 /// @return 返回找到的值, 若没找到, 返回空值(用字段isEmpty检查)
-extern Data_S getPtrSValBySKeyInSOAMap(OAMap_S* pMap, Data_S key);
+/// @note 如果不复制, 可用于修改内部数据, 如果复制, 会创建副本, 副本默认拥有数据所有权, 使用完后通过freeSValInSOAMap函数释放
+extern Data_S getSValBySKeyInSOAMap(OAMap_S* pMap, Data_S key, selectOfCopy isCopyVal);
 
-/// @brief 通过键找到单类型开放寻址哈希表中的条目, 使用完后用freeSEntryInSOAMap函数进行释放
+
+
+/// @brief 通过键找到单类型开放寻址哈希表中的条目
 /// @param pMap 哈希表指针
-/// @param key 待查找的条目的键
+/// @param key 待查找的键
+/// @param isCopyEntry 返回的条目是否要复制
 /// @return 返回找到的条目, 若没找到, 返回空条目(用字段isEmpty检查)
-/// @note 返回的键值对默认对数据具有控制权
-extern Entry_S_inOAMap getCopySEntryBySKeyInSOAMap(OAMap_S* pMap, Data_S key);
+/// @note 如果不复制, 可用于修改内部数据, 如果复制, 会创建副本, 副本默认拥有数据所有权, 使用完后通过freeSEntryInSOAMap函数释放
+extern Entry_S_inOAMap getSEntryBySKeyInSOAMap(OAMap_S* pMap, Data_S key, selectOfCopy isCopyEntry);
+
 
 
 /// @brief 判断单类型开放寻址哈希表中是否存在当前键

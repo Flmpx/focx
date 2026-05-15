@@ -59,41 +59,32 @@ static Node_M_inSList* getNodeByPos(SList_M* plist, int pos) {
     return p;
 }
 
-Data_M getPtrMValByMValInMSList(SList_M* plist, Data_M val) {
+
+Data_M getMValByMValInMSList(SList_M* plist, Data_M val, selectOfCopy isCopyVal) {
     Node_M_inSList* p = getNodeByMVal(plist, val);
     if (p == NULL) {
         return getEmptyMData();
+    }
+    if (isCopyVal == Data_Copy) {
+        return copyMData(p->val);
     } else {
         return p->val;
     }
 }
 
 
-Data_M getCopyMValByPosInMSList(SList_M* plist, int pos) {
+Data_M getMValByPosInMSList(SList_M* plist, int pos, selectOfCopy isCopyVal) {
     if ((pos < 0) || (pos >= plist->size)) return getEmptyMData();
-    Node_M_inSList* p = plist->head;
-    //由于是单链表, 不能优化位置查找函数了
-    
-    for (int i = 0; i < pos; i++) {
-        p = p->next;
+    //此时保证不会返回空指针的p
+    Node_M_inSList* p = getNodeByPos(plist, pos);
+    if (isCopyVal == Data_Copy) {
+        return copyMData(p->val);
+    } else {
+        return p->val;
     }
-    //返回的一定是深拷贝的Data
-    Data_M newVal = copyMData(p->val);
-    if (newVal.isEmpty) {
-        //内存分配失败
-        return getEmptyMData();
-    }
-    return newVal;
+
 }
 
-Data_M getPtrMValByPosInMSList(SList_M* plist, int pos) {
-    if ((pos < 0) || (pos >= plist->size)) return getEmptyMData();
-    Node_M_inSList* p = plist->head;
-    for (int i = 0; i < pos; i++) {
-        p = p->next;
-    }
-    return p->val;
-}
 
 bool hasMValInMSList(SList_M* plist, Data_M val) {
     Node_M_inSList* p = getNodeByMVal(plist, val);

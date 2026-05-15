@@ -53,64 +53,43 @@ static Node_M_inDList* getNodeByMVal(DList_M* plist, Data_M val) {
 /// @return 若存在节点,返回节点, 如果位置无效,返回NULL
 static Node_M_inDList* getNodeByPos(DList_M* plist, int pos) {
     if ((pos < 0) || (pos >= plist->size)) return NULL;
-    Node_M_inDList* p = plist->head;
-    // TODO: 这里的查找函数太低效了, 参考getCopyMDataByPosInMDList函数
-    for (int i = 0; i < pos; i++) {
-        p = p->next;
+    Node_M_inDList* p = NULL;
+    if (pos > plist->size/2) {
+        p = plist->tail;
+        int diff = plist->size - pos - 1;
+        for (int i = 0; i < diff; i++) {
+            p = p->prev;
+        }
+    } else {
+        p = plist->head;
+        for (int i = 0; i < pos; i++) {
+            p = p->next;
+        }
     }
     return p;
 }
 
-Data_M getPtrMValByMValInMDList(DList_M* plist, Data_M val) {
+Data_M getMValByMValInMDList(DList_M* plist, Data_M val, selectOfCopy isCopyVal) {
     Node_M_inDList* p = getNodeByMVal(plist, val);
     if (p == NULL) {
         return getEmptyMData();
+    }
+    if (isCopyVal == Data_Copy) {
+        return copyMData(p->val);
     } else {
         return p->val;
     }
 }
 
-
-Data_M getCopyMValByPosInMDList(DList_M* plist, int pos) {
+Data_M getMValByPosInMDList(DList_M* plist, int pos, selectOfCopy isCopyVal) {
     if ((pos < 0) || (pos >= plist->size)) return getEmptyMData();
-    Node_M_inDList* p = NULL;
-    if (pos > plist->size/2) {
-        p = plist->tail;
-        int diff = plist->size - pos - 1;
-        for (int i = 0; i < diff; i++) {
-            p = p->prev;
-        }
+    //此时保证不会返回空指针的p
+    Node_M_inDList* p = getNodeByPos(plist, pos);
+    if (isCopyVal == Data_Copy) {
+        return copyMData(p->val);
     } else {
-        p = plist->head;
-        for (int i = 0; i < pos; i++) {
-            p = p->next;
-        }
+        return p->val;
     }
-    //返回的一定是深拷贝的Data
-    Data_M newVal = copyMData(p->val);
-    if (newVal.isEmpty) {
-        //内存分配失败
-        return getEmptyMData();
-    }
-    return newVal;
-}
-
-Data_M getPtrMValByPosInMDList(DList_M* plist, int pos) {
-    if ((pos < 0) || (pos >= plist->size)) return getEmptyMData();
-    Node_M_inDList* p = NULL;
-    if (pos > plist->size/2) {
-        p = plist->tail;
-        int diff = plist->size - pos - 1;
-        for (int i = 0; i < diff; i++) {
-            p = p->prev;
-        }
-    } else {
-        p = plist->head;
-        for (int i = 0; i < pos; i++) {
-            p = p->next;
-        }
-    }
-    return p->val;
 }
 
 bool hasMValInMDList(DList_M* plist, Data_M val) {

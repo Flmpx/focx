@@ -233,22 +233,25 @@ static Position getIndexBySKey(OASet_S* pSet, Data_S key) {
 }
 
 
-Data_S getCopySKeyBySKeyInSOASet(OASet_S* pSet, Data_S key) {
-    int index = getIndexBySKey(pSet, key);
+Data_S getSKeyBySKeyInSOASet(OASet_S* pSet, Data_S key, selectOfCopy isCopyKey) {
+    int index = getIndexBySKey(pSet, key);\
     if (index == NOT_FOUND) {
-        printf("\nNot Found\n");
         return getEmptySData();
-    } else {
-        Data_S newData;
-        newData = copySData(pSet->arr[index].key, pSet->keyInfo);
+    } 
+    
+    if (isCopyKey == Data_Copy) {
         /*
             由于复制类函数如果复制不成功, 
             那会自动返回空的Data_M类型,
             所有这里直接返回就行
         */
-        return newData;
+        return copySData(pSet->arr[index].key, pSet->keyInfo);
+    } else {
+        return pSet->arr[index].key;
     }
+    
 }
+
 
 bool hasSKeyInSOASet(OASet_S* pSet, Data_S key) {
     if (getIndexBySKey(pSet, key) == NOT_FOUND) {

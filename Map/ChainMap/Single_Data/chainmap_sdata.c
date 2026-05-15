@@ -65,7 +65,9 @@ void freeSValInSChainMap(ChainMap_S* pMap, Data_S* val) {
     freeSData(val, pMap->valInfo);
 }
 
-
+void freeSKeyInSChainMap(ChainMap_S* pMap, Data_S* key) {
+    freeSData(key, pMap->keyInfo);
+}
 
 /************ */
 //这个仅仅只会把Entry中的key和value的data和others(不会释放oper,因为同种类型数据是要共用同一个opertion类型的指针)
@@ -423,67 +425,73 @@ int insertSKeyAndSValInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCo
 //查找类
 
 
-
-//返回的Data数据为新建,用完后记得释放
-Data_S getCopySValBySKeyInSChainMap(ChainMap_S* pMap, Data_S key) {
+Data_S getSKeyBySKeyInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyKey) {
     if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return getEmptySData();
     ull index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
     
     Node_S_inChainMap* p = getNodeBySKey(&(pMap->arr[index]), key, pMap->keyInfo);
     if (p == NULL) {
         return getEmptySData();
-    } else {
-        Data_S newData;
-        newData = copySData(p->entry.val, pMap->valInfo);
+    }
+    
+    if (isCopyKey == Data_Copy) {
         /*
             由于复制类函数如果复制不成功, 
             那会自动返回空的Data_S类型,
             所有这里直接返回就行
         */
-        return newData;
+        return copySData(p->entry.key, pMap->keyInfo);
+    } else {
+        return p->entry.key;
     }
 }
 
 
-Data_S getPtrSValBySKeyInSChainMap(ChainMap_S* pMap, Data_S key) {
+
+Data_S getSValBySKeyInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyVal) {
     if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return getEmptySData();
     ull index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
     
     Node_S_inChainMap* p = getNodeBySKey(&(pMap->arr[index]), key, pMap->keyInfo);
     if (p == NULL) {
         return getEmptySData();
+    }
+    if (isCopyVal == Data_Copy) {
+        return copySData(p->entry.val, pMap->valInfo);
     } else {
         return p->entry.val;
     }
 }
 
-
-Entry_S_inChainMap getCopySEntryBySKeyInSChainMap(ChainMap_S* pMap, Data_S key) {
+Entry_S_inChainMap getSEntryBySKeyInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyEntry) {
     if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return getEmptySEntry();
     ull index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
     
     Node_S_inChainMap* p = getNodeBySKey(&(pMap->arr[index]), key, pMap->keyInfo);
     if (p == NULL) {
         return getEmptySEntry();
-    } else {
+    }
+
+    if (isCopyEntry == Data_Copy) {
         Entry_S_inChainMap newEntry;
         
         newEntry = createSEntryBySKeyAndMVal(pMap, p->entry.key, Data_Copy, p->entry.val, Data_Copy);
-
+        
         //函数已经说明是会复制的了, 返回的应当具有权限
         newEntry.key.isOwner = true;
         newEntry.val.isOwner = true;
-
-
+        
+        
         /*
             由于复制类函数如果复制不成功, 
             那会自动返回空的Entry_S_inChainMap类型,
             所有这里直接返回就行
         */
         return newEntry;
+    } else {
+        return p->entry;
     }
 }
-
 
 bool hasSKeyInSChainMap(ChainMap_S* pMap, Data_S key) {
     if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return false;

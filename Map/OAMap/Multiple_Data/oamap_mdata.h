@@ -33,6 +33,10 @@ extern void initMOAMap(OAMap_M* pMap);
 extern void freeMValInMOAMap(Data_M* val);
 
 
+/// @brief 释放多类型开放寻址哈希表中的键
+/// @param key 待释放的键
+extern void freeMKeyInMOAMap(Data_M* key);
+
 
 /// @brief 释放多类型开放寻址哈希表中的条目
 /// @param entry 待释放的条目
@@ -51,26 +55,31 @@ extern void freeMOAMap(OAMap_M* pMap);
 /// @return 操作结果状态码
 extern InfoOfReturn insertMKeyAndMValInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy isCopyKey, Data_M val, selectOfCopy isCopyVal);
 
-/// @brief 通过键找到多类型开放寻址哈希表中的值, 使用完后用freeMValInMOAMap函数进行释放
+
+/// @brief 通过键找到多类型开放寻址哈希表中的键
 /// @param pMap 哈希表指针
 /// @param key 待查找的键
-/// @return 返回找到的值, 若没找到, 返回空值(用字段isEmpty检查)
-/// @note 返回的值默认对数据具有控制权
-extern Data_M getCopyMValByMKeyInMOAMap(OAMap_M* pMap, Data_M key);
+/// @param isCopyKey 返回的键是否要复制
+/// @return 返回找到的键, 若没找到, 返回空键(用字段isEmpty检查)
+/// @note 如果不复制, 可用于修改内部数据, 如果复制, 会创建副本, 副本默认拥有数据所有权, 使用完后通过freeMKeyInMOAMap函数释放
+extern Data_M getMKeyByMKeyInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy isCopyKey);
 
-/// @brief 通过键找到多类型开放寻址哈希表中的值, 可以直接修改内部数据
+
+/// @brief 通过键找到多类型开放寻址哈希表中的值
 /// @param pMap 哈希表指针
 /// @param key 待查找的键
+/// @param isCopyKey 返回的值是否要复制
 /// @return 返回找到的值, 若没找到, 返回空值(用字段isEmpty检查)
-extern Data_M getPtrMValByMKeyInMOAMap(OAMap_M* pMap, Data_M key);
+/// @note 如果不复制, 可用于修改内部数据, 如果复制, 会创建副本, 副本默认拥有数据所有权, 使用完后通过freeMValInMOAMap函数释放
+extern Data_M getMValByMKeyInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy isCopyVal);
 
-
-/// @brief 通过键找到多类型开放寻址哈希表中的条目, 使用完后用freeMEntryInMOAMap函数进行释放
+/// @brief 通过键找到多类型开放寻址哈希表中的条目
 /// @param pMap 哈希表指针
-/// @param key 待查找的条目的键
+/// @param key 待查找的键
+/// @param isCopyEntry 返回的条目是否要复制
 /// @return 返回找到的条目, 若没找到, 返回空条目(用字段isEmpty检查)
-/// @note 返回的键值对默认对数据具有控制权
-extern Entry_M_inOAMap getCopyMEntryByMKeyInMOAMap(OAMap_M* pMap, Data_M key);
+/// @note 如果不复制, 可用于修改内部数据, 如果复制, 会创建副本, 副本默认拥有数据所有权, 使用完后通过freeMEntryInMOAMap函数释放
+extern Entry_M_inOAMap getMEntryByMKeyInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy isCopyEntry);
 
 
 /// @brief 判断多类型开放寻址哈希表中是否存在当前键

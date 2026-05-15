@@ -35,25 +35,25 @@ extern void initMSList(SList_M* plist);
 extern void freeMValInMSList(Data_M* val);
 
 
-/// @brief 通过值找到多类型单向链表中值, 可以直接修改内部数据
+
+/// @brief 通过值找到多类型单向链表中值
 /// @param plist 链表指针
 /// @param val 待查找的值
+/// @param isCopyVal 返回的值是否要复制
 /// @return 返回找到的值, 若没找到, 返回空值(用字段isEmpty检查)
-extern Data_M getPtrMValByMValInMSList(SList_M* plist, Data_M val);
+/// @note 如果不复制, 可用于修改内部数据, 如果复制, 会创建副本, 副本默认拥有数据所有权, 使用完后通过freeMValInMSList函数释放
+extern Data_M getMValByMValInMSList(SList_M* plist, Data_M val, selectOfCopy isCopyVal);
 
-/// @brief 查找在多类型单向链表的指定位置的值, 使用完后用freeMValInMSList函数进行释放
+
+
+/// @brief 查找在多类型单向链表的指定位置的值
 /// @param plist 链表指针
 /// @param pos 位置(从0开始)
+/// @param isCopyVal 返回的值是否要复制
 /// @return 返回找到的值, 若没找到, 返回空值(用字段isEmpty检查)
-/// @note 返回的值默认对数据具有控制权
-extern Data_M getCopyMValByPosInMSList(SList_M* plist, int pos);
+/// @note 如果不复制, 可用于修改内部数据, 如果复制, 会创建副本, 副本默认拥有数据所有权, 使用完后通过freeMValInMSList函数释放
+extern Data_M getMValByPosInMSList(SList_M* plist, int pos, selectOfCopy isCopyVal);
 
-
-/// @brief 查找在多类型单向链表的指定位置的值, 可以直接修改内部数据
-/// @param plist 链表指针
-/// @param pos 位置(从0开始)
-/// @return 返回找到的值, 若没找到, 返回空值(用字段isEmpty检查)
-extern Data_M getPtrMValByPosInMSList(SList_M* plist, int pos);
 
 /// @brief 判断多类型单向链表中是否有当前值
 /// @param plist 链表指针

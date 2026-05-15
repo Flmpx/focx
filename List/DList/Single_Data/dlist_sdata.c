@@ -52,9 +52,18 @@ static Node_S_inDList* getNodeBySVal(DList_S* plist, Data_S val) {
 /// @return 若存在节点,返回节点, 如果位置无效,返回NULL
 static Node_S_inDList* getNodeByPos(DList_S* plist, int pos) {
     if ((pos < 0) || (pos >= plist->size)) return NULL;
-    Node_S_inDList* p = plist->head;
-    for (int i = 0; i < pos; i++) {
-        p = p->next;
+    Node_S_inDList* p = NULL;
+    if (pos > plist->size/2) {
+        p = plist->tail;
+        int diff = plist->size - pos - 1;
+        for (int i = 0; i < diff; i++) {
+            p = p->prev;
+        }
+    } else {
+        p = plist->head;
+        for (int i = 0; i < pos; i++) {
+            p = p->next;
+        }
     }
     return p;
 }
@@ -67,56 +76,32 @@ void freeSValInSDList(DList_S* plist, Data_S* val) {
 }
 
 
-Data_S getPtrSValBySValInSDList(DList_S* plist, Data_S val) {
+Data_S getSValBySValInSDList(DList_S* plist, Data_S val, selectOfCopy isCopyVal) {
     Node_S_inDList* p = getNodeBySVal(plist, val);
     if (p == NULL) {
         return getEmptySData();
+    }
+    if (isCopyVal == Data_Copy) {
+        return copySData(p->val, plist->valInfo);
     } else {
         return p->val;
     }
 }
 
 
-Data_S getCopySValByPosInSDList(DList_S* plist, int pos) {
+
+
+Data_S getSValByPosInSDList(DList_S* plist, int pos, selectOfCopy isCopyVal) {
     if ((pos < 0) || (pos >= plist->size)) return getEmptySData();
-    Node_S_inDList* p = NULL;
-    if (pos > plist->size/2) {
-        p = plist->tail;
-        int diff = plist->size - pos - 1;
-        for (int i = 0; i < diff; i++) {
-            p = p->prev;
-        }
+    //此时保证不会返回空指针的p
+    Node_S_inDList* p = getNodeByPos(plist, pos);
+    if (isCopyVal == Data_Copy) {
+        return copySData(p->val, plist->valInfo);
     } else {
-        p = plist->head;
-        for (int i = 0; i < pos; i++) {
-            p = p->next;
-        }
+        return p->val;
     }
-    Data_S newVal = copySData(p->val, plist->valInfo);
-    if (newVal.isEmpty) {
-        //内存分配失败
-        return getEmptySData();
-    }
-    return newVal;
 }
 
-Data_S getPtrSValByPosInSDList(DList_S* plist, int pos) {
-    if ((pos < 0) || (pos >= plist->size)) return getEmptySData();
-    Node_S_inDList* p = NULL;
-    if (pos > plist->size/2) {
-        p = plist->tail;
-        int diff = plist->size - pos - 1;
-        for (int i = 0; i < diff; i++) {
-            p = p->prev;
-        }
-    } else {
-        p = plist->head;
-        for (int i = 0; i < pos; i++) {
-            p = p->next;
-        }
-    }
-    return p->val;
-}
 
 bool hasSValInSDList(DList_S* plist, Data_S val) {
     Node_S_inDList* p = getNodeBySVal(plist, val);
@@ -149,7 +134,8 @@ static Node_S_inDList* createNodeAndVal(DList_S* plist, Data_S val, selectOfCopy
     return newNode;
 }
 
-/*********** */
+
+
 InfoOfReturn insertSValAtEndInSDList(DList_S* plist, Data_S val, selectOfCopy isCopyVal) {
     
     //创建节点

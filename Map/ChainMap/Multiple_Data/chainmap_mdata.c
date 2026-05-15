@@ -70,6 +70,9 @@ void freeMValInMChainMap(Data_M* val) {
     freeMData(val);
 }
 
+void freeMKeyInMChainMap(Data_M* key) {
+    freeMData(key);
+}
 
 
 //这个仅仅只会把Entry中的key和value的data和others(不会释放oper,因为同种类型数据是要共用同一个opertion类型的指针)
@@ -271,7 +274,6 @@ static Entry_M_inChainMap creatMEntryByMKeyAndMVal(Data_M key, selectOfCopy isCo
     //设置是否有权限
     newEntry.key.isOwner = key.isOwner;
     newEntry.val.isOwner = val.isOwner;
-
     newEntry.isEmpty = false;
 
     return newEntry;
@@ -427,48 +429,51 @@ InfoOfReturn insertMKeyAndMValInMChainMap(ChainMap_M* pMap, Data_M key, selectOf
 //查找类
 
 
-
-//返回的Data数据为新建,用完后记得释放
-Data_M getCopyMValByMKeyInMChainMap(ChainMap_M* pMap, Data_M key) {
+Data_M getMKeyByMKeyInMChainMap(ChainMap_M* pMap, Data_M key, selectOfCopy isCopyKey) {
     if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return getEmptyMData();
     ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pMap->mod;
-    
     Node_M_inChainMap* p = getNodeByMKey(&(pMap->arr[index]), key);
     if (p == NULL) {
         return getEmptyMData();
+    }
+    if (isCopyKey == Data_Copy) {
+        return copyMData(p->entry.key);
     } else {
-        Data_M newData;
-        newData = copyMData(p->entry.val);
+        return p->entry.key;
+    }
+}
+
+Data_M getMValByMKeyInMchainMap(ChainMap_M* pMap, Data_M key, selectOfCopy isCopyVal) {
+    if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return getEmptyMData();
+    ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pMap->mod;
+    Node_M_inChainMap* p = getNodeByMKey(&(pMap->arr[index]), key);
+    if (p == NULL) {
+        return getEmptyMData();
+    }
+    if (isCopyVal == Data_Copy) {
         /*
             由于复制类函数如果复制不成功, 
             那会自动返回空的Data_M类型,
             所有这里直接返回就行
         */
-        return newData;
-    }
-}
-
-Data_M getPtrMValByMKeyInMChainMap(ChainMap_M* pMap, Data_M key) {
-    if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return getEmptyMData();
-    ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pMap->mod;
-    
-    Node_M_inChainMap* p = getNodeByMKey(&(pMap->arr[index]), key);
-    if (p == NULL) {
-        return getEmptyMData();
+        return copyMData(p->entry.val);
     } else {
         return p->entry.val;
     }
 }
 
 
-Entry_M_inChainMap getCopyMEntryByMKeyInMChainMap(ChainMap_M* pMap, Data_M key) {
+Entry_M_inChainMap getMEntryByMKeyInMChainMap(ChainMap_M* pMap, Data_M key, selectOfCopy isCopyEntry) {
     if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return getEmptyMEntry();
     ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pMap->mod;
     
     Node_M_inChainMap* p = getNodeByMKey(&(pMap->arr[index]), key);
+
     if (p == NULL) {
         return getEmptyMEntry();
-    } else {
+    }
+
+    if (isCopyEntry == Data_Copy) {
         Entry_M_inChainMap newEntry;
         
         newEntry = creatMEntryByMKeyAndMVal(p->entry.key, Data_Copy, p->entry.val, Data_Copy);
@@ -476,13 +481,14 @@ Entry_M_inChainMap getCopyMEntryByMKeyInMChainMap(ChainMap_M* pMap, Data_M key) 
         newEntry.key.isOwner = true;
         newEntry.val.isOwner = true;
 
-
         /*
             由于复制类函数如果复制不成功, 
             那会自动返回空的Entry_M_inChainMap类型,
             所有这里直接返回就行
         */
         return newEntry;
+    } else {
+        return p->entry;
     }
 }
 

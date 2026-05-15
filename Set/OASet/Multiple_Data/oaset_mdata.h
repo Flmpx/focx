@@ -51,12 +51,13 @@ extern void freeMOASet(OASet_M* pSet);
 /// @return 操作结果状态码
 extern InfoOfReturn insertMKeyInMOASet(OASet_M* pSet, Data_M key, selectOfCopy isCopyKey);
 
-/// @brief 通过键找到多类型开放寻址集合中的键, 使用完后用freeMKeyInMOASet函数进行释放(你可能会觉得奇怪)
+
+/// @brief 通过键找到多类型开放寻址集合中的键
 /// @param pSet 集合指针
 /// @param key 待查找的键
 /// @return 返回找到的键, 若没找到, 返回空键(用字段isEmpty检查)
-/// @note 返回的键默认对数据具有控制权
-extern Data_M getCopyMKeyByMKeyInMOASet(OASet_M* pSet, Data_M key);
+/// @note 如果不复制, 可用于修改内部数据, 如果复制, 会创建副本, 副本默认拥有数据所有权, 使用完后通过freeMKeyInMOASet函数释放
+extern Data_M getMKeyByMKeyInMOASet(OASet_M* pSet, Data_M key, selectOfCopy isCopyKey);
 
 
 

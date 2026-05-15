@@ -42,6 +42,10 @@ void freeSValInSOAMap(OAMap_S* pMap, Data_S* val) {
     freeSData(val, pMap->valInfo);
 }
 
+void freeSKeyInSOAMap(OAMap_S* pMap, Data_S* key) {
+    freeSData(key, pMap->keyInfo);
+}
+
 //不会自动给entry的state进行赋值, 自己根据情况进行赋值
 void freeSEntryInSOAMap(OAMap_S* pMap, Entry_S_inOAMap* entry) {
     if (entry->isEmpty) return;
@@ -269,56 +273,63 @@ static Position getIndexBySKey(OAMap_S* pMap, Data_S key) {
 }
 
 
-Data_S getCopySValBySKeyInSOAMap(OAMap_S* pMap, Data_S key) {
+Data_S getSKeyBySKeyInSOAMap(OAMap_S* pMap, Data_S key, selectOfCopy isCopyKey) {
     int index = getIndexBySKey(pMap, key);
     if (index == NOT_FOUND) {
-        printf("\nNot Found\n");
+        //没找到
         return getEmptySData();
-    } else {
-        Data_S newData;
-        newData = copySData(pMap->arr[index].val, pMap->valInfo);
+    }
+    if (isCopyKey == Data_Copy) {
         /*
             由于复制类函数如果复制不成功, 
             那会自动返回空的Data_S类型,
             所有这里直接返回就行
         */
-        return newData;
+        return copySData(pMap->arr[index].key, pMap->keyInfo);
+    } else {
+        return pMap->arr[index].key;
     }
 }
 
 
-
-Data_S getPtrSValBySKeyInSOAMap(OAMap_S* pMap, Data_S key) {
+Data_S getSValBySKeyInSOAMap(OAMap_S* pMap, Data_S key, selectOfCopy isCopyVal) {
     int index = getIndexBySKey(pMap, key);
     if (index == NOT_FOUND) {
         return getEmptySData();
+    }
+    if (isCopyVal == Data_Copy) {
+        return copySData(pMap->arr[index].val, pMap->valInfo);
     } else {
         return pMap->arr[index].val;
     }
+    
 }
 
-
-Entry_S_inOAMap getCopySEntryBySKeyInSOAMap(OAMap_S* pMap, Data_S key) {
+Entry_S_inOAMap getSEntryBySKeyInSOAMap(OAMap_S* pMap, Data_S key, selectOfCopy isCopyEntry) {
     int index = getIndexBySKey(pMap, key);
     if (index == NOT_FOUND) {
         return getEmptySEntry();
-    } else {
+    }
+    if (isCopyEntry == Data_Copy) {
         Entry_S_inOAMap newEntry;
-
+        
         newEntry = createSEntryBySKeyAndMVal(pMap, pMap->arr[index].key, Data_Copy, pMap->arr[index].val, Data_Copy);
-
+        
         //函数已经说明是会复制的了, 返回的应当具有权限
         newEntry.key.isOwner = true;
         newEntry.val.isOwner = true;
-
+        
         /*
             由于复制类函数如果复制不成功, 
             那会自动返回空的Entry_S_inOAMap类型,
             所有这里直接返回就行
         */
         return newEntry;
+    } else {
+        return pMap->arr[index];
     }
 }
+
 
 bool hasSKeyInSOAMap(OAMap_S* pMap, Data_S key) {
     if (getIndexBySKey(pMap, key) == NOT_FOUND) {
@@ -326,8 +337,6 @@ bool hasSKeyInSOAMap(OAMap_S* pMap, Data_S key) {
     } else {
         return true;
     }
-    
-    
 }
 
 

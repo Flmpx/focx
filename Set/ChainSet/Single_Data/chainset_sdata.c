@@ -400,24 +400,23 @@ int insertSKeyInSChainSet(ChainSet_S* pSet, Data_S key, selectOfCopy isCopyKey) 
 //查找类
 
 
-
-//返回的Data数据为新建,用完后记得释放
-Data_S getCopySKeyBySKeyInSChainSet(ChainSet_S* pSet, Data_S key) {
+Data_S getSKeyBySKeyInSChainSet(ChainSet_S* pSet, Data_S key, selectOfCopy isCopyKey) {
     if (pSet->len == 0 || pSet->size == 0 || pSet->arr == NULL) return getEmptySData();
     ull index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
     
     Node_S_inChainSet* p = getNodeBySKey(&(pSet->arr[index]), key, pSet->keyInfo);
     if (p == NULL) {
         return getEmptySData();
-    } else {
-        Data_S newData;
-        newData = copySData(p->entry.key, pSet->keyInfo);
+    }
+    if (isCopyKey == Data_Copy) {
         /*
             由于复制类函数如果复制不成功, 
             那会自动返回空的Data_M类型,
             所有这里直接返回就行
         */
-        return newData;
+        return copySData(p->entry.key, pSet->keyInfo);
+    } else {
+        return p->entry.key;
     }
 }
 

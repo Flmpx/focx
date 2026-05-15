@@ -64,39 +64,30 @@ void freeSValInSSList(SList_S* plist, Data_S* val) {
     freeSData(val, plist->valInfo);
 }
 
-
-Data_S getPtrSValBySValInSSList(SList_S* plist, Data_S val) {
+Data_S getSValBySValInSSList(SList_S* plist, Data_S val, selectOfCopy isCopyKey) {
     Node_S_inSList* p = getNodeBySVal(plist, val);
     if (p == NULL) {
         return getEmptySData();
+    }
+    if (isCopyKey == Data_Copy) {
+        return copySData(p->val, plist->valInfo);
     } else {
         return p->val;
     }
 }
 
-
-Data_S getCopySValByPosInSSList(SList_S* plist, int pos) {
+Data_S getSValByPosINSSList(SList_S* plist, int pos, selectOfCopy isCopyVal) {
     if ((pos < 0) || (pos >= plist->size)) return getEmptySData();
-    Node_S_inSList* p = plist->head;
-    for (int i = 0; i < pos; i++) {
-        p = p->next;
+    //此时保证不会返回空指针的p
+    Node_S_inSList* p = getNodeByPos(plist, pos);
+    if (isCopyVal == Data_Copy) {
+        return copySData(p->val, plist->valInfo);
+    } else {
+        return p->val;
     }
-    Data_S newVal = copySData(p->val, plist->valInfo);
-    if (newVal.isEmpty) {
-        //内存分配失败
-        return getEmptySData();
-    }
-    return newVal;
+    
 }
 
-Data_S getPtrSValByPosInSSList(SList_S* plist, int pos) {
-    if ((pos < 0) || (pos >= plist->size)) return getEmptySData();
-    Node_S_inSList* p = plist->head;
-    for (int i = 0; i < pos; i++) {
-        p = p->next;
-    }
-    return p->val;
-}
 
 bool hasSValInSSList(SList_S* plist, Data_S val) {
     Node_S_inSList* p = getNodeBySVal(plist, val);

@@ -401,28 +401,25 @@ InfoOfReturn insertMKeyInMChainSet(ChainSet_M* pSet, Data_M key, selectOfCopy is
 //////////////////////////////////////////////////////////////////////////////////////////////
 //查找类
 
-
-
-//返回的Data数据为新建,用完后记得释放
-Data_M getCopyMKeyByMKeyInMChainSet(ChainSet_M* pSet, Data_M key) {
+Data_M getMKeyByMKeyInMChainSet(ChainSet_M* pSet, Data_M key, selectOfCopy isCopyKey) {
     if (pSet->len == 0 || pSet->size == 0 || pSet->arr == NULL) return getEmptyMData();
     ull index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
     
     Node_M_inChainSet* p = getNodeByMKey(&(pSet->arr[index]), key);
     if (p == NULL) {
         return getEmptyMData();
-    } else {
-        Data_M newData;
-        newData = copyMData(p->entry.key);
+    }
+    if (isCopyKey == Data_Copy) {
         /*
             由于复制类函数如果复制不成功, 
             那会自动返回空的Data_M类型,
             所有这里直接返回就行
         */
-        return newData;
+        return copyMData(p->entry.key);
+    } else {
+        return p->entry.key;
     }
 }
-
 
 
 bool hasMKeyInMChainSet(ChainSet_M* pSet, Data_M key) {

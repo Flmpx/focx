@@ -229,24 +229,23 @@ static Position getIndexByMKey(OASet_M* pSet, Data_M key) {
 }
 
 
-//返回的Data数据为新建,用完后记得释放
-Data_M getCopyMKeyByMKeyInMOASet(OASet_M* pSet, Data_M key) {
+
+Data_M getMKeyByMKeyInMOASet(OASet_M* pSet, Data_M key, selectOfCopy isCopyKey) {
     int index = getIndexByMKey(pSet, key);
     if (index == NOT_FOUND) {
-        printf("\nNot Found\n");
         return getEmptyMData();
-    } else {
-        Data_M newData;
-        newData = copyMData(pSet->arr[index].key);
+    }
+    if (isCopyKey == Data_Copy) {
         /*
             由于复制类函数如果复制不成功, 
             那会自动返回空的Data_M类型,
             所有这里直接返回就行
         */
-        return newData;
+        return copyMData(pSet->arr[index].key);
+    } else {
+        return pSet->arr[index].key;
     }
 }
-
 
 
 bool hasMKeyInMOASet(OASet_M* pSet, Data_M key) {
