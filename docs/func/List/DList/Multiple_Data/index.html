@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DList_M 文档 - FOCX</title>
     <link rel="stylesheet" href="index.css">
-    <!-- Prism.js 代码高亮 -->
     <link href="https://cdn.bootcdn.net/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
 </head>
 <body>
@@ -16,12 +15,12 @@
             <a href="../../index.html">← List</a>
         </div>
 
-        <h1 class="mainTitle">🧬 DList_M - 双向链表（多种数据类型）</h1>
-        <p class="subtitle">可存储任意类型数据的双向链表，每个数据自带操作函数</p>
+        <h1 class="mainTitle">📋 DList_M - 双向链表（多数据类型）</h1>
+        <p class="subtitle">存储任意类型数据的双向链表，每条数据自带 InfoOfData</p>
 
         <div class="section">
             <h2>📖 概述</h2>
-            <p>DList_M (Double List Multiple Data) 是一种双向链表数据结构，可以存储任意类型的数据。与 DList_S 不同，DList_M 不需要预先提供统一的操作集，每个 Data_M 数据都自带 InfoOfData 指针来描述自己的操作方式。</p>
+            <p>DList_M (Double List Multiple Data) 是一种双向链表数据结构，可以存储任意类型的数据。每条数据都是独立的 Data_M 类型，自带 InfoOfData 操作集指针，因此可以同时存储不同类型的数据。</p>
         </div>
 
         <div class="section">
@@ -31,7 +30,7 @@
 typedef struct Node_M_inDList {
     struct Node_M_inDList* prev;  // 前驱节点
     struct Node_M_inDList* next;   // 后继节点
-    Data_M val;                    // 数据（自带操作集）
+    Data_M val;                    // 数据
 } Node_M_inDList;
 
 // DList_M 链表
@@ -49,7 +48,6 @@ typedef struct {
 <pre class="language-c"><code>#include "base.h"
 #include "List/DList/Multiple_Data/dlist_mdata.h"
 #include "Oper/Int_Info/int_info.h"
-#include "Oper/String_Info/string_info.h"
 
 int main() {
     // 1. 初始化链表
@@ -57,20 +55,13 @@ int main() {
     initMDList(&list);
 
     // 2. 插入不同类型的数据
-    // 插入整数
-    int num = 42;
-    Data_M data1 = Data_M_OWN(&num, NULL, &Info_Int, 0);
-    insertMValAtEndInMDList(&list, data1);
+    int i = 100;
+    double d = 3.14;
+    
+    insertMValAtEndInMDList(&list, Data_M_OWN(&i, NULL, &Info_Int, TYPE_INT), Data_Copy);
+    insertMValAtEndInMDList(&list, Data_M_OWN(&d, NULL, &Info_Double, TYPE_DOUBLE), Data_Copy);
 
-    // 插入字符串
-    char str[] = "Hello";
-    Data_M data2 = Data_M_OWN(str, NULL, &Info_String, 0);
-    insertMValAtEndInMDList(&list, data2);
-
-    // 3. 打印链表
-    printMDList(&list);
-
-    // 4. 释放链表
+    // 3. 释放链表
     freeMDList(&list);
     return 0;
 }</code></pre>
@@ -123,13 +114,14 @@ int main() {
                 <h3>➕ 插入操作</h3>
                 
                 <div class="funcItem">
-                    <div class="funcSignature">InfoOfReturn insertMValAtEndInMDList(DList_M* plist, Data_M val)</div>
+                    <div class="funcSignature">InfoOfReturn insertMValAtEndInMDList(DList_M* plist, Data_M val, selectOfCopy isCopyVal)</div>
                     <p class="funcDesc">在多类型双向链表尾部插入值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
                             <li><code>plist</code> - 链表指针</li>
                             <li><code>val</code> - 待插入的值</li>
+                            <li><code>isCopyVal</code> - 是否要复制传入的 val</li>
                         </ul>
                     </div>
                     <div class="params">
@@ -138,13 +130,14 @@ int main() {
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">InfoOfReturn insertMValAtStartInMDList(DList_M* plist, Data_M val)</div>
+                    <div class="funcSignature">InfoOfReturn insertMValAtStartInMDList(DList_M* plist, Data_M val, selectOfCopy isCopyVal)</div>
                     <p class="funcDesc">在多类型双向链表头部插入值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
                             <li><code>plist</code> - 链表指针</li>
                             <li><code>val</code> - 待插入的值</li>
+                            <li><code>isCopyVal</code> - 是否要复制传入的 val</li>
                         </ul>
                     </div>
                     <div class="params">
@@ -153,13 +146,14 @@ int main() {
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">InfoOfReturn insertMValAtPosInMDList(DList_M* plist, Data_M val, int pos)</div>
+                    <div class="funcSignature">InfoOfReturn insertMValAtPosInMDList(DList_M* plist, Data_M val, selectOfCopy isCopyVal, int pos)</div>
                     <p class="funcDesc">在多类型双向链表指定位置插入值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
                             <li><code>plist</code> - 链表指针</li>
                             <li><code>val</code> - 待插入的值</li>
+                            <li><code>isCopyVal</code> - 是否要复制传入的 val</li>
                             <li><code>pos</code> - 位置的范围在 [0, 链表大小]，范围的两端分别代表头插和尾插</li>
                         </ul>
                     </div>
@@ -237,53 +231,40 @@ int main() {
                 <h3>🔍 查询操作</h3>
                 
                 <div class="funcItem">
-                    <div class="funcSignature">Data_M getPtrMValByPosInMDList(DList_M* plist, int pos)</div>
-                    <p class="funcDesc">查找在多类型双向链表的指定位置的值，可以直接修改内部数据</p>
+                    <div class="funcSignature">Data_M getMValByPosInMDList(DList_M* plist, int pos, selectOfCopy isCopyVal)</div>
+                    <p class="funcDesc">查找在多类型双向链表的指定位置的值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
                             <li><code>plist</code> - 链表指针</li>
                             <li><code>pos</code> - 位置（从 0 开始）</li>
+                            <li><code>isCopyVal</code> - 返回的值是否要复制</li>
                         </ul>
                     </div>
                     <div class="params">
                         <strong>返回:</strong> 返回找到的值，若没找到，返回空值（用字段 isEmpty 检查）
                     </div>
-                    <div class="warning">
-                        <strong>警告:</strong> 返回的指针直接指向链表内部数据，请勿 free
+                    <div class="note">
+                        <strong>说明:</strong> 如果不复制，可用于修改内部数据；如果复制，会创建副本，副本默认拥有数据所有权，使用完后通过 freeMValInMDList 函数释放
                     </div>
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">Data_M getCopyMValByPosInMDList(DList_M* plist, int pos)</div>
-                    <p class="funcDesc">查找在多类型双向链表的指定位置的值，使用完后用 freeMValInMDList 函数进行释放</p>
-                    <div class="params">
-                        <strong>参数:</strong>
-                        <ul>
-                            <li><code>plist</code> - 链表指针</li>
-                            <li><code>pos</code> - 位置（从 0 开始）</li>
-                        </ul>
-                    </div>
-                    <div class="params">
-                        <strong>返回:</strong> 返回找到的值，若没找到，返回空值（用字段 isEmpty 检查）
-                    </div>
-                    <div class="warning">
-                        <strong>警告:</strong> 返回的是复制的数据，使用后需调用 freeMValInMDList 释放
-                    </div>
-                </div>
-
-                <div class="funcItem">
-                    <div class="funcSignature">Data_M getPtrMValByMValInMDList(DList_M* plist, Data_M val)</div>
-                    <p class="funcDesc">通过值找到多类型双向链表中值，可以直接修改内部数据</p>
+                    <div class="funcSignature">Data_M getMValByMValInMDList(DList_M* plist, Data_M val, selectOfCopy isCopyVal)</div>
+                    <p class="funcDesc">通过值找到多类型双向链表中值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
                             <li><code>plist</code> - 链表指针</li>
                             <li><code>val</code> - 待查找的值</li>
+                            <li><code>isCopyVal</code> - 返回的值是否要复制</li>
                         </ul>
                     </div>
                     <div class="params">
                         <strong>返回:</strong> 返回找到的值，若没找到，返回空值（用字段 isEmpty 检查）
+                    </div>
+                    <div class="note">
+                        <strong>说明:</strong> 如果不复制，可用于修改内部数据；如果复制，会创建副本，副本默认拥有数据所有权，使用完后通过 freeMValInMDList 函数释放
                     </div>
                 </div>
 
@@ -317,127 +298,20 @@ int main() {
                         </ul>
                     </div>
                 </div>
-
-                <div class="funcItem">
-                    <div class="funcSignature">void printMValInMDList(Data_M val)</div>
-                    <p class="funcDesc">打印多类型双向链表中的值</p>
-                    <div class="params">
-                        <strong>参数:</strong>
-                        <ul>
-                            <li><code>val</code> - 待打印的值</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="funcItem">
-                    <div class="funcSignature">void printMDList(DList_M* plist)</div>
-                    <p class="funcDesc">打印多类型双向链表</p>
-                    <div class="params">
-                        <strong>参数:</strong>
-                        <ul>
-                            <li><code>plist</code> - 链表指针</li>
-                        </ul>
-                    </div>
-                </div>
             </div>
-        </div>
-
-        <div class="section">
-            <h2>💡 完整示例</h2>
-            <div class="codeBlock">
-<pre class="language-c"><code>#include &lt;stdio.h&gt;
-#include <string.h>
-#include "base.h"
-#include "List/DList/Multiple_Data/dlist_mdata.h"
-#include "Oper/Int_Info/int_info.h"
-#include "Oper/Double_Info/double_info.h"
-
-int main() {
-    // 初始化链表
-    DList_M list;
-    initMDList(&list);
-
-    // 插入不同类型的数据
-    int num1 = 100, num2 = 200;
-    double val = 3.14;
-
-    // 插入整数
-    Data_M data1 = Data_M_OWN(&num1, NULL, &Info_Int, 0);
-    insertMValAtEndInMDList(&list, data1);
-
-    // 插入整数
-    Data_M data2 = Data_M_OWN(&num2, NULL, &Info_Int, 0);
-    insertMValAtStartInMDList(&list, data2);
-
-    // 插入浮点数
-    Data_M data3 = Data_M_OWN(&val, NULL, &Info_Double, 0);
-    insertMValAtPosInMDList(&list, data3, 1);
-
-    printf("=== 链表内容 ===\n");
-    printMDList(&list);
-
-    // 反转链表
-    printf("\n=== 反转后 ===\n");
-    reverseMDList(&list);
-    printMDList(&list);
-
-    // 释放链表
-    freeMDList(&list);
-    return 0;
-}</code></pre>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>🔄 DList_S vs DList_M</h2>
-            <table class="compareTable">
-                <tr>
-                    <th>特性</th>
-                    <th>DList_S</th>
-                    <th>DList_M</th>
-                </tr>
-                <tr>
-                    <td>数据类型</td>
-                    <td>只能存储单一类型</td>
-                    <td>可存储任意类型</td>
-                </tr>
-                <tr>
-                    <td>初始化</td>
-                    <td>需要传入 InfoOfData</td>
-                    <td>不需要，链表自管理</td>
-                </tr>
-                <tr>
-                    <td>灵活性</td>
-                    <td>较低</td>
-                    <td>高</td>
-                </tr>
-                <tr>
-                    <td>内存开销</td>
-                    <td>较低（共享操作集）</td>
-                    <td>较高（每个节点自带操作集）</td>
-                </tr>
-                <tr>
-                    <td>适用场景</td>
-                    <td>同类数据集合</td>
-                    <td>异构数据、JSON-like 数据</td>
-                </tr>
-            </table>
         </div>
 
         <div class="section">
             <h2>⚠️ 注意事项</h2>
             <ul class="warningList">
-                <li>DList_M 不需要传入统一的操作集，每个数据都自带 InfoOfData</li>
-                <li>使用 OWN 模式插入数据时，链表会自动复制一份数据</li>
-                <li>使用 REF 模式插入数据时，链表只保存指针</li>
-                <li>通过 getCopy 系列函数获取的数据使用后必须释放</li>
+                <li>DList_M 每条数据都自带 InfoOfData，可以存储多种不同类型的数据</li>
+                <li>使用 Data_Copy 模式插入数据时，链表会自动复制一份数据</li>
+                <li>使用 Data_NoCopy 模式插入数据时，链表只保存指针</li>
                 <li>每次使用完链表后必须调用 freeMDList 释放整个链表</li>
-                <li>Data_M 的 type 字段可用于标识数据类型</li>
             </ul>
         </div>
     </div>
 
-    <!-- Prism.js -->
     <script src="https://cdn.bootcdn.net/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
     <script src="index.js"></script>

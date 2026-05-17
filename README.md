@@ -196,7 +196,7 @@ typedef enum {
 
 
 
-<!-- - [详细内容以及函数的使用](https://flmpx.github.io/focx/) -->
+- [详细内容以及函数的使用](https://flmpx.github.io/focx/)
 
 
 

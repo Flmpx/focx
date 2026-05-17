@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DList_S 文档 - FOCX</title>
     <link rel="stylesheet" href="index.css">
-    <!-- Prism.js 代码高亮 -->
     <link href="https://cdn.bootcdn.net/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
 </head>
 <body>
@@ -57,16 +56,12 @@ int main() {
     initSDList(&list, &Info_Int);
 
     // 2. 创建数据并插入
-    Data_S data1 = Data_S_OWN(123, NULL);
-    insertSValAtEndInSDList(&list, data1);
+    int i;
+    for (i = 0; i < 10; i++) {
+        insertSValAtEndInSDList(&list, Data_S_OWN(&i, NULL), Data_Copy);
+    }
 
-    Data_S data2 = Data_S_OWN(456, NULL);
-    insertSValAtEndInSDList(&list, data2);
-
-    // 3. 打印链表
-    printSDList(&list);
-
-    // 4. 释放链表
+    // 3. 释放链表
     freeSDList(&list);
     return 0;
 }</code></pre>
@@ -121,13 +116,14 @@ int main() {
                 <h3>➕ 插入操作</h3>
                 
                 <div class="funcItem">
-                    <div class="funcSignature">InfoOfReturn insertSValAtEndInSDList(DList_S* plist, Data_S val)</div>
+                    <div class="funcSignature">InfoOfReturn insertSValAtEndInSDList(DList_S* plist, Data_S val, selectOfCopy isCopyVal)</div>
                     <p class="funcDesc">在单类型双向链表尾部插入值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
                             <li><code>plist</code> - 链表指针</li>
                             <li><code>val</code> - 待插入的值</li>
+                            <li><code>isCopyVal</code> - 是否要复制传入的 val</li>
                         </ul>
                     </div>
                     <div class="params">
@@ -136,13 +132,14 @@ int main() {
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">InfoOfReturn insertSValAtStartInSDList(DList_S* plist, Data_S val)</div>
+                    <div class="funcSignature">InfoOfReturn insertSValAtStartInSDList(DList_S* plist, Data_S val, selectOfCopy isCopyVal)</div>
                     <p class="funcDesc">在单类型双向链表头部插入值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
                             <li><code>plist</code> - 链表指针</li>
                             <li><code>val</code> - 待插入的值</li>
+                            <li><code>isCopyVal</code> - 是否要复制传入的 val</li>
                         </ul>
                     </div>
                     <div class="params">
@@ -151,13 +148,14 @@ int main() {
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">InfoOfReturn insertSValAtPosInSDList(DList_S* plist, Data_S val, int pos)</div>
+                    <div class="funcSignature">InfoOfReturn insertSValAtPosInSDList(DList_S* plist, Data_S val, selectOfCopy isCopyVal, int pos)</div>
                     <p class="funcDesc">在单类型双向链表指定位置插入值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
                             <li><code>plist</code> - 链表指针</li>
                             <li><code>val</code> - 待插入的值</li>
+                            <li><code>isCopyVal</code> - 是否要复制传入的 val</li>
                             <li><code>pos</code> - 位置的范围在 [0, 链表大小]，范围的两端分别代表头插和尾插</li>
                         </ul>
                     </div>
@@ -235,53 +233,40 @@ int main() {
                 <h3>🔍 查询操作</h3>
                 
                 <div class="funcItem">
-                    <div class="funcSignature">Data_S getPtrSValByPosInSDList(DList_S* plist, int pos)</div>
-                    <p class="funcDesc">查找在单类型双向链表的指定位置的值，可以直接修改内部数据</p>
+                    <div class="funcSignature">Data_S getSValByPosInSDList(DList_S* plist, int pos, selectOfCopy isCopyVal)</div>
+                    <p class="funcDesc">查找在单类型双向链表的指定位置的值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
                             <li><code>plist</code> - 链表指针</li>
                             <li><code>pos</code> - 位置（从 0 开始）</li>
+                            <li><code>isCopyVal</code> - 返回的值是否要复制</li>
                         </ul>
                     </div>
                     <div class="params">
                         <strong>返回:</strong> 返回找到的值，若没找到，返回空值（用字段 isEmpty 检查）
                     </div>
-                    <div class="warning">
-                        <strong>警告:</strong> 返回的指针直接指向链表内部数据，请勿 free
+                    <div class="note">
+                        <strong>说明:</strong> 如果不复制，可用于修改内部数据；如果复制，会创建副本，副本默认拥有数据所有权，使用完后通过 freeSValInSDList 函数释放
                     </div>
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">Data_S getCopySValByPosInSDList(DList_S* plist, int pos)</div>
-                    <p class="funcDesc">查找在单类型双向链表的指定位置的值，使用完后用 freeSValInSDList 函数进行释放</p>
-                    <div class="params">
-                        <strong>参数:</strong>
-                        <ul>
-                            <li><code>plist</code> - 链表指针</li>
-                            <li><code>pos</code> - 位置（从 0 开始）</li>
-                        </ul>
-                    </div>
-                    <div class="params">
-                        <strong>返回:</strong> 返回找到的值，若没找到，返回空值（用字段 isEmpty 检查）
-                    </div>
-                    <div class="warning">
-                        <strong>警告:</strong> 返回的是复制的数据，使用后需调用 freeSValInSDList 释放
-                    </div>
-                </div>
-
-                <div class="funcItem">
-                    <div class="funcSignature">Data_S getPtrSValBySValInSDList(DList_S* plist, Data_S val)</div>
-                    <p class="funcDesc">通过值找到单类型双向链表中值，可以直接修改内部数据</p>
+                    <div class="funcSignature">Data_S getSValBySValInSDList(DList_S* plist, Data_S val, selectOfCopy isCopyVal)</div>
+                    <p class="funcDesc">通过值找到单类型双向链表中值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
                             <li><code>plist</code> - 链表指针</li>
                             <li><code>val</code> - 待查找的值</li>
+                            <li><code>isCopyVal</code> - 返回的值是否要复制</li>
                         </ul>
                     </div>
                     <div class="params">
                         <strong>返回:</strong> 返回找到的值，若没找到，返回空值（用字段 isEmpty 检查）
+                    </div>
+                    <div class="note">
+                        <strong>说明:</strong> 如果不复制，可用于修改内部数据；如果复制，会创建副本，副本默认拥有数据所有权，使用完后通过 freeSValInSDList 函数释放
                     </div>
                 </div>
 
@@ -315,29 +300,6 @@ int main() {
                         </ul>
                     </div>
                 </div>
-
-                <div class="funcItem">
-                    <div class="funcSignature">void printSValInSDList(DList_S* plist, Data_S val)</div>
-                    <p class="funcDesc">打印单类型双向链表中的值</p>
-                    <div class="params">
-                        <strong>参数:</strong>
-                        <ul>
-                            <li><code>plist</code> - 链表指针</li>
-                            <li><code>val</code> - 待打印的值</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="funcItem">
-                    <div class="funcSignature">void printSDList(DList_S* plist)</div>
-                    <p class="funcDesc">打印单类型双向链表</p>
-                    <div class="params">
-                        <strong>参数:</strong>
-                        <ul>
-                            <li><code>plist</code> - 链表指针</li>
-                        </ul>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -356,15 +318,14 @@ int main() {
 
     // 插入数据
     printf("=== 插入数据 ===\n");
-    insertSValAtEndInSDList(&list, Data_S_OWN(100, NULL));
-    insertSValAtEndInSDList(&list, Data_S_OWN(200, NULL));
-    insertSValAtStartInSDList(&list, Data_S_OWN(50, NULL));
-    insertSValAtPosInSDList(&list, Data_S_OWN(150, NULL), 2);
-    printSDList(&list);
+    insertSValAtEndInSDList(&list, Data_S_OWN(100, NULL), Data_Copy);
+    insertSValAtEndInSDList(&list, Data_S_OWN(200, NULL), Data_Copy);
+    insertSValAtStartInSDList(&list, Data_S_OWN(50, NULL), Data_Copy);
+    insertSValAtPosInSDList(&list, Data_S_OWN(150, NULL), Data_Copy, 2);
 
     // 查找数据
     printf("\n=== 查找数据 ===\n");
-    Data_S found = getPtrSValByPosInSDList(&list, 2);
+    Data_S found = getSValByPosInSDList(&list, 2, Data_NoCopy);
     if (!found.isEmpty) {
         printf("位置 2 的数据: %d\n", *(int*)found.data);
     }
@@ -375,12 +336,10 @@ int main() {
     // 删除数据
     printf("\n=== 删除数据 ===\n");
     delNodeByPosInSDList(&list, 1);
-    printSDList(&list);
 
     // 反转链表
     printf("\n=== 反转链表 ===\n");
     reverseSDList(&list);
-    printSDList(&list);
 
     // 释放链表
     freeSDList(&list);
@@ -392,16 +351,15 @@ int main() {
         <div class="section">
             <h2>⚠️ 注意事项</h2>
             <ul class="warningList">
-                <li>使用 OWN 模式插入数据时，链表会自动复制一份数据</li>
-                <li>使用 REF 模式插入数据时，链表只保存指针，不会复制数据</li>
-                <li>通过 getCopy 系列函数获取的数据使用后必须释放</li>
-                <li>通过 getPtr 系列函数获取的数据指针直接指向链表内部，不要释放</li>
+                <li>使用 Data_Copy 模式插入数据时，链表会自动复制一份数据</li>
+                <li>使用 Data_NoCopy 模式插入数据时，链表只保存指针，不会复制数据</li>
+                <li>通过 Data_Copy 获取的数据使用后必须释放</li>
+                <li>通过 Data_NoCopy 获取的数据指针直接指向链表内部，不要释放</li>
                 <li>每次使用完链表后必须调用 freeSDList 释放整个链表</li>
             </ul>
         </div>
     </div>
 
-    <!-- Prism.js -->
     <script src="https://cdn.bootcdn.net/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
     <script src="index.js"></script>

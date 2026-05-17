@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChainMap_S 文档 - FOCX</title>
     <link rel="stylesheet" href="index.css">
-    <!-- Prism.js 代码高亮 -->
     <link href="https://cdn.bootcdn.net/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
 </head>
 <body>
@@ -16,32 +15,46 @@
             <a href="../../index.html">← Map</a>
         </div>
 
-        <h1 class="mainTitle">🔑 ChainMap_S - 链式哈希表（单一数据类型）</h1>
-        <p class="subtitle">采用链表法解决哈希冲突的键值对存储，需要提供键和值的数据操作集</p>
+        <h1 class="mainTitle">🔗 ChainMap_S - 链式哈希表（单一数据类型）</h1>
+        <p class="subtitle">采用链表法处理冲突的哈希表，存储单一类型的键值对</p>
 
         <div class="section">
             <h2>📖 概述</h2>
-            <p>ChainMap_S (Chain Map Single Data) 采用链表法（Separate Chaining）解决哈希冲突。每个哈希桶都是一个链表，可以在同义词冲突时将多个键值对链接在一起。</p>
+            <p>ChainMap_S (Chain Map Single Data) 是一种链式哈希表数据结构，采用链表法处理哈希冲突。它只能存储单一类型的键和值，需要提供键和值的数据操作集 InfoOfData。</p>
         </div>
 
         <div class="section">
             <h2>⚙️ 数据类型定义</h2>
             <div class="codeBlock">
-<pre class="language-c"><code>// 键值对条目
+<pre class="language-c"><code>// 条目类型
 typedef struct Entry_S_inChainMap {
     Data_S key;      // 键
     Data_S val;      // 值
     bool isEmpty;    // 是否为空
 } Entry_S_inChainMap;
 
-// 哈希表
+// 链表节点
+typedef struct Node_S_inChainMap {
+    struct Node_S_inChainMap* next;
+    struct Node_S_inChainMap* prev;
+    Entry_S_inChainMap entry;
+} Node_S_inChainMap;
+
+// 链表
+typedef struct List_S_inChainMap {
+    Node_S_inChainMap* head;
+    Node_S_inChainMap* tail;
+    int size;
+} List_S_inChainMap;
+
+// ChainMap_S 哈希表
 typedef struct ChainMap_S {
     List_S_inChainMap* arr;    // 哈希桶数组
-    InfoOfData* keyInfo;       // 键的操作集
-    InfoOfData* valInfo;       // 值的操作集
-    int mod;                   // 模数（哈希表大小）
-    int len;                   // 当前元素数量
-    int size;                  // 哈希表容量
+    InfoOfData* keyInfo;       // 键的数据操作集
+    InfoOfData* valInfo;       // 值的数据操作集
+    int mod;                   // 哈希模数
+    int len;                   // 哈希表长度
+    int size;                  // 元素数量
 } ChainMap_S;</code></pre>
             </div>
         </div>
@@ -51,26 +64,25 @@ typedef struct ChainMap_S {
             <div class="codeBlock">
 <pre class="language-c"><code>#include "base.h"
 #include "Map/ChainMap/Single_Data/chainmap_sdata.h"
-#include "Oper/Int_Info/int_info.h"  // 键和值都用整数
-#include "Oper/String_Info/string_info.h"  // 或者用字符串
+#include "Oper/Int_Info/int_info.h"
+#include "Oper/String_Info/string_info.h"
 
 int main() {
     // 1. 初始化哈希表
     ChainMap_S map;
-    initSChainMap(&map, &Info_Int, &Info_Int);
+    initSChainMap(&map, &Info_Int, &Info_String);
 
     // 2. 插入键值对
-    insertSKeyAndSValInSChainMap(&map, Data_S_OWN(1, NULL), Data_S_OWN(100, NULL));
-    insertSKeyAndSValInSChainMap(&map, Data_S_OWN(2, NULL), Data_S_OWN(200, NULL));
+    char* name1 = "Alice";
+    char* name2 = "Bob";
+    insertSKeyAndSValInSChainMap(&map, 
+        Data_S_OWN(1, NULL), Data_Copy, 
+        Data_S_OWN(name1, NULL), Data_Copy);
+    insertSKeyAndSValInSChainMap(&map, 
+        Data_S_OWN(2, NULL), Data_Copy, 
+        Data_S_OWN(name2, NULL), Data_Copy);
 
-    // 3. 查找值
-    Data_S val = getCopySValBySKeyInSChainMap(&map, Data_S_OWN(1, NULL));
-    if (!val.isEmpty) {
-        printf("Key 1's value: %d\n", *(int*)val.data);
-        freeSValInSChainMap(&map, &val);
-    }
-
-    // 4. 释放哈希表
+    // 3. 释放哈希表
     freeSChainMap(&map);
     return 0;
 }</code></pre>
@@ -93,6 +105,18 @@ int main() {
                             <li><code>pMap</code> - 哈希表指针</li>
                             <li><code>keyInfo</code> - 键的数据信息的指针</li>
                             <li><code>valInfo</code> - 值的数据信息的指针</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="funcItem">
+                    <div class="funcSignature">void freeSKeyInSChainMap(ChainMap_S* pMap, Data_S* key)</div>
+                    <p class="funcDesc">释放单类型链式哈希表中的键</p>
+                    <div class="params">
+                        <strong>参数:</strong>
+                        <ul>
+                            <li><code>pMap</code> - 哈希表指针</li>
+                            <li><code>key</code> - 待释放的键</li>
                         </ul>
                     </div>
                 </div>
@@ -138,14 +162,16 @@ int main() {
                 <h3>➕ 插入操作</h3>
                 
                 <div class="funcItem">
-                    <div class="funcSignature">InfoOfReturn insertSKeyAndSValInSChainMap(ChainMap_S* pMap, Data_S key, Data_S val)</div>
+                    <div class="funcSignature">InfoOfReturn insertSKeyAndSValInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyKey, Data_S val, selectOfCopy isCopyVal)</div>
                     <p class="funcDesc">在单类型链式哈希表中插入键值对</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
                             <li><code>pMap</code> - 哈希表指针</li>
                             <li><code>key</code> - 待插入的键</li>
+                            <li><code>isCopyKey</code> - 是否要复制传入的 key</li>
                             <li><code>val</code> - 待插入的值</li>
+                            <li><code>isCopyVal</code> - 是否要复制传入的 val</li>
                         </ul>
                     </div>
                     <div class="params">
@@ -159,53 +185,59 @@ int main() {
                 <h3>🔍 查询操作</h3>
                 
                 <div class="funcItem">
-                    <div class="funcSignature">Data_S getCopySValBySKeyInSChainMap(ChainMap_S* pMap, Data_S key)</div>
-                    <p class="funcDesc">通过键找到单类型链式哈希表中的值，使用完后用 freeSValInSChainMap 函数进行释放</p>
+                    <div class="funcSignature">Data_S getSKeyBySKeyInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyKey)</div>
+                    <p class="funcDesc">通过键找到单类型链式哈希表中的键</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
                             <li><code>pMap</code> - 哈希表指针</li>
                             <li><code>key</code> - 待查找的键</li>
+                            <li><code>isCopyKey</code> - 返回的键是否要复制</li>
                         </ul>
                     </div>
                     <div class="params">
-                        <strong>返回:</strong> 返回找到的值，若没找到，返回空值（用字段 isEmpty 检查）
+                        <strong>返回:</strong> 返回找到的键，若没找到，返回空键（用字段 isEmpty 检查）
                     </div>
-                    <div class="warning">
-                        <strong>警告:</strong> 返回的是复制的数据，使用后需调用 freeSValInSChainMap 释放
+                    <div class="note">
+                        <strong>说明:</strong> 如果不复制，可用于修改内部数据；如果复制，会创建副本，副本默认拥有数据所有权，使用完后通过 freeSKeyInSChainMap 函数释放
                     </div>
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">Data_S getPtrSValBySKeyInSChainMap(ChainMap_S* pMap, Data_S key)</div>
-                    <p class="funcDesc">通过键找到单类型链式哈希表中的值，可以直接修改内部数据</p>
+                    <div class="funcSignature">Data_S getSValBySKeyInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyVal)</div>
+                    <p class="funcDesc">通过键找到单类型链式哈希表中的值</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
                             <li><code>pMap</code> - 哈希表指针</li>
-                            <li><code>key</code> - 待查找的键</li>
+                            <li><code>key</code> - 待查找的值的键</li>
+                            <li><code>isCopyVal</code> - 返回的值是否要复制</li>
                         </ul>
                     </div>
                     <div class="params">
                         <strong>返回:</strong> 返回找到的值，若没找到，返回空值（用字段 isEmpty 检查）
                     </div>
-                    <div class="warning">
-                        <strong>警告:</strong> 返回的指针直接指向哈希表内部数据，请勿 free
+                    <div class="note">
+                        <strong>说明:</strong> 如果不复制，可用于修改内部数据；如果复制，会创建副本，副本默认拥有数据所有权，使用完后通过 freeSValInSChainMap 函数释放
                     </div>
                 </div>
 
                 <div class="funcItem">
-                    <div class="funcSignature">Entry_S_inChainMap getCopySEntryBySKeyInSChainMap(ChainMap_S* pMap, Data_S key)</div>
-                    <p class="funcDesc">通过键找到单类型链式哈希表中的条目，使用完后用 freeSEntryInSChainMap 函数进行释放</p>
+                    <div class="funcSignature">Entry_S_inChainMap getSEntryBySKeyInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyEntry)</div>
+                    <p class="funcDesc">通过键找到单类型链式哈希表中的条目</p>
                     <div class="params">
                         <strong>参数:</strong>
                         <ul>
                             <li><code>pMap</code> - 哈希表指针</li>
                             <li><code>key</code> - 待查找的条目的键</li>
+                            <li><code>isCopyEntry</code> - 返回的条目是否要复制</li>
                         </ul>
                     </div>
                     <div class="params">
                         <strong>返回:</strong> 返回找到的条目，若没找到，返回空条目（用字段 isEmpty 检查）
+                    </div>
+                    <div class="note">
+                        <strong>说明:</strong> 如果不复制，可用于修改内部数据；如果复制，会创建副本，副本默认拥有数据所有权，使用完后通过 freeSEntryInMChainMap 函数释放
                     </div>
                 </div>
 
@@ -244,72 +276,18 @@ int main() {
                     </div>
                 </div>
             </div>
-
-            <!-- 打印操作 -->
-            <div class="funcGroup">
-                <h3>🖨️ 打印操作</h3>
-                
-                <div class="funcItem">
-                    <div class="funcSignature">void printSKeyInSChainMap(ChainMap_S* pMap, Data_S key)</div>
-                    <p class="funcDesc">打印单类型链式哈希表的键</p>
-                    <div class="params">
-                        <strong>参数:</strong>
-                        <ul>
-                            <li><code>pMap</code> - 哈希表指针</li>
-                            <li><code>key</code> - 待打印的键</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="funcItem">
-                    <div class="funcSignature">void printSValInSChainMap(ChainMap_S* pMap, Data_S val)</div>
-                    <p class="funcDesc">打印单类型链式哈希表的值</p>
-                    <div class="params">
-                        <strong>参数:</strong>
-                        <ul>
-                            <li><code>pMap</code> - 哈希表指针</li>
-                            <li><code>val</code> - 待打印的值</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="funcItem">
-                    <div class="funcSignature">void printSEntryInSChainMap(ChainMap_S* pMap, Entry_S_inChainMap entry)</div>
-                    <p class="funcDesc">打印单类型链式哈希表的条目</p>
-                    <div class="params">
-                        <strong>参数:</strong>
-                        <ul>
-                            <li><code>pMap</code> - 哈希表指针</li>
-                            <li><code>entry</code> - 待打印的条目</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="funcItem">
-                    <div class="funcSignature">void printSChainMap(ChainMap_S* pMap)</div>
-                    <p class="funcDesc">打印单类型链式哈希表</p>
-                    <div class="params">
-                        <strong>参数:</strong>
-                        <ul>
-                            <li><code>pMap</code> - 哈希表指针</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div class="section">
             <h2>⚠️ 注意事项</h2>
             <ul class="warningList">
-                <li>通过 getCopy 系列函数获取的数据使用后必须释放</li>
-                <li>通过 getPtr 系列函数获取的数据指针直接指向哈希表内部，不要释放</li>
+                <li>ChainMap 采用链表法处理哈希冲突，支持更多元素</li>
+                <li>使用 Data_Copy 模式插入数据时，哈希表会自动复制一份数据</li>
                 <li>每次使用完哈希表后必须调用 freeSChainMap 释放整个哈希表</li>
-                <li>ChainMap 使用链表法解决冲突，适合数据量较大或分布不均匀的场景</li>
             </ul>
         </div>
     </div>
 
-    <!-- Prism.js -->
     <script src="https://cdn.bootcdn.net/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
     <script src="index.js"></script>
