@@ -267,9 +267,10 @@ InfoOfReturn delNodeBySValInSDList(DList_S* plist, Data_S val) {
 InfoOfReturn delNodeByPosInSDList(DList_S* plist, int pos) {
     if (isEmptySDList(plist)) return Warning;
     if ((pos < 0) || (pos >= plist->size)) return Warning;
+    if (pos == 0) return delStartNodeInSDList(plist);
+    if (pos == plist->size-1) return delEndNodeInSDList(plist);
+
     Node_S_inDList* p = getNodeByPos(plist, pos);
-    if (p == plist->head) return delStartNodeInSDList(plist);
-    if (p == plist->tail) return delEndNodeInSDList(plist);
     
     p->prev->next = p->next;
     p->next->prev = p->prev;

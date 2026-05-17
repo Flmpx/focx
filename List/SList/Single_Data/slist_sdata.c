@@ -206,18 +206,11 @@ InfoOfReturn delEndNodeInSSList(SList_S* plist) {
     Node_S_inSList* p = plist->head;
     Node_S_inSList* q = NULL;
 
-    for (int i = 0; i < plist->size-1; i++) {
+    /*通过循环找到最后一个节点和它的前驱节点*/
+    while (p->next != NULL) {
         q = p;
         p = p->next;
     }
-
-    /*
-        TODO: 之后修改和优化会参考下面的循环, 这样防御性更好
-    */
-    // while (p->next != NULL) {
-    //     q = p;
-    //     p = p->next;
-    // }
     
 
     
@@ -262,7 +255,8 @@ InfoOfReturn delNodeBySValInSSList(SList_S* plist, Data_S val) {
     while (p != NULL) {
         if (compareSData(p->val, plist->valInfo, val, plist->valInfo) == SAME) {
             if (p == plist->head) return delStartNodeInSSList(plist);
-            if (p == plist->tail) return delEndNodeInSSList(plist);
+            
+            //只有头要进行特判
             q->next = p->next;
 
             freeSData(&(p->val), plist->valInfo);
@@ -285,18 +279,19 @@ InfoOfReturn delNodeBySValInSSList(SList_S* plist, Data_S val) {
 InfoOfReturn delNodeByPosInSSList(SList_S* plist, int pos) {
     if (isEmptySSList(plist)) return Warning;
     if ((pos < 0) || (pos >= plist->size)) return Warning;
+
+    if (pos == 0) return delStartNodeInSSList(plist);
+    if (pos == plist->size-1) return delEndNodeInSSList(plist);
     
     Node_S_inSList* p = plist->head;
     Node_S_inSList* q = NULL;
 
+    //找到对应位置的节点
     for (int i = 0; i < pos; i++) {
         q = p;
         p = p->next;
     }
-
-    // TODO: 如果找到的是最后一个节点, 那明明可以不跑
-    if (p == plist->head) return delStartNodeInSSList(plist);
-    if (p == plist->tail) return delEndNodeInSSList(plist);
+    
     
     q->next = p->next;
 
@@ -306,21 +301,6 @@ InfoOfReturn delNodeByPosInSSList(SList_S* plist, int pos) {
     return Success;
 }
 
-// void reverseSDList(SList_S* plist) {
-//     if (plist->size < 2) return;
-//     Node_S_inSList* temp = NULL;
-//     Node_S_inSList* p = plist->head;
-//     while (p) {
-//         temp = p->next;
-//         p->next = p->prev;
-//         p->prev = temp;
-        
-//         p = p->prev;
-//     }
-//     temp = plist->head;
-//     plist->head = plist->tail;
-//     plist->tail = temp;
-// }
 
 
 void printSValInSSList(SList_S* plist, Data_S val) {

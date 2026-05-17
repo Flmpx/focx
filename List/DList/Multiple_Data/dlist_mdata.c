@@ -269,9 +269,12 @@ InfoOfReturn delNodeByMValInMDList(DList_M* plist, Data_M val) {
 InfoOfReturn delNodeByPosInMDList(DList_M* plist, int pos) {
     if (isEmptyMDList(plist)) return Warning;
     if ((pos < 0) || (pos >= plist->size)) return Warning;
+    
+    if (pos == 0) return delStartNodeInMDList(plist);
+    if (pos == plist->size-1) return delEndNodeInMDList(plist);
+
+
     Node_M_inDList* p = getNodeByPos(plist, pos);
-    if (p == plist->head) return delStartNodeInMDList(plist);
-    if (p == plist->tail) return delEndNodeInMDList(plist);
     
     p->prev->next = p->next;
     p->next->prev = p->prev;

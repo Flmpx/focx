@@ -214,18 +214,12 @@ InfoOfReturn delEndNodeInMSList(SList_M* plist) {
     Node_M_inSList* p = plist->head;
     Node_M_inSList* q = NULL;
 
-    for (int i = 0; i < plist->size-1; i++) {
+
+    
+    while (p->next != NULL) {
         q = p;
         p = p->next;
     }
-
-    /*
-        TODO: 之后修改和优化会参考下面的循环, 这样防御性更好
-    */
-    // while (p->next != NULL) {
-    //     q = p;
-    //     p = p->next;
-    // }
     
 
     
@@ -273,8 +267,8 @@ InfoOfReturn delNodeByMValInMSList(SList_M* plist, Data_M val) {
         if (compareMData(val, p->val) == SAME) {
             if (p == plist->head) return delStartNodeInMSList(plist);
 
-            //TODO:这个可以优化, 找到最后一个经历了一次循环, delEnd函数也会经历一次循环, 这可以优化
-            if (p == plist->tail) return delEndNodeInMSList(plist);
+            //只有头要进行特判
+            
             
             freeMData(&(p->val));
             q->next = p->next;
@@ -293,6 +287,11 @@ InfoOfReturn delNodeByMValInMSList(SList_M* plist, Data_M val) {
 InfoOfReturn delNodeByPosInMSList(SList_M* plist, int pos) {
     if (isEmptyMSList(plist)) return Warning;
     if ((pos < 0) || (pos >= plist->size)) return Warning;
+
+    //提前判断是否要进入头删除和尾删除函数
+    if (pos == 0) return delStartNodeInMSList(plist);
+    if (pos == plist->size-1) return delEndNodeInMSList(plist);
+
     Node_M_inSList* p  = plist->head;
     Node_M_inSList* q = NULL;
 
@@ -302,10 +301,6 @@ InfoOfReturn delNodeByPosInMSList(SList_M* plist, int pos) {
     }
 
 
-
-    // TODO: 如果找到的是最后一个节点, 那明明可以不跑
-    if (p == plist->head) return delStartNodeInMSList(plist);
-    if (p == plist->tail) return delEndNodeInMSList(plist);
     
     q->next = p->next;
     
