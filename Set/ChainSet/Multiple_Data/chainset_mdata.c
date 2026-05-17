@@ -277,13 +277,13 @@ static InfoOfReturn addMEntryFunction(ChainSet_M* pSet, Data_M key, selectOfCopy
         return Warning;
     }
     if (insertMEntryInMList(&(pSet->arr[index]), newEntry) == Warning) {
-        // BUG: 节点创建失败导致返回Warning, 但newEntry也是新得到的, 在复制的情况下要释放
-        // BUG: 当为复制的情况下要释放, 其他不复制的情况不需要释放什么, 将Data的isOwner强行设置为true, 然后释放
+        //如果插入失败, 为防止调用者把isOwner设置无权且要求复制, 那么在释放的时候就要强行把她设置为有权
 
         if (isCopyKey == Data_Copy) {
             newEntry.key.isOwner = true;
-            freeMData(&(newEntry.key));
         }
+        freeMEntry(&newEntry);
+
         //内存分配失败
         return Warning;
     }
@@ -309,7 +309,7 @@ static InfoOfReturn addMEntryForFreshMChainSet(ChainSet_M* pSet, Data_M key) {
 }
 
 
-static void freeMListForFreshMChainSet(List_M_inChainSet* plist) {
+static void shallowFreeMList(List_M_inChainSet* plist) {
     if (isEmptyMList(plist)) {
         return;
     }
@@ -321,6 +321,14 @@ static void freeMListForFreshMChainSet(List_M_inChainSet* plist) {
         free(q);
     }
     initMList(plist);
+}
+
+static void shallowFreeMChainSet(ChainSet_M* pSet) {
+    for (int i = 0; i < pSet->len; i++) {
+        shallowFreeMList(&(pSet->arr[i]));
+    }
+    free(pSet->arr);
+    initMChainSet(pSet);
 }
 
 
@@ -367,20 +375,27 @@ static InfoOfReturn freshMChainSet(ChainSet_M* pSet) {
         /*
             将这个循环改为用p来进行判断
         */
-        for (int j = 0; j < pSet->arr[i].size; j++, p = p->next) {
+
+        while (p) {
             if (addMEntryForFreshMChainSet(&newSet, p->entry.key) == Warning) {
                 //内存分配失败
-                // freeMChainSet(&newSet);
-                // BUG: 尝试创建一个专门浅释放Set的函数, 顺便将下面的释放也包含了
+                shallowFreeMChainSet(&newSet);
                 return Warning;
             }
+            p = p->next;
         }
+        // for (int j = 0; j < pSet->arr[i].size; j++, p = p->next) {
+        //     if (addMEntryForFreshMChainSet(&newSet, p->entry.key) == Warning) {
+        //         //内存分配失败
+        //         // freeMChainSet(&newSet);
+        //         // BUG: 尝试创建一个专门浅释放Set的函数, 顺便将下面的释放也包含了
+        //         return Warning;
+        //     }
+        // }
     }
 
-    for (int i = 0; i < pSet->len; i++) {
-        freeMListForFreshMChainSet(&(pSet->arr[i]));
-    }
-    free(pSet->arr);
+    shallowFreeMChainSet(pSet);
+
     *pSet = newSet;
     return Success;
 }
@@ -393,7 +408,12 @@ InfoOfReturn insertMKeyInMChainSet(ChainSet_M* pSet, Data_M key, selectOfCopy is
     
     //在插入之前进行freshSet
     //当填充因子大于75%时或者Set为空时自动扩容
-    freshMChainSet(pSet);
+    if (freshMChainSet(pSet) == Warning) {
+        //如果重hash失败要提示插入失败, 防止继续插入导致Set出错
+        return Warning;
+    }
+    
+    //如果插入失败, 添加函数会进行处理后事
     return addMEntryFunction(pSet, key, isCopyKey);
 }
 
@@ -450,6 +470,8 @@ InfoOfReturn delMKeyByMKeyInMChainSet(ChainSet_M* pSet, Data_M key) {
     }
     pSet->size--;
     //删除后进行重hash
+
+    
     freshMChainSet(pSet);
     return Success;
 }

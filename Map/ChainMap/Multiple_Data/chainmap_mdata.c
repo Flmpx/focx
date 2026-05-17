@@ -312,6 +312,14 @@ static InfoOfReturn addMEntryFunction(ChainMap_M* pMap, Data_M key, selectOfCopy
         return Warning;
     }
     if (insertMEntryInMList(&(pMap->arr[index]), newEntry) == Warning) {
+        //如果插入失败, 为防止调用者把isOwner设置无权且要求复制, 那么在释放的时候就要强行把她设置为有权
+        if (isCopyKey == Data_Copy) {
+            newEntry.key.isOwner = true;
+        }
+        if (isCopyVal == Data_Copy) {
+            newEntry.val.isOwner = true;
+        }
+        freeMEntryInMChainMap(&newEntry);
         //内存分配失败
         return Warning;
     }
@@ -330,7 +338,10 @@ static InfoOfReturn addMEntryForFreshMChainMap(ChainMap_M* pMap, Data_M key, Dat
     entry.key = key;
     entry.val = val;
     if (insertMEntryInMList(&(pMap->arr[index]), entry) == Warning) {
+        
         //内存分配失败
+
+        //如果失败的话, 调用这个函数的freshMap函数会进行清理操作, 这里直接返回错误码就行
         return Warning;
     }
     pMap->size++;
@@ -338,7 +349,7 @@ static InfoOfReturn addMEntryForFreshMChainMap(ChainMap_M* pMap, Data_M key, Dat
 }
 
 
-static void freeMListForFreshMChainMap(List_M_inChainMap* plist) {
+static void shallowFreeMList(List_M_inChainMap* plist) {
     if (isEmptyMList(plist)) {
         return;
     }
@@ -352,6 +363,14 @@ static void freeMListForFreshMChainMap(List_M_inChainMap* plist) {
     initMList(plist);
 }
 
+
+static void shallowFreeMChainMap(ChainMap_M* pMap) {
+    for (int i = 0; i < pMap->len; i++) {
+        shallowFreeMList(&(pMap->arr[i]));
+    }
+    free(pMap->arr);
+    initMChainMap(pMap);
+}
 
 //重hash
 static InfoOfReturn freshMChainMap(ChainMap_M* pMap) {
@@ -396,18 +415,24 @@ static InfoOfReturn freshMChainMap(ChainMap_M* pMap) {
         /*
             将这个循环改为用p来进行判断
         */
-        for (int j = 0; j < pMap->arr[i].size; j++, p = p->next) {
+        while (p) {
             if (addMEntryForFreshMChainMap(&newMap, p->entry.key, p->entry.val) == Warning) {
                 //内存分配失败
+                shallowFreeMChainMap(&newMap);
                 return Warning;
             }
+            p = p->next;
         }
+        // for (int j = 0; j < pMap->arr[i].size; j++, p = p->next) {
+        //     if (addMEntryForFreshMChainMap(&newMap, p->entry.key, p->entry.val) == Warning) {
+        //         //内存分配失败
+        //         return Warning;
+        //     }
+        // }
     }
 
-    for (int i = 0; i < pMap->len; i++) {
-        freeMListForFreshMChainMap(&(pMap->arr[i]));
-    }
-    free(pMap->arr);
+    shallowFreeMChainMap(pMap);
+
     *pMap = newMap;
     return Success;
 }
@@ -420,7 +445,12 @@ InfoOfReturn insertMKeyAndMValInMChainMap(ChainMap_M* pMap, Data_M key, selectOf
     
     //在插入之前进行freshMap
     //当填充因子大于75%时或者Map为空时自动扩容
-    freshMChainMap(pMap);
+
+    if (freshMChainMap(pMap) == Warning) {
+        //如果重hash失败要提示插入失败, 防止继续插入导致Map出错
+        return Warning;
+    }
+    //如果插入失败, 添加函数会进行处理后事
     return addMEntryFunction(pMap, key, isCopyKey, val, isCopyVal);
 }
 
@@ -542,10 +572,10 @@ void printMKeyInMChainMap(Data_M key) {
 
 void printMValInMChainMap(Data_M val) {
     if (val.isEmpty) {
-        printf("\nkey is empty, cannot print\n");
+        printf("\nval is empty, cannot print\n");
         return;
     }
-    printf("[key:");
+    printf("[val:");
     val.dataInfo->oper->printdata(val.data, val.content);
     printf("]");
 }

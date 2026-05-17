@@ -205,7 +205,12 @@ InfoOfReturn insertSKeyInSOASet(OASet_S* pSet, Data_S key, selectOfCopy isCopyKe
     //     }
     // }
     //先进行重hash
-    freshSOASet(pSet);
+
+    if (freshSOASet(pSet) == Warning) {
+        //如果重hash失败要提示插入失败, 防止继续插入导致Set出错
+        return Warning;
+    }
+    //如果插入失败, 添加函数会进行处理后事
     return addSEntryFunction(pSet, key, isCopyKey);
 }
 

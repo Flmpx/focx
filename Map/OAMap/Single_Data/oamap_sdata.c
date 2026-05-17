@@ -245,7 +245,12 @@ InfoOfReturn insertSKeyAndSValInSOAMap(OAMap_S* pMap, Data_S key, selectOfCopy i
     //     }
     // }
     //先进行重hash
-    freshSOAMap(pMap);
+    if (freshSOAMap(pMap) == Warning) {
+        //如果重hash失败要提示插入失败, 防止继续插入导致Map出错
+        return Warning;
+    }
+
+    //如果插入失败, 添加函数会进行处理后事
     return addSEntryFunction(pMap, key, isCopyKey, val, isCopyVal);
 }
 
@@ -377,7 +382,7 @@ void printSValInSOAMap(OAMap_S* pMap, Data_S val) {
         printf("\nval is empty, cannot print\n");
         return;
     }
-    printf("[key:");
+    printf("[val:");
     pMap->keyInfo->oper->printdata(val.data, val.content);
     printf("]");
 }

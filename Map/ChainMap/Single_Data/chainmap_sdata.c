@@ -315,6 +315,14 @@ static int addSEntryFunction(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyKe
         return Warning;
     }
     if (insertSEntryInSList(&(pMap->arr[index]), newEntry) == Warning) {
+        //如果插入失败, 为防止调用者把isOwner设置无权且要求复制, 那么在释放的时候就要强行把她设置为有权
+        if (isCopyKey == Data_Copy) {
+            newEntry.key.isOwner = true;
+        }
+        if (isCopyVal == Data_Copy) {
+            newEntry.val.isOwner = true;
+        }
+        freeSEntryInSChainMap(pMap, &newEntry);
         //内存分配失败
         return Warning;
     }
@@ -333,6 +341,7 @@ static int addSEntryForFreshSChainMap(ChainMap_S* pMap, Data_S key, Data_S val) 
     entry.key = key;
     entry.val = val;
     if (insertSEntryInSList(&(pMap->arr[index]), entry) == Warning) {
+        //如果失败的话, 调用这个函数的freshMap函数会进行清理操作, 这里直接返回错误码就行
         //内存分配失败
         return Warning;
     }
@@ -342,7 +351,7 @@ static int addSEntryForFreshSChainMap(ChainMap_S* pMap, Data_S key, Data_S val) 
 
 
 //专门做的一个软删除的freeList
-static void freeSListForFreshSChainMap(List_S_inChainMap* plist) {
+static void shallowFreeSList(List_S_inChainMap* plist) {
     if (isEmptySList(plist)) {
         return;
     }
@@ -356,6 +365,13 @@ static void freeSListForFreshSChainMap(List_S_inChainMap* plist) {
     initSList(plist);
 }
 
+static void shallowFreeSChainMap(ChainMap_S* pMap) {
+    for (int i = 0; i < pMap->len; i++) {
+        shallowFreeSList(&(pMap->arr[i]));
+    }
+    free(pMap->arr);
+    initSChainMap(pMap, pMap->keyInfo, pMap->valInfo);
+}
 
 //重hash
 static int freshSChainMap(ChainMap_S* pMap) {
@@ -396,18 +412,24 @@ static int freshSChainMap(ChainMap_S* pMap) {
 
     for (int i = 0; i < pMap->len; i++) {
         Node_S_inChainMap* p = pMap->arr[i].head;
-        for (int j = 0; j < pMap->arr[i].size; j++, p = p->next) {
+        while (p) {
             if (addSEntryForFreshSChainMap(&newMap, p->entry.key, p->entry.val) == Warning) {
+                shallowFreeSChainMap(&newMap);
                 //内存分配失败
                 return Warning;
             }
+            p = p->next;
         }
+        // for (int j = 0; j < pMap->arr[i].size; j++, p = p->next) {
+        //     if (addSEntryForFreshSChainMap(&newMap, p->entry.key, p->entry.val) == Warning) {
+        //         //内存分配失败
+        //         return Warning;
+        //     }
+        // }
     }
 
-    for (int i = 0; i < pMap->len; i++) {
-        freeSListForFreshSChainMap(&(pMap->arr[i]));
-    }
-    free(pMap->arr);
+    shallowFreeSChainMap(pMap);
+
     *pMap = newMap;
 
     return Success;
@@ -416,7 +438,12 @@ static int freshSChainMap(ChainMap_S* pMap) {
 
 int insertSKeyAndSValInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyKey, Data_S val, selectOfCopy isCopyVal) {
     //当填充因子大于75%时或者Map为空时自动扩容
-    freshSChainMap(pMap);
+
+    if (freshSChainMap(pMap) == Warning) {
+        //如果重hash失败要提示插入失败, 防止继续插入导致Map出错
+        return Warning;
+    }
+    //如果插入失败, 添加函数会进行处理后事
     return addSEntryFunction(pMap, key, isCopyKey, val, isCopyVal);
 }
 
@@ -551,7 +578,7 @@ void printSValInSChainMap(ChainMap_S* pMap, Data_S val) {
         printf("\nval is empty, cannot print\n");
         return;
     }
-    printf("[key:");
+    printf("[val:");
     pMap->keyInfo->oper->printdata(val.data, val.content);
     printf("]");
 

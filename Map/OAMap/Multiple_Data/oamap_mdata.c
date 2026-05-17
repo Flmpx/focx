@@ -238,7 +238,11 @@ static InfoOfReturn freshMOAMap(OAMap_M* pMap) {
 
 InfoOfReturn insertMKeyAndMValInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy isCopyKey, Data_M val, selectOfCopy isCopyVal) {
     //当填充因子大于75%时自动扩容
-    freshMOAMap(pMap);
+    if (freshMOAMap(pMap) == Warning) {
+        //如果重hash失败要提示插入失败, 防止继续插入导致Map出错
+        return Warning;
+    }
+    //如果插入失败, 添加函数会进行处理后事
     return addMEntryFunction(pMap, key, isCopyKey, val, isCopyVal);
 }
 

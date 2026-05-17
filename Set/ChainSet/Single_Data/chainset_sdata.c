@@ -266,7 +266,7 @@ static int addSEntryFunction(ChainSet_S* pSet, Data_S key, selectOfCopy isCopyKe
     ll index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
 
     /*
-        TODO: 可以先进行复制Key
+        TODO: 可以先进行复制Key, 复制都失败了, 还有必要查找吗?
     */
 
     Node_S_inChainSet* p = getNodeBySKey(&(pSet->arr[index]), key, pSet->keyInfo);
@@ -292,6 +292,11 @@ static int addSEntryFunction(ChainSet_S* pSet, Data_S key, selectOfCopy isCopyKe
     
 
     if (insertSEntryInSList(&(pSet->arr[index]), newEntry) == Warning) {
+        //如果插入失败, 为防止调用者把isOwner设置无权且要求复制, 那么在释放的时候就要强行把她设置为有权
+        if (isCopyKey == Data_Copy) {
+            newEntry.key.isOwner = true;
+        }
+        freeSEntry(pSet, &newEntry);
         //内存分配失败
         return Warning;
     }
@@ -309,6 +314,7 @@ static int addSEntryForFreshSChainSet(ChainSet_S* pSet, Data_S key) {
     entry.isEmpty = false;
     entry.key = key;
     if (insertSEntryInSList(&(pSet->arr[index]), entry) == Warning) {
+        //如果失败的话, 调用这个函数的freshMap函数会进行清理操作, 这里直接返回错误码就行
         //内存分配失败
         return Warning;
     }
@@ -318,7 +324,7 @@ static int addSEntryForFreshSChainSet(ChainSet_S* pSet, Data_S key) {
 
 
 //专门做的一个软删除的freeList
-static void freeSListForFreshSChainSet(List_S_inChainSet* plist) {
+static void shallowFreeSList(List_S_inChainSet* plist) {
     if (isEmptySList(plist)) {
         return;
     }
@@ -330,6 +336,14 @@ static void freeSListForFreshSChainSet(List_S_inChainSet* plist) {
         free(q);
     }
     initSList(plist);
+}
+
+static void shallowFreeSChainSet(ChainSet_S* pSet) {
+    for (int i = 0; i < pSet->len; i++) {
+        shallowFreeSList(&(pSet->arr[i]));
+    }
+    free(pSet->arr);
+    initSChainSet(pSet, pSet->keyInfo);
 }
 
 
@@ -371,16 +385,25 @@ static int freshSChainSet(ChainSet_S* pSet) {
 
     for (int i = 0; i < pSet->len; i++) {
         Node_S_inChainSet* p = pSet->arr[i].head;
-        for (int j = 0; j < pSet->arr[i].size; j++, p = p->next) {
+
+        while (p) {
             if (addSEntryForFreshSChainSet(&newSet, p->entry.key) == Warning) {
+                shallowFreeSChainSet(&newSet);
                 //内存分配失败
                 return Warning;
             }
+            p = p->next;
         }
+        // for (int j = 0; j < pSet->arr[i].size; j++, p = p->next) {
+        //     if (addSEntryForFreshSChainSet(&newSet, p->entry.key) == Warning) {
+        //         //内存分配失败
+        //         return Warning;
+        //     }
+        // }
     }
 
     for (int i = 0; i < pSet->len; i++) {
-        freeSListForFreshSChainSet(&(pSet->arr[i]));
+        shallowFreeSList(&(pSet->arr[i]));
     }
     free(pSet->arr);
     *pSet = newSet;
@@ -391,7 +414,13 @@ static int freshSChainSet(ChainSet_S* pSet) {
 
 int insertSKeyInSChainSet(ChainSet_S* pSet, Data_S key, selectOfCopy isCopyKey) {
     //当填充因子大于75%时或者Set为空时自动扩容
-    freshSChainSet(pSet);
+    
+    if (freshSChainSet(pSet) == Warning) {
+        //如果重hash失败要提示插入失败, 防止继续插入导致Ser出错
+        return Warning;
+    }
+    
+    //如果插入失败, 添加函数会进行处理后事
     return addSEntryFunction(pSet, key, isCopyKey);
 }
 

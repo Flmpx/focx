@@ -200,7 +200,11 @@ static InfoOfReturn freshMOASet(OASet_M* pSet) {
 
 InfoOfReturn insertMKeyInMOASet(OASet_M* pSet, Data_M key, selectOfCopy isCopyKey) {
     //当填充因子大于75%时自动扩容
-    freshMOASet(pSet);
+    if (freshMOASet(pSet) == Warning) {
+        //如果重hash失败要提示插入失败, 防止继续插入导致Set出错
+        return Warning;
+    }
+    //如果插入失败, 添加函数会进行处理后事
     return addMEntryFunction(pSet, key, isCopyKey);
 }
 
