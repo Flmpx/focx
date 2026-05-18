@@ -124,6 +124,7 @@ static InfoOfReturn addMEntryFunction(OASet_M* pSet, Data_M key, selectOfCopy is
         //内存分配失败
         return Warning;
     }
+    pSet->arr[index] = newEntry;
     pSet->arr[index].state = EXIST_IN_SET;
     pSet->size++;
     return Success;

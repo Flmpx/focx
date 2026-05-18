@@ -156,11 +156,14 @@ static InfoOfReturn addSEntryFunction(OAMap_S* pMap, Data_S key, selectOfCopy is
     }
 
     
-    pMap->arr[index] = createSEntryBySKeyAndMVal(pMap, key, isCopyKey, val, isCopyVal);
-    if (pMap->arr[index].isEmpty) {
+    Entry_S_inOAMap newEntry = createSEntryBySKeyAndMVal(pMap, key, isCopyKey, val, isCopyVal);
+    
+    if (newEntry.isEmpty) {
         //内存分配失败;
         return Warning;
     }
+
+    pMap->arr[index] = newEntry;
     pMap->arr[index].state = EXIST_IN_MAP;
     pMap->size++;
     return Success;
