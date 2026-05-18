@@ -56,6 +56,14 @@ extern void freeMOAMap(OAMap_M* pMap);
 extern InfoOfReturn insertMKeyAndMValInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy isCopyKey, Data_M val, selectOfCopy isCopyVal);
 
 
+
+/// @brief 对多类型开放寻址哈希表进行缩容
+/// @param pMap 哈希表指针
+/// @return 操作状态码
+extern InfoOfReturn shrinkMOAMap(OAMap_M* pMap);
+
+
+
 /// @brief 通过键找到多类型开放寻址哈希表中的键
 /// @param pMap 哈希表指针
 /// @param key 待查找的键

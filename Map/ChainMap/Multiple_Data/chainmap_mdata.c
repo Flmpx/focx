@@ -373,20 +373,26 @@ static void shallowFreeMChainMap(ChainMap_M* pMap) {
 }
 
 //重hash
-static InfoOfReturn freshMChainMap(ChainMap_M* pMap) {
-    int newLen = 0;
-
+static InfoOfReturn freshMChainMap(ChainMap_M* pMap, int newLen) {
+    // int newLen = 0;
     //无论如何都要保证len至少为16
-    if (pMap->len == 0) {
+    if (newLen < 16) {
         newLen = 16;
-    } else if (4*(pMap->size) >= 3*(pMap->len)) {
-        newLen = pMap->len*2;
-    } else if (4*(pMap->size) <= pMap->len && pMap->len >= 32) {
-        //至少要保证缩容之后len至少为16
-        newLen = pMap->len/2;
-    } else {
-        return None;
     }
+    
+    if (newLen < pMap->size) {
+        return Warning;
+    }
+    // if (pMap->len == 0) {
+    //     newLen = 16;
+    // } else if (4*(pMap->size) >= 3*(pMap->len)) {
+    //     newLen = pMap->len*2;
+    // } else if (4*(pMap->size) <= pMap->len && pMap->len >= 32) {
+    //     //至少要保证缩容之后len至少为16
+    //     newLen = pMap->len/2;
+    // } else {
+    //     return None;
+    // }
 
     int newSize = pMap->size;
     int newMod = getLargestPrime(newLen);
@@ -438,6 +444,23 @@ static InfoOfReturn freshMChainMap(ChainMap_M* pMap) {
 }
 
 
+InfoOfReturn shrinkMChainMap(ChainMap_M* pMap) {
+    //TODO: 将所有的传入数据和指针进行判空
+    if (pMap == NULL) {
+        return Warning;
+    }
+
+    //容量必须保证有16个以上, 只有填充因子小于25%才进行缩容
+    if (pMap->len < 32 || 4*(pMap->size) > pMap->len) {
+        return None;
+    }
+    //缩容为当前元素总量的2倍
+    int newLen = pMap->size*2;
+    if (newLen < 16) {
+        newLen = 16;
+    }
+    return freshMChainMap(pMap, newLen);
+}
 
 
 
@@ -445,10 +468,22 @@ InfoOfReturn insertMKeyAndMValInMChainMap(ChainMap_M* pMap, Data_M key, selectOf
     
     //在插入之前进行freshMap
     //当填充因子大于75%时或者Map为空时自动扩容
+    bool flagOfExpend = false;
+    int newLen = 0;
+    if (pMap->len == 0) {
+        flagOfExpend = true;
+        newLen = 16;
+    } else if (4*(pMap->size) >= 3*(pMap->len)) {
+        flagOfExpend = true;
+        newLen = pMap->len*2;
+    }
 
-    if (freshMChainMap(pMap) == Warning) {
-        //如果重hash失败要提示插入失败, 防止继续插入导致Map出错
-        return Warning;
+    if (flagOfExpend) {
+        if (freshMChainMap(pMap, newLen) == Warning) {
+            //如果重hash失败要提示插入失败, 防止继续插入导致Map出错
+            return Warning;
+        }
+
     }
     //如果插入失败, 添加函数会进行处理后事
     return addMEntryFunction(pMap, key, isCopyKey, val, isCopyVal);
@@ -550,8 +585,6 @@ InfoOfReturn delMEntryByMKeyInMChainMap(ChainMap_M* pMap, Data_M key) {
         return None;
     }
     pMap->size--;
-    //删除后进行重hash
-    freshMChainMap(pMap);
     return Success;
 }
 

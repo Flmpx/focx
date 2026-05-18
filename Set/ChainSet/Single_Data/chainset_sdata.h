@@ -79,6 +79,12 @@ extern void freeSChainSet(ChainSet_S* pSet);
 /// @return 操作结果状态码
 extern InfoOfReturn insertSKeyInSChainSet(ChainSet_S* pSet, Data_S key, selectOfCopy isCopyKey);
 
+
+/// @brief 对单类型链式集合进行缩容
+/// @param pSet 集合指针
+/// @return 操作状态码
+extern InfoOfReturn shrinkSChainSet(ChainSet_S* pSet);
+
 /// @brief 通过键找到单类型链式集合中的键
 /// @param pSet 集合指针
 /// @param key 待查找的键

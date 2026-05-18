@@ -60,6 +60,10 @@ extern InfoOfReturn insertMKeyInMOASet(OASet_M* pSet, Data_M key, selectOfCopy i
 extern Data_M getMKeyByMKeyInMOASet(OASet_M* pSet, Data_M key, selectOfCopy isCopyKey);
 
 
+/// @brief 对多类型开放寻址集合进行缩容
+/// @param pSet 集合指针
+/// @return 操作状态码
+extern InfoOfReturn shrinkMOASet(OASet_M* pSet);
 
 /// @brief 判断多类型开放寻址集合中是否存在当前键
 /// @param pSet 集合指针

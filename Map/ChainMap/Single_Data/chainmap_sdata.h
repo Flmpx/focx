@@ -84,6 +84,12 @@ extern void freeSChainMap(ChainMap_S* pMap);
 extern InfoOfReturn insertSKeyAndSValInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyKey, Data_S val, selectOfCopy isCopyVal);
 
 
+/// @brief 对单类型链式哈希表进行缩容
+/// @param pMap 哈希表指针
+/// @return 操作状态码
+InfoOfReturn shrinkSChainMap(ChainMap_S* pMap);
+
+
 /// @brief 通过键找到单类型链式哈希表中的键
 /// @param pMap 哈希表指针
 /// @param key 待查找的键

@@ -186,18 +186,14 @@ static InfoOfReturn addMEntryForFreshMOAMap(OAMap_M* pMap, Data_M key, Data_M va
 
 
 //重hash
-static InfoOfReturn freshMOAMap(OAMap_M* pMap) {
-    int newLen = 0;
+static InfoOfReturn freshMOAMap(OAMap_M* pMap, int newLen) {
     //无论如何都要保证len至少为16
-    if (pMap->len == 0) {
+    if (newLen < 16) {
         newLen = 16;
-    } else if (4*(pMap->size) >= 3*(pMap->len)) {
-        newLen = pMap->len*2;
-    } else if (4*(pMap->size) <= pMap->len && pMap->len >= 32) {
-        //至少要保证缩容之后len至少为16
-        newLen = pMap->len/2;
-    } else {
-        return None;
+    }
+    
+    if (newLen < pMap->size) {
+        return Warning;
     }
 
     int newSize = pMap->size;
@@ -236,11 +232,42 @@ static InfoOfReturn freshMOAMap(OAMap_M* pMap) {
 
 
 
+InfoOfReturn shrinkMOAMap(OAMap_M* pMap) {
+    if (pMap == NULL) {
+        return Warning;
+    }
+
+    //容量必须保证有16个以上, 只有填充因子小于25%才进行缩容
+    if (pMap->len < 32 || 4*(pMap->size) > pMap->len) {
+        return None;
+    }
+    //缩容为当前元素总量的2倍
+    int newLen = pMap->size*2;
+    if (newLen < 16) {
+        newLen = 16;
+    }
+    return freshMOAMap(pMap, newLen);
+}
+
+
 InfoOfReturn insertMKeyAndMValInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy isCopyKey, Data_M val, selectOfCopy isCopyVal) {
     //当填充因子大于75%时自动扩容
-    if (freshMOAMap(pMap) == Warning) {
-        //如果重hash失败要提示插入失败, 防止继续插入导致Map出错
-        return Warning;
+    bool flagOfExpend = false;
+    int newLen = 0;
+    if (pMap->len == 0) {
+        flagOfExpend = true;
+        newLen = 16;
+    } else if (4*(pMap->size) >= 3*(pMap->len)) {
+        flagOfExpend = true;
+        newLen = pMap->len*2;
+    }
+
+    if (flagOfExpend) {
+        if (freshMOAMap(pMap, newLen) == Warning) {
+            //如果重hash失败要提示插入失败, 防止继续插入导致Map出错
+            return Warning;
+        }
+
     }
     //如果插入失败, 添加函数会进行处理后事
     return addMEntryFunction(pMap, key, isCopyKey, val, isCopyVal);
@@ -347,8 +374,6 @@ InfoOfReturn delMEntryByMKeyInMOAMap(OAMap_M* pMap, Data_M key) {
         freeMEntryInMOAMap(&(pMap->arr[index]));
         pMap->arr[index].state = DEL_IN_MAP;
         pMap->size--;
-        //删除之后进行重hash
-        freshMOAMap(pMap);
         return Success;
     }
 }

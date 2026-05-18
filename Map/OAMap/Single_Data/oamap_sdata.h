@@ -66,6 +66,11 @@ extern void freeSOAMap(OAMap_S* pMap);
 extern InfoOfReturn insertSKeyAndSValInSOAMap(OAMap_S* pMap, Data_S key, selectOfCopy isCopyKey, Data_S val, selectOfCopy isCopyVal);
 
 
+/// @brief 对单类型开放寻址哈希表进行缩容
+/// @param pMap 哈希表指针
+/// @return 操作状态码
+extern InfoOfReturn shrinkSOAMap(OAMap_S* pMap);
+
 
 /// @brief 通过键找到单类型开放寻址哈希表中的键
 /// @param pMap 哈希表指针

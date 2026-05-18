@@ -68,6 +68,12 @@ extern void freeMChainSet(ChainSet_M* pSet);
 /// @return 操作结果状态码
 extern InfoOfReturn insertMKeyInMChainSet(ChainSet_M* pSet, Data_M key, selectOfCopy isCopyKey);
 
+/// @brief 对多类型链式集合进行缩容
+/// @param pSet 集合指针
+/// @return 操作状态码
+extern InfoOfReturn shrinkMChainSet(ChainSet_M* pSet);
+
+
 
 /// @brief 通过键找到多类型链式集合中的键
 /// @param pSet 集合指针

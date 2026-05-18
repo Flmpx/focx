@@ -150,19 +150,14 @@ static InfoOfReturn addSEntryForFreshSOASet(OASet_S* pSet, Data_S key) {
 
 }
 
-static InfoOfReturn freshSOASet(OASet_S* pSet) {
-    int newLen = 0;
-
+static InfoOfReturn freshSOASet(OASet_S* pSet, int newLen) {
     //无论如何都要保证len至少为16
-    if (pSet->len == 0) {
+    if (newLen < 16) {
         newLen = 16;
-    } else if (4*(pSet->size) >= 3*(pSet->len)) {
-        newLen = pSet->len*2;
-    } else if (4*(pSet->size) <= pSet->len && pSet->len >= 32) {
-        //至少要保证缩容之后len至少为16
-        newLen = pSet->len/2;
-    } else {
-        return None;
+    }
+    
+    if (newLen < pSet->size) {
+        return Warning;
     }
     
     OASet_S newSet;
@@ -197,18 +192,43 @@ static InfoOfReturn freshSOASet(OASet_S* pSet) {
 
 }
 
-InfoOfReturn insertSKeyInSOASet(OASet_S* pSet, Data_S key, selectOfCopy isCopyKey) {
-    // if (4*(pSet->size) >= 3*(pSet->len)) {
-    //     if (freshSOASet(pSet) == Warning) {
-    //         //内存分配失败
-    //         return Warning;
-    //     }
-    // }
-    //先进行重hash
 
-    if (freshSOASet(pSet) == Warning) {
-        //如果重hash失败要提示插入失败, 防止继续插入导致Set出错
+InfoOfReturn shrinkSOASet(OASet_S* pSet) {
+    if (pSet == NULL) {
         return Warning;
+    }
+
+    //容量必须保证有16个以上, 只有填充因子小于25%才进行缩容
+    if (pSet->len < 32 || 4*(pSet->size) > pSet->len) {
+        return None;
+    }
+    //缩容为当前元素总量的2倍
+    int newLen = pSet->size*2;
+    if (newLen < 16) {
+        newLen = 16;
+    }
+    return freshSOASet(pSet, newLen);
+
+}
+
+InfoOfReturn insertSKeyInSOASet(OASet_S* pSet, Data_S key, selectOfCopy isCopyKey) {
+    //当填充因子大于75%时或者Set为空时自动扩容
+    bool flagOfExpend = false;
+    int newLen = 0;
+    if (pSet->len == 0) {
+        flagOfExpend = true;
+        newLen = 16;
+    } else if (4*(pSet->size) >= 3*(pSet->len)) {
+        flagOfExpend = true;
+        newLen = pSet->len*2;
+    }
+
+    if (flagOfExpend) {
+        if (freshSOASet(pSet, newLen) == Warning) {
+            //如果重hash失败要提示插入失败, 防止继续插入导致Set出错
+            return Warning;
+        }
+
     }
     //如果插入失败, 添加函数会进行处理后事
     return addSEntryFunction(pSet, key, isCopyKey);
@@ -280,8 +300,6 @@ InfoOfReturn delSKeyBySKeyInSOASet(OASet_S* pSet, Data_S key) {
         freeSEntry(pSet, &(pSet->arr[index]));
         pSet->arr[index].state = DEL_IN_SET;
         pSet->size--;
-        //删除后进行重hash
-        freshSOASet(pSet);
         return Success;
     }
 }

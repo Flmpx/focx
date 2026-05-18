@@ -83,6 +83,14 @@ extern void freeMChainMap(ChainMap_M* pMap);
 /// @return 操作结果状态码
 extern InfoOfReturn insertMKeyAndMValInMChainMap(ChainMap_M* pMap, Data_M key, selectOfCopy isCopyKey, Data_M val, selectOfCopy isCopyVal);
 
+
+/// @brief 对多类型链式哈希表进行缩容
+/// @param pMap 哈希表指针
+/// @return 操作状态码
+extern InfoOfReturn shrinkMChainMap(ChainMap_M* pMap);
+
+
+
 /// @brief 通过键找到多类型链式哈希表中的键
 /// @param pMap 哈希表指针
 /// @param key 待查找的键

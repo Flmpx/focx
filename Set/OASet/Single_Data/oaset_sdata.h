@@ -54,6 +54,10 @@ extern InfoOfReturn insertSKeyInSOASet(OASet_S* pSet, Data_S key, selectOfCopy i
 
 
 
+/// @brief 对单类型开放寻址集合进行缩容
+/// @param pSet 集合指针
+/// @return 操作状态码
+extern InfoOfReturn shrinkSOASet(OASet_S* pSet);
 
 
 /// @brief 通过键找到单类型开放寻址集合中的键

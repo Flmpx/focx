@@ -149,18 +149,14 @@ static InfoOfReturn addMEntryForFreshMOASet(OASet_M* pSet, Data_M key) {
 
 
 //重hash
-static InfoOfReturn freshMOASet(OASet_M* pSet) {
-    int newLen = 0;
+static InfoOfReturn freshMOASet(OASet_M* pSet, int newLen) {
     //无论如何都要保证len至少为16
-    if (pSet->len == 0) {
+    if (newLen < 16) {
         newLen = 16;
-    } else if (4*(pSet->size) >= 3*(pSet->len)) {
-        newLen = pSet->len*2;
-    } else if (4*(pSet->size) <= pSet->len && pSet->len >= 32) {
-        //至少要保证缩容之后len至少为16
-        newLen = pSet->len/2;
-    } else {
-        return None;
+    }
+    
+    if (newLen < pSet->size) {
+        return Warning;
     }
 
     int newSize = pSet->size;
@@ -198,12 +194,43 @@ static InfoOfReturn freshMOASet(OASet_M* pSet) {
 }
 
 
+InfoOfReturn shrinkMOASet(OASet_M* pSet) {
+    if (pSet == NULL) {
+        return Warning;
+    }
+
+    //容量必须保证有16个以上, 只有填充因子小于25%才进行缩容
+    if (pSet->len < 32 || 4*(pSet->size) > pSet->len) {
+        return None;
+    }
+    //缩容为当前元素总量的2倍
+    int newLen = pSet->size*2;
+    if (newLen < 16) {
+        newLen = 16;
+    }
+    return freshMOASet(pSet, newLen);
+
+}
+
 
 InfoOfReturn insertMKeyInMOASet(OASet_M* pSet, Data_M key, selectOfCopy isCopyKey) {
     //当填充因子大于75%时自动扩容
-    if (freshMOASet(pSet) == Warning) {
-        //如果重hash失败要提示插入失败, 防止继续插入导致Set出错
-        return Warning;
+    bool flagOfExpend = false;
+    int newLen = 0;
+    if (pSet->len == 0) {
+        flagOfExpend = true;
+        newLen = 16;
+    } else if (4*(pSet->size) >= 3*(pSet->len)) {
+        flagOfExpend = true;
+        newLen = pSet->len*2;
+    }
+
+    if (flagOfExpend) {
+        if (freshMOASet(pSet, newLen) == Warning) {
+            //如果重hash失败要提示插入失败, 防止继续插入导致Set出错
+            return Warning;
+        }
+
     }
     //如果插入失败, 添加函数会进行处理后事
     return addMEntryFunction(pSet, key, isCopyKey);
@@ -275,8 +302,6 @@ InfoOfReturn delMKeyByMKeyInMOASet(OASet_M* pSet, Data_M key) {
         freeMEntry(&(pSet->arr[index]));
         pSet->arr[index].state = DEL_IN_SET;
         pSet->size--;
-        //删除之后进行重hash
-        freshMOASet(pSet);
         return Success;
     }
 }
