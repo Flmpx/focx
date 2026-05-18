@@ -80,8 +80,7 @@ CmpResult compareMData(Data_M Data_a, Data_M Data_b) {
         return DIFFERENT;
     }
     if (Data_a.dataInfo != Data_b.dataInfo) {
-        //类型相同但数据自带的操作函数及信息不同,说明有问题
-        printf("\nType is the same but operation is different! Please check!\n");
+        
         return DIFFERENT;
     }
 
@@ -103,14 +102,14 @@ Data_M copyMData(Data_M inputData) {
     newData.data = inputData.dataInfo->oper->copydata(inputData.data, inputData.content);
 
     if (newData.data == NULL) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return getEmptyMData();
     }
     //有content才复制content
     if (inputData.dataInfo->hasContent) {
         newData.content = inputData.dataInfo->oper->copycontent(inputData.content);
         if (newData.content == NULL) {
-            printf("\nMemory allocation failed\n");
+            //内存分配失败
             inputData.dataInfo->oper->freedata(newData.data, inputData.content);
             return getEmptyMData();
         }
@@ -137,7 +136,7 @@ Data_S copySData(Data_S inputData, InfoOfData* info) {
     Data_S newData;
     newData.data = info->oper->copydata(inputData.data, inputData.content);
     if (newData.data == NULL) {
-        printf("\nMemory allocation failed\n");
+        //内存分配失败
         return getEmptySData();
     }
 
@@ -145,7 +144,7 @@ Data_S copySData(Data_S inputData, InfoOfData* info) {
     if (info->hasContent) {
         newData.content = info->oper->copycontent(inputData.content);
         if (newData.content == NULL) {
-            printf("\nMemory allocation failed\n");
+            //内存分配失败
             info->oper->freedata(newData.data, inputData.content);
             return getEmptySData();
         }
