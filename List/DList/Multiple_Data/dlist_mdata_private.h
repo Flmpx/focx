@@ -11,4 +11,10 @@ extern void printMValInMDList(Data_M val);
 /// @param plist 链表指针
 extern void printMDList(DList_M* plist);
 
+/// @brief 得到在多类型双向链表中指定位置的Val指针
+/// @param plist 链表指针
+/// @param pos 位置(从0开始)
+/// @return 指定位置的值的指针
+extern Data_M* getPtrMValInByPosInMDList(DList_M* plist, int pos);
+
 #endif
