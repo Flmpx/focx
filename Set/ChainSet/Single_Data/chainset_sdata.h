@@ -69,8 +69,13 @@ extern void freeSKeyInSChainSet(ChainSet_S* pSet, Data_S* key);
 
 /// @brief 释放单类型链式集合
 /// @param pSet 集合指针
+/// @note 数据以及集合的桶也会删除
 extern void freeSChainSet(ChainSet_S* pSet);
 
+/// @brief 清空单类型链式集合
+/// @param pMap 集合指针
+/// @note 只清除数据, 不清除集合的桶
+extern void clearSChainSet(ChainSet_S* pSet);
 
 /// @brief 在单类型链式集合中插入键
 /// @param pSet 集合指针

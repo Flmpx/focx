@@ -59,7 +59,14 @@ extern void freeMKeyInMChainSet(Data_M* key);
 
 /// @brief 释放多类型链式集合
 /// @param pSet 集合指针
+/// @note 数据以及集合的桶也会删除
 extern void freeMChainSet(ChainSet_M* pSet);
+
+
+/// @brief 清空多类型链式集合
+/// @param pMap 集合指针
+/// @note 只清除数据, 不清除集合的桶
+extern void clearMChainSet(ChainSet_M* pSet);
 
 /// @brief 在多类型链式集合中插入键
 /// @param pSet 集合指针

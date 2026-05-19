@@ -54,7 +54,13 @@ extern void freeSEntryInSOAMap(OAMap_S* pMap, Entry_S_inOAMap* entry);
 
 /// @brief 释放单类型开放寻址哈希表
 /// @param pMap 哈希表指针
+/// @note 数据以及哈希表的桶也会删除
 extern void freeSOAMap(OAMap_S* pMap);
+
+/// @brief 清空单类型开放寻址哈希表
+/// @param pMap 哈希表指针
+/// @note 只清除数据, 不清除哈希表的桶
+extern void clearSOAMap(OAMap_S* pMap);
 
 /// @brief 在单类型开放寻址哈希表中插入键值对
 /// @param pMap 哈希表指针

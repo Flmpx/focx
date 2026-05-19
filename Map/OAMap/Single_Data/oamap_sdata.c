@@ -66,6 +66,16 @@ void freeSOAMap(OAMap_S* pMap) {
     initSOAMap(pMap, pMap->keyInfo, pMap->valInfo);
 }
 
+void clearSOAMap(OAMap_S* pMap) {
+    for (int i = 0; i < pMap->len; i++) {
+        if (pMap->arr[i].state == EXIST_IN_MAP) {
+            freeSEntryInSOAMap(pMap, &(pMap->arr[i]));
+        }
+        //全部设置为空, 无论del或者exist
+        pMap->arr[i].state = NONE_IN_MAP;
+    }
+    pMap->size = 0;
+}
 
 
 

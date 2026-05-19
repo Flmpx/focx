@@ -110,7 +110,14 @@ void freeMChainMap(ChainMap_M* pMap) {
     initMChainMap(pMap);
 }
 
-
+void clearMChainMap(ChainMap_M* pMap) {
+    for (int i = 0; i < pMap->len; i++) {
+        //freeMList函数内部会自动初始化每个链表
+        freeMList(&(pMap->arr[i]));
+    }
+    pMap->size = 0;
+    //其他内容无需要变动
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////////////

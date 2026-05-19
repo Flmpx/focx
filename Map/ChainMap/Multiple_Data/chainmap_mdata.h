@@ -72,7 +72,14 @@ extern void freeMEntryInMChainMap(Entry_M_inChainMap* entry);
 
 /// @brief 释放多类型链式哈希表
 /// @param pMap 哈希表指针
+/// @note 数据以及哈希表的桶也会删除
 extern void freeMChainMap(ChainMap_M* pMap);
+
+
+/// @brief 清空多类型链式哈希表
+/// @param pMap 哈希表指针
+/// @note 只清除数据, 不清除哈希表的桶
+extern void clearMChainMap(ChainMap_M* pMap);
 
 /// @brief 在多类型链式哈希表中插入键值对
 /// @param pMap 哈希表指针

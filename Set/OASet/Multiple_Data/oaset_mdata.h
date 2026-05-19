@@ -42,7 +42,14 @@ extern void freeMKeyInMOASet(Data_M* key);
 
 /// @brief 释放多类型开放寻址集合
 /// @param pSet 集合指针
+/// @note 数据以及集合的桶也会删除
 extern void freeMOASet(OASet_M* pSet);
+
+
+/// @brief 清空多类型开放寻址集合
+/// @param pMap 集合指针
+/// @note 只清除数据, 不清除集合的桶
+extern void clearMOASet(OASet_M* pSet);
 
 /// @brief 在多类型开放寻址集合中插入键
 /// @param pSet 集合指针

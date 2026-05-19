@@ -60,7 +60,16 @@ void freeSOASet(OASet_S* pSet) {
 }
 
 
-
+void freeSOASet(OASet_S* pSet) {
+    for (int i = 0; i < pSet->len; i++) {
+        if (pSet->arr[i].state == EXIST_IN_SET) {
+            freeSEntry(pSet, &(pSet->arr[i]));
+        }
+        //全部设置为空, 无论del或者exist
+        pSet->arr[i].state = NONE_IN_SET;
+    }
+    pSet->size = 0;
+}
 
 
 /////////////////////////////////////////////////////////////////////////////////

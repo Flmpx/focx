@@ -99,6 +99,15 @@ void freeMChainSet(ChainSet_M* pSet) {
     initMChainSet(pSet);
 }
 
+void clearMChainSet(ChainSet_M* pSet) {
+    for (int i = 0; i < pSet->len; i++) {
+        //freeMList函数内部会自动初始化每个链表
+        freeMList(&(pSet->arr[i]));
+    }
+    pSet->size = 0;
+    //其他内容无需要变动
+}
+
 
 
 

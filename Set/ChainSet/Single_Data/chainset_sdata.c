@@ -103,7 +103,15 @@ void freeSChainSet(ChainSet_S* pSet) {
     initSChainSet(pSet, pSet->keyInfo);
 }
 
+void clearSChainSet(ChainSet_S* pSet) {
+    for (int i = 0; i < pSet->len; i++) {
+        //freeSList函数内部会自动初始化每个链表
+        freeSList(&(pSet->arr[i]), pSet);
+    }
+    pSet->size = 0;
 
+    //其他内容无需要变动
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////////////
