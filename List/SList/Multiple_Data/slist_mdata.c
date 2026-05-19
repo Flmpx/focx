@@ -349,7 +349,17 @@ void printMSList(SList_M* plist) {
     
 }
 
+//////////////////////////////////////////////////////////////////////////////
+//高级函数功能, 函数声明位于private头文件中
 
+
+Data_M* getPtrMValByPosInMSList(SList_M* plist, int pos) {
+    if ((pos < 0) || (pos >= plist->size)) return NULL;
+    //这里保证不会出现p为空的情况
+    Node_M_inSList* p = getNodeByPos(plist, pos);
+
+    return &(p->val);
+}
 
 
 

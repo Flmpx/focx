@@ -328,6 +328,7 @@ void printMDList(DList_M* plist) {
     Node_M_inDList* p = plist->head;
     printf("[");
     int cnt = 0;
+    //TODO: 改成while循环
     for (; p; p = p->next) {
         if (cnt != 0) {
             printf("-->");
@@ -347,7 +348,7 @@ void printMDList(DList_M* plist) {
 //////////////////////////////////////////////////////////////////////////////
 //高级函数功能, 函数声明位于private头文件中
 
-Data_M* getPtrMValInByPosInMDList(DList_M* plist, int pos) {
+Data_M* getPtrMValByPosInMDList(DList_M* plist, int pos) {
     if ((pos < 0) || (pos >= plist->size)) return NULL;
     //这里保证不会出现p为空的情况
     Node_M_inDList* p = getNodeByPos(plist, pos);

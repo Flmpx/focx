@@ -25,7 +25,7 @@ typedef struct {
 } DList_M;
 
 
-/*** */
+
 /// @brief 初始化多类型双向链表
 /// @param plist 链表指针
 extern void initMDList(DList_M* plist);

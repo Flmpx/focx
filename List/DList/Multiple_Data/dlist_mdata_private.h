@@ -15,6 +15,6 @@ extern void printMDList(DList_M* plist);
 /// @param plist 链表指针
 /// @param pos 位置(从0开始)
 /// @return 指定位置的值的指针
-extern Data_M* getPtrMValInByPosInMDList(DList_M* plist, int pos);
+extern Data_M* getPtrMValByPosInMDList(DList_M* plist, int pos);
 
 #endif
