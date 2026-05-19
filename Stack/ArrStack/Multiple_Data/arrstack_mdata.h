@@ -51,7 +51,8 @@ extern InfoOfReturn pushMValInMArrStack(ArrStack_M* pStack, Data_M val, selectOf
 
 /// @brief 弹出多类型数组栈中的值
 /// @param pStack 栈指针
-/// @return 操作状态码
+/// @return 弹出的值, 若栈空, 返回空值(用字段isEmpty检查)
+/// @note 弹出的值记得使用freeMValInMArrStack函数释放
 extern Data_M popMValInMArrStack(ArrStack_M* pStack);
 
 

@@ -148,11 +148,11 @@ void printMArrStack(ArrStack_M* pStack) {
     int cnt = 0;
     for (int i = 0; i < pStack->size; i++) {
         if (cnt != 0) {
-            printf("---");
+            printf("-->");
         }
         Data_M val = pStack->arr[i];
         val.dataInfo->oper->printdata(val.data, val.content);
     }
-    printf("]");
+    printf("]top");
 }
 
