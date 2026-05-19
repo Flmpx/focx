@@ -76,6 +76,20 @@ void freeSValInSDList(DList_S* plist, Data_S* val) {
 }
 
 
+
+void freeSDList(DList_S* plist) {
+    Node_S_inDList* p = plist->head;
+    Node_S_inDList* q = NULL;
+    while (p) {
+        q = p;
+        p = p->next;
+        
+        freeSData(&(q->val), plist->valInfo);
+        free(q);
+    }
+    initSDList(plist, plist->valInfo);
+}
+
 Data_S getSValBySValInSDList(DList_S* plist, Data_S val, selectOfCopy isCopyVal) {
     Node_S_inDList* p = getNodeBySVal(plist, val);
     if (p == NULL) {
@@ -298,6 +312,16 @@ void reverseSDList(DList_S* plist) {
 }
 
 
+
+
+
+
+
+
+
+
+
+
 void printSValInSDList(DList_S* plist, Data_S val) {
     if (val.isEmpty) {
         printf("\ndata is empty, cannot print\n");
@@ -327,16 +351,5 @@ void printSDList(DList_S* plist) {
 
 
 
-void freeSDList(DList_S* plist) {
-    Node_S_inDList* p = plist->head;
-    Node_S_inDList* q = NULL;
-    while (p) {
-        q = p;
-        p = p->next;
-        
-        freeSData(&(q->val), plist->valInfo);
-        free(q);
-    }
-    initSDList(plist, plist->valInfo);
-}
+
 

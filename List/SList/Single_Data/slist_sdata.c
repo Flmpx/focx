@@ -64,6 +64,19 @@ void freeSValInSSList(SList_S* plist, Data_S* val) {
     freeSData(val, plist->valInfo);
 }
 
+void freeSSList(SList_S* plist) {
+    Node_S_inSList* p = plist->head;
+    Node_S_inSList* q = NULL;
+    while (p) {
+        q = p;
+        p = p->next;
+        
+        freeSData(&(q->val), plist->valInfo);
+        free(q);
+    }
+    initSSList(plist, plist->valInfo);
+}
+
 Data_S getSValBySValInSSList(SList_S* plist, Data_S val, selectOfCopy isCopyKey) {
     Node_S_inSList* p = getNodeBySVal(plist, val);
     if (p == NULL) {
@@ -332,16 +345,5 @@ void printSSList(SList_S* plist) {
 
 
 
-void freeSSList(SList_S* plist) {
-    Node_S_inSList* p = plist->head;
-    Node_S_inSList* q = NULL;
-    while (p) {
-        q = p;
-        p = p->next;
-        
-        freeSData(&(q->val), plist->valInfo);
-        free(q);
-    }
-    initSSList(plist, plist->valInfo);
-}
+
 

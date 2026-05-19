@@ -102,7 +102,17 @@ void freeMValInMSList(Data_M* val) {
     freeMData(val);
 }
 
-
+void freeMSList(SList_M* plist) {
+    Node_M_inSList* p = plist->head;
+    Node_M_inSList* q = NULL;
+    while (p) {
+        q = p;
+        p = p->next;
+        freeMData(&(q->val));
+        free(q);
+    }
+    initMSList(plist);
+}
 
 //这个创建创建一个Node,并整合数据, 根据isCopyVal判断是否要复制数据
 static Node_M_inSList* createNodeAndVal(Data_M val, selectOfCopy isCopyVal) {
@@ -341,15 +351,5 @@ void printMSList(SList_M* plist) {
 
 
 
-void freeMSList(SList_M* plist) {
-    Node_M_inSList* p = plist->head;
-    Node_M_inSList* q = NULL;
-    while (p) {
-        q = p;
-        p = p->next;
-        freeMData(&(q->val));
-        free(q);
-    }
-    initMSList(plist);
-}
+
 
