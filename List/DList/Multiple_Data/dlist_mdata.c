@@ -316,7 +316,7 @@ void reverseMDList(DList_M* plist) {
 
 void printMValInMDList(Data_M val) {
     if (val.isEmpty) {
-        printf("\ndata is empty, cannot print\n");
+        printf("\nval is empty, cannot print\n");
         return;
     }
     printf("[val:");

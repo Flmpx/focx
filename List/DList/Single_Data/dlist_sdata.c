@@ -324,7 +324,7 @@ void reverseSDList(DList_S* plist) {
 
 void printSValInSDList(DList_S* plist, Data_S val) {
     if (val.isEmpty) {
-        printf("\ndata is empty, cannot print\n");
+        printf("\nval is empty, cannot print\n");
         return;
     }
     printf("[val:");
