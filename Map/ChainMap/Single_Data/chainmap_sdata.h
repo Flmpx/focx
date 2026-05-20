@@ -37,7 +37,7 @@ struct List_S_inChainMap {
 
 /// @brief ChainMap_S->采用链表法的Map, 可存储单一类型数据
 typedef struct ChainMap_S {
-    List_S_inChainMap* arr;
+    List_S_inChainMap* buckets;
     InfoOfData* keyInfo;
     InfoOfData* valInfo;
     int mod;

@@ -29,7 +29,7 @@ static Entry_M_inChainSet getEmptyMEntry() {
 
 
 void initMChainSet(ChainSet_M* pSet) {
-    pSet->arr = NULL;
+    pSet->buckets = NULL;
     pSet->len = pSet->size = 0;
     pSet->mod = 2;
 }
@@ -93,16 +93,16 @@ static void freeMList(List_M_inChainSet* plist) {
 
 void freeMChainSet(ChainSet_M* pSet) {
     for (int i = 0; i < pSet->len; i++) {
-        freeMList(&(pSet->arr[i]));
+        freeMList(&(pSet->buckets[i]));
     }
-    free(pSet->arr);
+    free(pSet->buckets);
     initMChainSet(pSet);
 }
 
 void clearMChainSet(ChainSet_M* pSet) {
     for (int i = 0; i < pSet->len; i++) {
         //freeMList函数内部会自动初始化每个链表
-        freeMList(&(pSet->arr[i]));
+        freeMList(&(pSet->buckets[i]));
     }
     pSet->size = 0;
     //其他内容无需要变动
@@ -265,7 +265,7 @@ static InfoOfReturn addMEntryFunction(ChainSet_M* pSet, Data_M key, selectOfCopy
     ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
 
     //在插入之前先进行一次查找
-    Node_M_inChainSet* p = getNodeByMKey(&(pSet->arr[index]), key);
+    Node_M_inChainSet* p = getNodeByMKey(&(pSet->buckets[index]), key);
     if (p) {
         //完全按照使用者的意思
         Entry_M_inChainSet newEntry = createMEntryByMKey(key, isCopyKey);
@@ -285,7 +285,7 @@ static InfoOfReturn addMEntryFunction(ChainSet_M* pSet, Data_M key, selectOfCopy
         //内存分配失败
         return Warning;
     }
-    if (insertMEntryInMList(&(pSet->arr[index]), newEntry) == Warning) {
+    if (insertMEntryInMList(&(pSet->buckets[index]), newEntry) == Warning) {
         //如果插入失败, 为防止调用者把isOwner设置无权且要求复制, 那么在释放的时候就要强行把她设置为有权
 
         if (isCopyKey == Data_Copy) {
@@ -309,7 +309,7 @@ static InfoOfReturn addMEntryForFreshMChainSet(ChainSet_M* pSet, Data_M key) {
     Entry_M_inChainSet entry;
     entry.isEmpty = false;
     entry.key = key;
-    if (insertMEntryInMList(&(pSet->arr[index]), entry) == Warning) {
+    if (insertMEntryInMList(&(pSet->buckets[index]), entry) == Warning) {
         //内存分配失败
         return Warning;
     }
@@ -334,9 +334,9 @@ static void shallowFreeMList(List_M_inChainSet* plist) {
 
 static void shallowFreeMChainSet(ChainSet_M* pSet) {
     for (int i = 0; i < pSet->len; i++) {
-        shallowFreeMList(&(pSet->arr[i]));
+        shallowFreeMList(&(pSet->buckets[i]));
     }
-    free(pSet->arr);
+    free(pSet->buckets);
     initMChainSet(pSet);
 }
 
@@ -368,13 +368,13 @@ static InfoOfReturn freshMChainSet(ChainSet_M* pSet, int newLen) {
     }
 
 
-    newSet.arr = newArray;
+    newSet.buckets = newArray;
     newSet.len = newLen;
     newSet.mod = newMod;
     newSet.size = 0;    //在添加函数中会自动加,这里设置为0
 
     for (int i = 0; i < pSet->len; i++) {
-        Node_M_inChainSet* p = pSet->arr[i].head;
+        Node_M_inChainSet* p = pSet->buckets[i].head;
         
         /*
             将这个循环改为用p来进行判断
@@ -388,7 +388,7 @@ static InfoOfReturn freshMChainSet(ChainSet_M* pSet, int newLen) {
             }
             p = p->next;
         }
-        // for (int j = 0; j < pSet->arr[i].size; j++, p = p->next) {
+        // for (int j = 0; j < pSet->buckets[i].size; j++, p = p->next) {
         //     if (addMEntryForFreshMChainSet(&newSet, p->entry.key) == Warning) {
         //         //内存分配失败
         //         // freeMChainSet(&newSet);
@@ -457,10 +457,10 @@ InfoOfReturn insertMKeyInMChainSet(ChainSet_M* pSet, Data_M key, selectOfCopy is
 //查找类
 
 Data_M getMKeyByMKeyInMChainSet(ChainSet_M* pSet, Data_M key, selectOfCopy isCopyKey) {
-    if (pSet->len == 0 || pSet->size == 0 || pSet->arr == NULL) return getEmptyMData();
+    if (pSet->len == 0 || pSet->size == 0 || pSet->buckets == NULL) return getEmptyMData();
     ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
     
-    Node_M_inChainSet* p = getNodeByMKey(&(pSet->arr[index]), key);
+    Node_M_inChainSet* p = getNodeByMKey(&(pSet->buckets[index]), key);
     if (p == NULL) {
         return getEmptyMData();
     }
@@ -478,10 +478,10 @@ Data_M getMKeyByMKeyInMChainSet(ChainSet_M* pSet, Data_M key, selectOfCopy isCop
 
 
 bool hasMKeyInMChainSet(ChainSet_M* pSet, Data_M key) {
-    if (pSet->len == 0 || pSet->size == 0 || pSet->arr == NULL) return false;
+    if (pSet->len == 0 || pSet->size == 0 || pSet->buckets == NULL) return false;
     ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
     
-    Node_M_inChainSet* p = getNodeByMKey(&(pSet->arr[index]), key);
+    Node_M_inChainSet* p = getNodeByMKey(&(pSet->buckets[index]), key);
     if (p == NULL) {
         return false;
     } else {
@@ -496,10 +496,10 @@ bool hasMKeyInMChainSet(ChainSet_M* pSet, Data_M key) {
 
 
 InfoOfReturn delMKeyByMKeyInMChainSet(ChainSet_M* pSet, Data_M key) {
-    if (pSet->len == 0 || pSet->size == 0 || pSet->arr == NULL) return Warning;
+    if (pSet->len == 0 || pSet->size == 0 || pSet->buckets == NULL) return Warning;
     ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
     
-    if (delNodeByMKey(&(pSet->arr[index]), key) == None) {
+    if (delNodeByMKey(&(pSet->buckets[index]), key) == None) {
         //没找到
         return None;
     }
@@ -530,8 +530,8 @@ void printMChainSet(ChainSet_M* pSet) {
     int cnt = 0;
     printf("[");
     for (int i = 0; i < pSet->len; i++) {
-        Node_M_inChainSet* p = pSet->arr[i].head;
-        for (int j = 0; j < pSet->arr[i].size; j++, p = p->next) {
+        Node_M_inChainSet* p = pSet->buckets[i].head;
+        for (int j = 0; j < pSet->buckets[i].size; j++, p = p->next) {
             if (cnt != 0) {
                 printf(", ");
             }

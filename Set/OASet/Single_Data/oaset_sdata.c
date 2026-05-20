@@ -15,7 +15,7 @@
 
 
 void initSOASet(OASet_S* pSet, InfoOfData* keyInfo)  {
-    pSet->arr = NULL;
+    pSet->buckets = NULL;
     pSet->keyInfo = keyInfo;
     pSet->len = pSet->size = 0;
     pSet->mod = 2;
@@ -51,22 +51,22 @@ static void freeSEntry(OASet_S* pSet, Entry_S_inOASet* entry) {
 
 void freeSOASet(OASet_S* pSet) {
     for (int i = 0; i < pSet->len; i++) {
-        if (pSet->arr[i].state == EXIST_IN_SET) {
-            freeSEntry(pSet, &(pSet->arr[i]));
+        if (pSet->buckets[i].state == EXIST_IN_SET) {
+            freeSEntry(pSet, &(pSet->buckets[i]));
         }
     }
-    free(pSet->arr);
+    free(pSet->buckets);
     initSOASet(pSet, pSet->keyInfo);
 }
 
 
 void freeSOASet(OASet_S* pSet) {
     for (int i = 0; i < pSet->len; i++) {
-        if (pSet->arr[i].state == EXIST_IN_SET) {
-            freeSEntry(pSet, &(pSet->arr[i]));
+        if (pSet->buckets[i].state == EXIST_IN_SET) {
+            freeSEntry(pSet, &(pSet->buckets[i]));
         }
         //全部设置为空, 无论del或者exist
-        pSet->arr[i].state = NONE_IN_SET;
+        pSet->buckets[i].state = NONE_IN_SET;
     }
     pSet->size = 0;
 }
@@ -103,20 +103,20 @@ static InfoOfReturn addSEntryFunction(OASet_S* pSet, Data_S key, selectOfCopy is
     int flagFindDel = 0;
     ll firstDelIndex = pSet->len+10;
 
-    while (pSet->arr[index].state != NONE_IN_SET) {
-        if (pSet->arr[index].state == DEL_IN_SET && flagFindDel == 0) {
+    while (pSet->buckets[index].state != NONE_IN_SET) {
+        if (pSet->buckets[index].state == DEL_IN_SET && flagFindDel == 0) {
             firstDelIndex = index;
             flagFindDel = 1;
         }
-        if (compareSData(pSet->arr[index].key, pSet->keyInfo, key, pSet->keyInfo) == SAME)  {
+        if (compareSData(pSet->buckets[index].key, pSet->keyInfo, key, pSet->keyInfo) == SAME)  {
             Entry_S_inOASet newEntry = createSEntryBySkey(pSet, key, isCopyKey);
             if (newEntry.isEmpty) {
                 //内存分配失败
                 return Warning;
             }
             newEntry.state = EXIST_IN_SET;
-            freeSEntry(pSet, &(pSet->arr[index]));
-            pSet->arr[index] = newEntry;
+            freeSEntry(pSet, &(pSet->buckets[index]));
+            pSet->buckets[index] = newEntry;
             return None;
         }
         index++;
@@ -133,8 +133,8 @@ static InfoOfReturn addSEntryFunction(OASet_S* pSet, Data_S key, selectOfCopy is
         return Warning;
     }
 
-    pSet->arr[index] = newEntry;
-    pSet->arr[index].state = EXIST_IN_SET;
+    pSet->buckets[index] = newEntry;
+    pSet->buckets[index].state = EXIST_IN_SET;
     pSet->size++;
     return Success;
 
@@ -146,14 +146,14 @@ static InfoOfReturn addSEntryFunction(OASet_S* pSet, Data_S key, selectOfCopy is
 //专门为重哈希做的软拷贝方式添加的Entry
 static InfoOfReturn addSEntryForFreshSOASet(OASet_S* pSet, Data_S key) {
     ll index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
-    while (pSet->arr[index].state != NONE_IN_SET) {
+    while (pSet->buckets[index].state != NONE_IN_SET) {
         index++;
         index %= pSet->len;
     }
 
-    pSet->arr[index].key = key;
-    pSet->arr[index].state = EXIST_IN_SET;
-    pSet->arr[index].isEmpty = false;
+    pSet->buckets[index].key = key;
+    pSet->buckets[index].state = EXIST_IN_SET;
+    pSet->buckets[index].isEmpty = false;
     pSet->size++;
     return Success;
 
@@ -175,25 +175,25 @@ static InfoOfReturn freshSOASet(OASet_S* pSet, int newLen) {
     newSet.mod = getLargestPrime(newLen);
     newSet.keyInfo = pSet->keyInfo;
     newSet.size = 0;    //再添加函数中会自动加,这里设置为0
-    newSet.arr = (Entry_S_inOASet*)malloc(newLen*sizeof(Entry_S_inOASet));
-    if (newSet.arr == NULL) {
+    newSet.buckets = (Entry_S_inOASet*)malloc(newLen*sizeof(Entry_S_inOASet));
+    if (newSet.buckets == NULL) {
         //内存分配失败
         return Warning;
     }
 
     for (int i = 0; i < newSet.len; i++) {
-        newSet.arr[i].isEmpty = true;
-        newSet.arr[i].state = NONE_IN_SET;
+        newSet.buckets[i].isEmpty = true;
+        newSet.buckets[i].state = NONE_IN_SET;
     }
 
     
     for (int i = 0; i < pSet->len; i++) {
-        if (pSet->arr[i].state == EXIST_IN_SET) {
-            addSEntryForFreshSOASet(&newSet, pSet->arr[i].key);
+        if (pSet->buckets[i].state == EXIST_IN_SET) {
+            addSEntryForFreshSOASet(&newSet, pSet->buckets[i].key);
 
         }
     }
-    free(pSet->arr);
+    free(pSet->buckets);
 
     *pSet = newSet;
 
@@ -249,15 +249,15 @@ InfoOfReturn insertSKeyInSOASet(OASet_S* pSet, Data_S key, selectOfCopy isCopyKe
 //查找类
 
 static Position getIndexBySKey(OASet_S* pSet, Data_S key) {
-    if (pSet->arr == NULL || pSet->size == 0 || pSet->len == 0) return NOT_FOUND;
+    if (pSet->buckets == NULL || pSet->size == 0 || pSet->len == 0) return NOT_FOUND;
     ll index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
 
     for (int i = 0; i < pSet->len; i++) {
-        if (pSet->arr[index].state == NONE_IN_SET) {
+        if (pSet->buckets[index].state == NONE_IN_SET) {
             return NOT_FOUND;
         }
 
-        if (compareSData(pSet->arr[index].key, pSet->keyInfo, key, pSet->keyInfo) == SAME) {
+        if (compareSData(pSet->buckets[index].key, pSet->keyInfo, key, pSet->keyInfo) == SAME) {
             return index;
         }
         index++;
@@ -279,9 +279,9 @@ Data_S getSKeyBySKeyInSOASet(OASet_S* pSet, Data_S key, selectOfCopy isCopyKey) 
             那会自动返回空的Data_M类型,
             所有这里直接返回就行
         */
-        return copySData(pSet->arr[index].key, pSet->keyInfo);
+        return copySData(pSet->buckets[index].key, pSet->keyInfo);
     } else {
-        return pSet->arr[index].key;
+        return pSet->buckets[index].key;
     }
     
 }
@@ -306,8 +306,8 @@ InfoOfReturn delSKeyBySKeyInSOASet(OASet_S* pSet, Data_S key) {
     if (index == NOT_FOUND) {
         return None;
     } else {
-        freeSEntry(pSet, &(pSet->arr[index]));
-        pSet->arr[index].state = DEL_IN_SET;
+        freeSEntry(pSet, &(pSet->buckets[index]));
+        pSet->buckets[index].state = DEL_IN_SET;
         pSet->size--;
         return Success;
     }
@@ -339,11 +339,11 @@ void printSOASet(OASet_S* pSet) {
     printf("[");
 
     for (int i = 0; i < pSet->len; i++) {
-        if (pSet->arr[i].isEmpty == false) {
+        if (pSet->buckets[i].isEmpty == false) {
             if (cnt != 0) {
                 printf(", ");
             }
-            printSKeyInSOASet(pSet, pSet->arr[i].key);
+            printSKeyInSOASet(pSet, pSet->buckets[i].key);
             cnt++;
         }
     }

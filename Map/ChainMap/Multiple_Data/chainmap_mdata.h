@@ -42,7 +42,7 @@ struct List_M_inChainMap {
 
 /// @brief ChainMap_M->采用链表法的Map, 可存储任意类型数据
 typedef struct ChainMap_M {
-    List_M_inChainMap* arr;
+    List_M_inChainMap* buckets;
     int mod;
     int len;
     int size;

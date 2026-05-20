@@ -32,7 +32,7 @@ static Entry_S_inChainMap getEmptySEntry() {
 
 /************** */
 void initSChainMap(ChainMap_S* pMap, InfoOfData* keyInfo, InfoOfData* valInfo) {
-    pMap->arr = NULL;
+    pMap->buckets = NULL;
     pMap->len = pMap->size = 0;
     pMap->mod = 2;
     pMap->keyInfo = keyInfo;
@@ -102,9 +102,9 @@ static void freeSList(List_S_inChainMap* plist, ChainMap_S* pMap) {
 
 void freeSChainMap(ChainMap_S* pMap) {
     for (int i = 0; i < pMap->len; i++) {
-        freeSList(&(pMap->arr[i]), pMap);
+        freeSList(&(pMap->buckets[i]), pMap);
     }
-    free(pMap->arr);
+    free(pMap->buckets);
     initSChainMap(pMap, pMap->keyInfo, pMap->valInfo);
 }
 
@@ -112,7 +112,7 @@ void freeSChainMap(ChainMap_S* pMap) {
 void clearSChainMap(ChainMap_S* pMap) {
     for (int i = 0; i < pMap->len; i++) {
         //freeSList函数内部会自动初始化每个链表
-        freeSList(&(pMap->arr[i]), pMap);
+        freeSList(&(pMap->buckets[i]), pMap);
     }
     pMap->size = 0;
     //其他内容无需要变动
@@ -302,7 +302,7 @@ static int addSEntryFunction(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyKe
     //hash
     ll index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
 
-    Node_S_inChainMap* p = getNodeBySKey(&(pMap->arr[index]), key, pMap->keyInfo);
+    Node_S_inChainMap* p = getNodeBySKey(&(pMap->buckets[index]), key, pMap->keyInfo);
     if (p) {
         //完全按照使用者的意思
         Entry_S_inChainMap newEntry = createSEntryBySKeyAndMVal(pMap, key, isCopyKey, val, isCopyVal);
@@ -322,7 +322,7 @@ static int addSEntryFunction(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyKe
         //内存分配失败
         return Warning;
     }
-    if (insertSEntryInSList(&(pMap->arr[index]), newEntry) == Warning) {
+    if (insertSEntryInSList(&(pMap->buckets[index]), newEntry) == Warning) {
         //如果插入失败, 为防止调用者把isOwner设置无权且要求复制, 那么在释放的时候就要强行把她设置为有权
         if (isCopyKey == Data_Copy) {
             newEntry.key.isOwner = true;
@@ -348,7 +348,7 @@ static int addSEntryForFreshSChainMap(ChainMap_S* pMap, Data_S key, Data_S val) 
     entry.isEmpty = false;
     entry.key = key;
     entry.val = val;
-    if (insertSEntryInSList(&(pMap->arr[index]), entry) == Warning) {
+    if (insertSEntryInSList(&(pMap->buckets[index]), entry) == Warning) {
         //如果失败的话, 调用这个函数的freshMap函数会进行清理操作, 这里直接返回错误码就行
         //内存分配失败
         return Warning;
@@ -375,9 +375,9 @@ static void shallowFreeSList(List_S_inChainMap* plist) {
 
 static void shallowFreeSChainMap(ChainMap_S* pMap) {
     for (int i = 0; i < pMap->len; i++) {
-        shallowFreeSList(&(pMap->arr[i]));
+        shallowFreeSList(&(pMap->buckets[i]));
     }
-    free(pMap->arr);
+    free(pMap->buckets);
     initSChainMap(pMap, pMap->keyInfo, pMap->valInfo);
 }
 
@@ -419,13 +419,13 @@ static int freshSChainMap(ChainMap_S* pMap, int newLen) {
 
     newMap.keyInfo = pMap->keyInfo;
     newMap.valInfo = pMap->valInfo;
-    newMap.arr = newArray;
+    newMap.buckets = newArray;
     newMap.len = newLen;
     newMap.mod = newMod;
     newMap.size = 0;    //再添加函数中会自动加,这里设置为0
 
     for (int i = 0; i < pMap->len; i++) {
-        Node_S_inChainMap* p = pMap->arr[i].head;
+        Node_S_inChainMap* p = pMap->buckets[i].head;
         while (p) {
             if (addSEntryForFreshSChainMap(&newMap, p->entry.key, p->entry.val) == Warning) {
                 shallowFreeSChainMap(&newMap);
@@ -434,7 +434,7 @@ static int freshSChainMap(ChainMap_S* pMap, int newLen) {
             }
             p = p->next;
         }
-        // for (int j = 0; j < pMap->arr[i].size; j++, p = p->next) {
+        // for (int j = 0; j < pMap->buckets[i].size; j++, p = p->next) {
         //     if (addSEntryForFreshSChainMap(&newMap, p->entry.key, p->entry.val) == Warning) {
         //         //内存分配失败
         //         return Warning;
@@ -502,10 +502,10 @@ int insertSKeyAndSValInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCo
 
 
 Data_S getSKeyBySKeyInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyKey) {
-    if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return getEmptySData();
+    if (pMap->len == 0 || pMap->size == 0 || pMap->buckets == NULL) return getEmptySData();
     ll index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
     
-    Node_S_inChainMap* p = getNodeBySKey(&(pMap->arr[index]), key, pMap->keyInfo);
+    Node_S_inChainMap* p = getNodeBySKey(&(pMap->buckets[index]), key, pMap->keyInfo);
     if (p == NULL) {
         return getEmptySData();
     }
@@ -525,10 +525,10 @@ Data_S getSKeyBySKeyInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCop
 
 
 Data_S getSValBySKeyInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyVal) {
-    if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return getEmptySData();
+    if (pMap->len == 0 || pMap->size == 0 || pMap->buckets == NULL) return getEmptySData();
     ll index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
     
-    Node_S_inChainMap* p = getNodeBySKey(&(pMap->arr[index]), key, pMap->keyInfo);
+    Node_S_inChainMap* p = getNodeBySKey(&(pMap->buckets[index]), key, pMap->keyInfo);
     if (p == NULL) {
         return getEmptySData();
     }
@@ -540,10 +540,10 @@ Data_S getSValBySKeyInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCop
 }
 
 Entry_S_inChainMap getSEntryBySKeyInSChainMap(ChainMap_S* pMap, Data_S key, selectOfCopy isCopyEntry) {
-    if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return getEmptySEntry();
+    if (pMap->len == 0 || pMap->size == 0 || pMap->buckets == NULL) return getEmptySEntry();
     ll index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
     
-    Node_S_inChainMap* p = getNodeBySKey(&(pMap->arr[index]), key, pMap->keyInfo);
+    Node_S_inChainMap* p = getNodeBySKey(&(pMap->buckets[index]), key, pMap->keyInfo);
     if (p == NULL) {
         return getEmptySEntry();
     }
@@ -570,10 +570,10 @@ Entry_S_inChainMap getSEntryBySKeyInSChainMap(ChainMap_S* pMap, Data_S key, sele
 }
 
 bool hasSKeyInSChainMap(ChainMap_S* pMap, Data_S key) {
-    if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return false;
+    if (pMap->len == 0 || pMap->size == 0 || pMap->buckets == NULL) return false;
     ll index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
     
-    Node_S_inChainMap* p = getNodeBySKey(&(pMap->arr[index]), key, pMap->keyInfo);
+    Node_S_inChainMap* p = getNodeBySKey(&(pMap->buckets[index]), key, pMap->keyInfo);
     if (p == NULL) {
         return false;
     } else {
@@ -588,10 +588,10 @@ bool hasSKeyInSChainMap(ChainMap_S* pMap, Data_S key) {
 
 
 InfoOfReturn delSEntryBySKeyInSChainMap(ChainMap_S* pMap, Data_S key) {
-    if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return Warning;
+    if (pMap->len == 0 || pMap->size == 0 || pMap->buckets == NULL) return Warning;
     ll index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
 
-    if (delNodeBySKey(&(pMap->arr[index]), key, pMap) ==  None) {
+    if (delNodeBySKey(&(pMap->buckets[index]), key, pMap) ==  None) {
         //没找到
         return None;
     }
@@ -654,8 +654,8 @@ void printSChainMap(ChainMap_S* pMap) {
     int cnt = 0;
     printf("[");
     for (int i = 0; i < pMap->len; i++) {
-        Node_S_inChainMap* p = pMap->arr[i].head;
-        for (int j = 0; j < pMap->arr[i].size; j++, p = p->next) {
+        Node_S_inChainMap* p = pMap->buckets[i].head;
+        for (int j = 0; j < pMap->buckets[i].size; j++, p = p->next) {
             if (cnt != 0) {
                 printf(", ");
             }

@@ -44,7 +44,7 @@ struct List_S_inChainSet {
 
 /// @brief ChainSet_S->采用链表法的Set, 可存储单一类型数据
 typedef struct ChainSet_S {
-    List_S_inChainSet* arr;
+    List_S_inChainSet* buckets;
     InfoOfData* keyInfo;
     int mod;
     int len;

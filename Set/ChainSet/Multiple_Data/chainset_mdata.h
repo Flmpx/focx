@@ -40,7 +40,7 @@ struct List_M_inChainSet {
 
 /// @brief ChainSet_M->采用链表法的Set, 可存储任意类型数据
 typedef struct ChainSet_M {
-    List_M_inChainSet* arr;
+    List_M_inChainSet* buckets;
     int mod;
     int len;
     int size;

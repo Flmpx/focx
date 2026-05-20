@@ -22,7 +22,7 @@ static Entry_M_inOAMap getEmptyMEntry() {
 
 
 void initMOAMap(OAMap_M* pMap) {
-    pMap->arr = NULL;
+    pMap->buckets = NULL;
     pMap->len = pMap->size = 0;
     pMap->mod = 2;
 }
@@ -56,22 +56,22 @@ void freeMEntryInMOAMap(Entry_M_inOAMap* entry) {
 
 void freeMOAMap(OAMap_M* pMap) {
     for (int i = 0; i < pMap->len; i++) {
-        if (pMap->arr[i].state == EXIST_IN_MAP) {
-            freeMEntryInMOAMap(&(pMap->arr[i]));
+        if (pMap->buckets[i].state == EXIST_IN_MAP) {
+            freeMEntryInMOAMap(&(pMap->buckets[i]));
         }
     }
-    free(pMap->arr);
+    free(pMap->buckets);
     initMOAMap(pMap);
 }
 
 
 void clearMOAMap(OAMap_M* pMap) {
     for (int i = 0; i < pMap->len; i++) {
-        if (pMap->arr[i].state == EXIST_IN_MAP) {
-            freeMEntryInMOAMap(&(pMap->arr[i]));
+        if (pMap->buckets[i].state == EXIST_IN_MAP) {
+            freeMEntryInMOAMap(&(pMap->buckets[i]));
         }
         //全部设置为空, 无论del或者exist
-        pMap->arr[i].state = NONE_IN_MAP;
+        pMap->buckets[i].state = NONE_IN_MAP;
     }
     pMap->size = 0;
 }
@@ -135,13 +135,13 @@ static InfoOfReturn addMEntryFunction(OAMap_M* pMap, Data_M key, selectOfCopy is
     int flagFindDel = 0;
     ll firstDelIndex = pMap->len+10;
     //找到一个NONE或者DEl标记的位置
-    while (pMap->arr[index].state != NONE_IN_MAP) {
-        if (pMap->arr[index].state == DEL_IN_MAP && flagFindDel == 0) {
+    while (pMap->buckets[index].state != NONE_IN_MAP) {
+        if (pMap->buckets[index].state == DEL_IN_MAP && flagFindDel == 0) {
             firstDelIndex = index;
             flagFindDel = 1;
         }
         //如果发现是同一个key,则更新数据
-        if (compareMData(pMap->arr[index].key, key) == SAME) {
+        if (compareMData(pMap->buckets[index].key, key) == SAME) {
             //完全按照使用者的意思
             Entry_M_inOAMap newEntry = creatMEntryByMKeyAndMVal(key, isCopyKey, val, isCopyVal);
             if (newEntry.isEmpty) {
@@ -150,9 +150,9 @@ static InfoOfReturn addMEntryFunction(OAMap_M* pMap, Data_M key, selectOfCopy is
             }
             //由于creatMEntryByMKeyAndMVal函数不会给state赋值, 所有这里进行赋值
             newEntry.state = EXIST_IN_MAP;
-            freeMEntryInMOAMap(&(pMap->arr[index]));
+            freeMEntryInMOAMap(&(pMap->buckets[index]));
 
-            pMap->arr[index] = newEntry;
+            pMap->buckets[index] = newEntry;
 
             return Success;
         }
@@ -171,8 +171,8 @@ static InfoOfReturn addMEntryFunction(OAMap_M* pMap, Data_M key, selectOfCopy is
         //内存分配失败
         return Warning;
     }
-    pMap->arr[index] = newEntry;
-    pMap->arr[index].state = EXIST_IN_MAP;
+    pMap->buckets[index] = newEntry;
+    pMap->buckets[index].state = EXIST_IN_MAP;
     pMap->size++;
     return Success;
 }
@@ -183,14 +183,14 @@ static InfoOfReturn addMEntryFunction(OAMap_M* pMap, Data_M key, selectOfCopy is
 //专门为重哈希做的软拷贝方式添加的Entry
 static InfoOfReturn addMEntryForFreshMOAMap(OAMap_M* pMap, Data_M key, Data_M val) {
     ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pMap->mod;
-    while (pMap->arr[index].state != NONE_IN_MAP) {
+    while (pMap->buckets[index].state != NONE_IN_MAP) {
         index++;
         index %= pMap->len;
     }
-    pMap->arr[index].key = key;
-    pMap->arr[index].val = val;
-    pMap->arr[index].state = EXIST_IN_MAP;
-    pMap->arr[index].isEmpty = false;
+    pMap->buckets[index].key = key;
+    pMap->buckets[index].val = val;
+    pMap->buckets[index].state = EXIST_IN_MAP;
+    pMap->buckets[index].isEmpty = false;
     pMap->size++;
     return Success;
 }
@@ -223,18 +223,18 @@ static InfoOfReturn freshMOAMap(OAMap_M* pMap, int newLen) {
         newArray[i].isEmpty = true;
     }
 
-    newMap.arr = newArray;
+    newMap.buckets = newArray;
     newMap.len = newLen;
     newMap.mod = newMod;
     newMap.size = 0;    //再添加函数中会自动加,这里设置为0
     for (int i = 0; i < pMap->len; i++) {
-        if (pMap->arr[i].state == EXIST_IN_MAP) {
-            addMEntryForFreshMOAMap(&newMap, pMap->arr[i].key, pMap->arr[i].val);
+        if (pMap->buckets[i].state == EXIST_IN_MAP) {
+            addMEntryForFreshMOAMap(&newMap, pMap->buckets[i].key, pMap->buckets[i].val);
         }
     }
 
     //释放掉原有Entry数组
-    free(pMap->arr);
+    free(pMap->buckets);
 
     //给新址
     *pMap = newMap;
@@ -291,15 +291,15 @@ InfoOfReturn insertMKeyAndMValInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy i
 
 //通过key返回key在Map中的位置
 static Position getIndexByMKey(OAMap_M* pMap, Data_M key) {
-    if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return NOT_FOUND;
+    if (pMap->len == 0 || pMap->size == 0 || pMap->buckets == NULL) return NOT_FOUND;
     ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pMap->mod;
     for (int i = 0; i < pMap->len; i++) {
-        if (pMap->arr[index].state == NONE_IN_MAP) {
+        if (pMap->buckets[index].state == NONE_IN_MAP) {
             return NOT_FOUND;
         }
         
         //这个也可以比较为空的情况
-        if (compareMData(pMap->arr[index].key, key) == SAME) {
+        if (compareMData(pMap->buckets[index].key, key) == SAME) {
             return index;
         }
         index++;
@@ -320,9 +320,9 @@ Data_M getMKeyByMKeyInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy isCopyKey) 
             那会自动返回空的Data_M类型,
             所有这里直接返回就行
         */
-        return copyMData(pMap->arr[index].key);
+        return copyMData(pMap->buckets[index].key);
     } else {
-        return pMap->arr[index].key;
+        return pMap->buckets[index].key;
     }
 }
 
@@ -332,9 +332,9 @@ Data_M getMValByMKeyInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy isCopyVal) 
         return getEmptyMData();
     } 
     if (isCopyVal == Data_Copy) {
-        return copyMData(pMap->arr[index].val);
+        return copyMData(pMap->buckets[index].val);
     } else {
-        return pMap->arr[index].val;
+        return pMap->buckets[index].val;
     }
 }
 
@@ -345,7 +345,7 @@ Entry_M_inOAMap getMEntryByMKeyInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy 
     }
     if (isCopyEntry == Data_Copy) {
         Entry_M_inOAMap newEntry;
-        newEntry = creatMEntryByMKeyAndMVal(pMap->arr[index].key, Data_Copy, pMap->arr[index].val, Data_Copy);
+        newEntry = creatMEntryByMKeyAndMVal(pMap->buckets[index].key, Data_Copy, pMap->buckets[index].val, Data_Copy);
         //函数已经说明是会复制的了, 返回的具有权限
         newEntry.key.isOwner = true;
         newEntry.val.isOwner = true;
@@ -358,7 +358,7 @@ Entry_M_inOAMap getMEntryByMKeyInMOAMap(OAMap_M* pMap, Data_M key, selectOfCopy 
         */
         return newEntry;
     } else {
-        return pMap->arr[index];
+        return pMap->buckets[index];
     }
 }
 
@@ -382,8 +382,8 @@ InfoOfReturn delMEntryByMKeyInMOAMap(OAMap_M* pMap, Data_M key) {
     if (index == NOT_FOUND) {
         return None;
     } else {
-        freeMEntryInMOAMap(&(pMap->arr[index]));
-        pMap->arr[index].state = DEL_IN_MAP;
+        freeMEntryInMOAMap(&(pMap->buckets[index]));
+        pMap->buckets[index].state = DEL_IN_MAP;
         pMap->size--;
         return Success;
     }
@@ -438,11 +438,11 @@ void printMOAMap(OAMap_M* pMap) {
     int cnt = 0;
     printf("[");
     for (int i = 0; i < pMap->len; i++) {
-        if (pMap->arr[i].isEmpty == false) {
+        if (pMap->buckets[i].isEmpty == false) {
             if (cnt != 0) {
                 printf(", ");
             }
-            printMEntryInMOAMap(pMap->arr[i]);
+            printMEntryInMOAMap(pMap->buckets[i]);
             cnt++;
         }
         

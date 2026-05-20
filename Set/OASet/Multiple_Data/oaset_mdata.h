@@ -19,7 +19,7 @@ typedef struct Entry_M_inOASet {
 
 /// @brief OASet_M->采用开放寻址法的Set, 可存储任意类型数据
 typedef struct OASet_M {
-    Entry_M_inOASet* arr;
+    Entry_M_inOASet* buckets;
     int mod;
     int len;
     int size;

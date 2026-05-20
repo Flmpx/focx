@@ -32,7 +32,7 @@ static Entry_S_inChainSet getEmptySEntry() {
 
 
 void initSChainSet(ChainSet_S* pSet, InfoOfData* keyInfo) {
-    pSet->arr = NULL;
+    pSet->buckets = NULL;
     pSet->len = pSet->size = 0;
     pSet->mod = 2;
     pSet->keyInfo = keyInfo;
@@ -97,16 +97,16 @@ static void freeSList(List_S_inChainSet* plist, ChainSet_S* pSet) {
 
 void freeSChainSet(ChainSet_S* pSet) {
     for (int i = 0; i < pSet->len; i++) {
-        freeSList(&(pSet->arr[i]), pSet);
+        freeSList(&(pSet->buckets[i]), pSet);
     }
-    free(pSet->arr);
+    free(pSet->buckets);
     initSChainSet(pSet, pSet->keyInfo);
 }
 
 void clearSChainSet(ChainSet_S* pSet) {
     for (int i = 0; i < pSet->len; i++) {
         //freeSList函数内部会自动初始化每个链表
-        freeSList(&(pSet->arr[i]), pSet);
+        freeSList(&(pSet->buckets[i]), pSet);
     }
     pSet->size = 0;
 
@@ -277,7 +277,7 @@ static int addSEntryFunction(ChainSet_S* pSet, Data_S key, selectOfCopy isCopyKe
         TODO: 可以先进行复制Key, 复制都失败了, 还有必要查找吗?
     */
 
-    Node_S_inChainSet* p = getNodeBySKey(&(pSet->arr[index]), key, pSet->keyInfo);
+    Node_S_inChainSet* p = getNodeBySKey(&(pSet->buckets[index]), key, pSet->keyInfo);
     if (p) {
         //完全按照使用者的意思
         Entry_S_inChainSet newEntry = createSEntryBySKey(pSet, key, isCopyKey);
@@ -299,7 +299,7 @@ static int addSEntryFunction(ChainSet_S* pSet, Data_S key, selectOfCopy isCopyKe
     }
     
 
-    if (insertSEntryInSList(&(pSet->arr[index]), newEntry) == Warning) {
+    if (insertSEntryInSList(&(pSet->buckets[index]), newEntry) == Warning) {
         //如果插入失败, 为防止调用者把isOwner设置无权且要求复制, 那么在释放的时候就要强行把她设置为有权
         if (isCopyKey == Data_Copy) {
             newEntry.key.isOwner = true;
@@ -321,7 +321,7 @@ static int addSEntryForFreshSChainSet(ChainSet_S* pSet, Data_S key) {
     Entry_S_inChainSet entry;
     entry.isEmpty = false;
     entry.key = key;
-    if (insertSEntryInSList(&(pSet->arr[index]), entry) == Warning) {
+    if (insertSEntryInSList(&(pSet->buckets[index]), entry) == Warning) {
         //如果失败的话, 调用这个函数的freshSet函数会进行清理操作, 这里直接返回错误码就行
         //内存分配失败
         return Warning;
@@ -348,9 +348,9 @@ static void shallowFreeSList(List_S_inChainSet* plist) {
 
 static void shallowFreeSChainSet(ChainSet_S* pSet) {
     for (int i = 0; i < pSet->len; i++) {
-        shallowFreeSList(&(pSet->arr[i]));
+        shallowFreeSList(&(pSet->buckets[i]));
     }
-    free(pSet->arr);
+    free(pSet->buckets);
     initSChainSet(pSet, pSet->keyInfo);
 }
 
@@ -382,13 +382,13 @@ static int freshSChainSet(ChainSet_S* pSet, int newLen) {
     }
 
     newSet.keyInfo = pSet->keyInfo;
-    newSet.arr = newArray;
+    newSet.buckets = newArray;
     newSet.len = newLen;
     newSet.mod = newMod;
     newSet.size = 0;    //再添加函数中会自动加,这里设置为0
 
     for (int i = 0; i < pSet->len; i++) {
-        Node_S_inChainSet* p = pSet->arr[i].head;
+        Node_S_inChainSet* p = pSet->buckets[i].head;
 
         while (p) {
             if (addSEntryForFreshSChainSet(&newSet, p->entry.key) == Warning) {
@@ -398,7 +398,7 @@ static int freshSChainSet(ChainSet_S* pSet, int newLen) {
             }
             p = p->next;
         }
-        // for (int j = 0; j < pSet->arr[i].size; j++, p = p->next) {
+        // for (int j = 0; j < pSet->buckets[i].size; j++, p = p->next) {
         //     if (addSEntryForFreshSChainSet(&newSet, p->entry.key) == Warning) {
         //         //内存分配失败
         //         return Warning;
@@ -407,9 +407,9 @@ static int freshSChainSet(ChainSet_S* pSet, int newLen) {
     }
 
     for (int i = 0; i < pSet->len; i++) {
-        shallowFreeSList(&(pSet->arr[i]));
+        shallowFreeSList(&(pSet->buckets[i]));
     }
-    free(pSet->arr);
+    free(pSet->buckets);
     *pSet = newSet;
 
     return Success;
@@ -467,10 +467,10 @@ int insertSKeyInSChainSet(ChainSet_S* pSet, Data_S key, selectOfCopy isCopyKey) 
 
 
 Data_S getSKeyBySKeyInSChainSet(ChainSet_S* pSet, Data_S key, selectOfCopy isCopyKey) {
-    if (pSet->len == 0 || pSet->size == 0 || pSet->arr == NULL) return getEmptySData();
+    if (pSet->len == 0 || pSet->size == 0 || pSet->buckets == NULL) return getEmptySData();
     ll index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
     
-    Node_S_inChainSet* p = getNodeBySKey(&(pSet->arr[index]), key, pSet->keyInfo);
+    Node_S_inChainSet* p = getNodeBySKey(&(pSet->buckets[index]), key, pSet->keyInfo);
     if (p == NULL) {
         return getEmptySData();
     }
@@ -489,10 +489,10 @@ Data_S getSKeyBySKeyInSChainSet(ChainSet_S* pSet, Data_S key, selectOfCopy isCop
 
 
 bool hasSKeyInSChainSet(ChainSet_S* pSet, Data_S key) {
-    if (pSet->len == 0 || pSet->size == 0 || pSet->arr == NULL) return false;
+    if (pSet->len == 0 || pSet->size == 0 || pSet->buckets == NULL) return false;
     ll index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
     
-    Node_S_inChainSet* p = getNodeBySKey(&(pSet->arr[index]), key, pSet->keyInfo);
+    Node_S_inChainSet* p = getNodeBySKey(&(pSet->buckets[index]), key, pSet->keyInfo);
     if (p == NULL) {
         return false;
     } else {
@@ -507,10 +507,10 @@ bool hasSKeyInSChainSet(ChainSet_S* pSet, Data_S key) {
 
 
 InfoOfReturn delSKeyBySKeyInSChainSet(ChainSet_S* pSet, Data_S key) {
-    if (pSet->len == 0 || pSet->size == 0 || pSet->arr == NULL) return Warning;
+    if (pSet->len == 0 || pSet->size == 0 || pSet->buckets == NULL) return Warning;
     ll index = (pSet->keyInfo->oper->hashdata(key.data, key.content))%pSet->mod;
 
-    if (delNodeBySKey(&(pSet->arr[index]), key, pSet) ==  None) {
+    if (delNodeBySKey(&(pSet->buckets[index]), key, pSet) ==  None) {
         //没找到
         return None;
     }
@@ -548,8 +548,8 @@ void printSChainSet(ChainSet_S* pSet) {
     int cnt = 0;
     printf("[");
     for (int i = 0; i < pSet->len; i++) {
-        Node_S_inChainSet* p = pSet->arr[i].head;
-        for (int j = 0; j < pSet->arr[i].size; j++, p = p->next) {
+        Node_S_inChainSet* p = pSet->buckets[i].head;
+        for (int j = 0; j < pSet->buckets[i].size; j++, p = p->next) {
             if (cnt != 0) {
                 printf(", ");
             }

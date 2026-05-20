@@ -16,7 +16,7 @@ typedef struct Entry_S_inOAMap {
 
 /// @brief OAMap_S->采用开放寻址法的Map, 可存储单一类型数据
 typedef struct OAMap_S {
-    Entry_S_inOAMap* arr;
+    Entry_S_inOAMap* buckets;
     int mod;
     int len;
     int size;

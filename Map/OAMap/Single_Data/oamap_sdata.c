@@ -12,7 +12,7 @@
 
 
 void initSOAMap(OAMap_S* pMap, InfoOfData* keyInfo, InfoOfData* valInfo)  {
-    pMap->arr = NULL;
+    pMap->buckets = NULL;
     pMap->keyInfo = keyInfo;
     pMap->valInfo = valInfo;
     pMap->len = pMap->size = 0;
@@ -58,21 +58,21 @@ void freeSEntryInSOAMap(OAMap_S* pMap, Entry_S_inOAMap* entry) {
 
 void freeSOAMap(OAMap_S* pMap) {
     for (int i = 0; i < pMap->len; i++) {
-        if (pMap->arr[i].state == EXIST_IN_MAP) {
-            freeSEntryInSOAMap(pMap, &(pMap->arr[i]));
+        if (pMap->buckets[i].state == EXIST_IN_MAP) {
+            freeSEntryInSOAMap(pMap, &(pMap->buckets[i]));
         }
     }
-    free(pMap->arr);
+    free(pMap->buckets);
     initSOAMap(pMap, pMap->keyInfo, pMap->valInfo);
 }
 
 void clearSOAMap(OAMap_S* pMap) {
     for (int i = 0; i < pMap->len; i++) {
-        if (pMap->arr[i].state == EXIST_IN_MAP) {
-            freeSEntryInSOAMap(pMap, &(pMap->arr[i]));
+        if (pMap->buckets[i].state == EXIST_IN_MAP) {
+            freeSEntryInSOAMap(pMap, &(pMap->buckets[i]));
         }
         //全部设置为空, 无论del或者exist
-        pMap->arr[i].state = NONE_IN_MAP;
+        pMap->buckets[i].state = NONE_IN_MAP;
     }
     pMap->size = 0;
 }
@@ -138,12 +138,12 @@ static InfoOfReturn addSEntryFunction(OAMap_S* pMap, Data_S key, selectOfCopy is
     int flagFindDel = 0;
     ll firstDelIndex = pMap->len+10;
 
-    while (pMap->arr[index].state != NONE_IN_MAP) {
-        if (pMap->arr[index].state == DEL_IN_MAP && flagFindDel == 0) {
+    while (pMap->buckets[index].state != NONE_IN_MAP) {
+        if (pMap->buckets[index].state == DEL_IN_MAP && flagFindDel == 0) {
             firstDelIndex = index;
             flagFindDel = 1;
         }
-        if (compareSData(pMap->arr[index].key, pMap->keyInfo, key, pMap->keyInfo) == SAME)  {
+        if (compareSData(pMap->buckets[index].key, pMap->keyInfo, key, pMap->keyInfo) == SAME)  {
             //完全按照使用者的意思
             Entry_S_inOAMap newEntry = createSEntryBySKeyAndMVal(pMap, key, isCopyKey, val, isCopyVal);
             if (newEntry.isEmpty) {
@@ -152,9 +152,9 @@ static InfoOfReturn addSEntryFunction(OAMap_S* pMap, Data_S key, selectOfCopy is
             }
             //由于createSEntryBySKeyAndMVal函数不会自动给state赋值
             newEntry.state = EXIST_IN_MAP;
-            freeSEntryInSOAMap(pMap, &(pMap->arr[index]));
+            freeSEntryInSOAMap(pMap, &(pMap->buckets[index]));
 
-            pMap->arr[index] = newEntry;
+            pMap->buckets[index] = newEntry;
             return Success;
         }
         index++;
@@ -173,8 +173,8 @@ static InfoOfReturn addSEntryFunction(OAMap_S* pMap, Data_S key, selectOfCopy is
         return Warning;
     }
 
-    pMap->arr[index] = newEntry;
-    pMap->arr[index].state = EXIST_IN_MAP;
+    pMap->buckets[index] = newEntry;
+    pMap->buckets[index].state = EXIST_IN_MAP;
     pMap->size++;
     return Success;
 
@@ -186,15 +186,15 @@ static InfoOfReturn addSEntryFunction(OAMap_S* pMap, Data_S key, selectOfCopy is
 //专门为重哈希做的软拷贝方式添加的Entry
 static InfoOfReturn addSEntryForFreshSOAMap(OAMap_S* pMap, Data_S key, Data_S val) {
     ll index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
-    while (pMap->arr[index].state != NONE_IN_MAP) {
+    while (pMap->buckets[index].state != NONE_IN_MAP) {
         index++;
         index %= pMap->len;
     }
 
-    pMap->arr[index].key = key;
-    pMap->arr[index].val = val;
-    pMap->arr[index].state = EXIST_IN_MAP;
-    pMap->arr[index].isEmpty = false;
+    pMap->buckets[index].key = key;
+    pMap->buckets[index].val = val;
+    pMap->buckets[index].state = EXIST_IN_MAP;
+    pMap->buckets[index].isEmpty = false;
     pMap->size++;
     return Success;
 
@@ -222,24 +222,24 @@ static InfoOfReturn freshSOAMap(OAMap_S* pMap, int newLen) {
     
     newMap.size = 0;    //再添加函数中会自动加,这里设置为0
 
-    newMap.arr = (Entry_S_inOAMap*)malloc(newLen*sizeof(Entry_S_inOAMap));
-    if (newMap.arr == NULL) {
+    newMap.buckets = (Entry_S_inOAMap*)malloc(newLen*sizeof(Entry_S_inOAMap));
+    if (newMap.buckets == NULL) {
         //内存分配失败;
         return Warning;
     }
 
     for (int i = 0; i < newMap.len; i++) {
-        newMap.arr[i] = getEmptySEntry();
+        newMap.buckets[i] = getEmptySEntry();
     }
 
     
     for (int i = 0; i < pMap->len; i++) {
-        if (pMap->arr[i].state == EXIST_IN_MAP) {
-            addSEntryForFreshSOAMap(&newMap, pMap->arr[i].key, pMap->arr[i].val);
+        if (pMap->buckets[i].state == EXIST_IN_MAP) {
+            addSEntryForFreshSOAMap(&newMap, pMap->buckets[i].key, pMap->buckets[i].val);
 
         }
     }
-    free(pMap->arr);
+    free(pMap->buckets);
 
     *pMap = newMap;
 
@@ -296,15 +296,15 @@ InfoOfReturn insertSKeyAndSValInSOAMap(OAMap_S* pMap, Data_S key, selectOfCopy i
 //查找类
 
 static Position getIndexBySKey(OAMap_S* pMap, Data_S key) {
-    if (pMap->arr == NULL || pMap->size == 0 || pMap->len == 0) return NOT_FOUND;
+    if (pMap->buckets == NULL || pMap->size == 0 || pMap->len == 0) return NOT_FOUND;
     ll index = (pMap->keyInfo->oper->hashdata(key.data, key.content))%pMap->mod;
 
     for (int i = 0; i < pMap->len; i++) {
-        if (pMap->arr[index].state == NONE_IN_MAP) {
+        if (pMap->buckets[index].state == NONE_IN_MAP) {
             return NOT_FOUND;
         }
 
-        if (compareSData(pMap->arr[index].key, pMap->keyInfo, key, pMap->keyInfo) == SAME) {
+        if (compareSData(pMap->buckets[index].key, pMap->keyInfo, key, pMap->keyInfo) == SAME) {
             return index;
         }
         index++;
@@ -326,9 +326,9 @@ Data_S getSKeyBySKeyInSOAMap(OAMap_S* pMap, Data_S key, selectOfCopy isCopyKey) 
             那会自动返回空的Data_S类型,
             所有这里直接返回就行
         */
-        return copySData(pMap->arr[index].key, pMap->keyInfo);
+        return copySData(pMap->buckets[index].key, pMap->keyInfo);
     } else {
-        return pMap->arr[index].key;
+        return pMap->buckets[index].key;
     }
 }
 
@@ -339,9 +339,9 @@ Data_S getSValBySKeyInSOAMap(OAMap_S* pMap, Data_S key, selectOfCopy isCopyVal) 
         return getEmptySData();
     }
     if (isCopyVal == Data_Copy) {
-        return copySData(pMap->arr[index].val, pMap->valInfo);
+        return copySData(pMap->buckets[index].val, pMap->valInfo);
     } else {
-        return pMap->arr[index].val;
+        return pMap->buckets[index].val;
     }
     
 }
@@ -354,7 +354,7 @@ Entry_S_inOAMap getSEntryBySKeyInSOAMap(OAMap_S* pMap, Data_S key, selectOfCopy 
     if (isCopyEntry == Data_Copy) {
         Entry_S_inOAMap newEntry;
         
-        newEntry = createSEntryBySKeyAndMVal(pMap, pMap->arr[index].key, Data_Copy, pMap->arr[index].val, Data_Copy);
+        newEntry = createSEntryBySKeyAndMVal(pMap, pMap->buckets[index].key, Data_Copy, pMap->buckets[index].val, Data_Copy);
         
         //函数已经说明是会复制的了, 返回的应当具有权限
         newEntry.key.isOwner = true;
@@ -367,7 +367,7 @@ Entry_S_inOAMap getSEntryBySKeyInSOAMap(OAMap_S* pMap, Data_S key, selectOfCopy 
         */
         return newEntry;
     } else {
-        return pMap->arr[index];
+        return pMap->buckets[index];
     }
 }
 
@@ -389,8 +389,8 @@ InfoOfReturn delSEntryBySKeyInSOAMap(OAMap_S* pMap, Data_S key) {
     if (index == NOT_FOUND) {
         return None;
     } else {
-        freeSEntryInSOAMap(pMap, &(pMap->arr[index]));
-        pMap->arr[index].state = DEL_IN_MAP;
+        freeSEntryInSOAMap(pMap, &(pMap->buckets[index]));
+        pMap->buckets[index].state = DEL_IN_MAP;
         pMap->size--;
         return Success;
     }
@@ -446,11 +446,11 @@ void printSOAMap(OAMap_S* pMap) {
     printf("[");
 
     for (int i = 0; i < pMap->len; i++) {
-        if (pMap->arr[i].isEmpty == false) {
+        if (pMap->buckets[i].isEmpty == false) {
             if (cnt != 0) {
                 printf(", ");
             }
-            printSEntryInSOAMap(pMap, pMap->arr[i]);
+            printSEntryInSOAMap(pMap, pMap->buckets[i]);
             cnt++;
         }
     }

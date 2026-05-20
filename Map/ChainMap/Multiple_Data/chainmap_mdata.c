@@ -36,7 +36,7 @@ static Entry_M_inChainMap getEmptyMEntry() {
 
 
 void initMChainMap(ChainMap_M* pMap) {
-    pMap->arr = NULL;
+    pMap->buckets = NULL;
     pMap->len = pMap->size = 0;
     pMap->mod = 2;
 }
@@ -104,16 +104,16 @@ static void freeMList(List_M_inChainMap* plist) {
 
 void freeMChainMap(ChainMap_M* pMap) {
     for (int i = 0; i < pMap->len; i++) {
-        freeMList(&(pMap->arr[i]));
+        freeMList(&(pMap->buckets[i]));
     }
-    free(pMap->arr);
+    free(pMap->buckets);
     initMChainMap(pMap);
 }
 
 void clearMChainMap(ChainMap_M* pMap) {
     for (int i = 0; i < pMap->len; i++) {
         //freeMList函数内部会自动初始化每个链表
-        freeMList(&(pMap->arr[i]));
+        freeMList(&(pMap->buckets[i]));
     }
     pMap->size = 0;
     //其他内容无需要变动
@@ -298,7 +298,7 @@ static InfoOfReturn addMEntryFunction(ChainMap_M* pMap, Data_M key, selectOfCopy
     ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pMap->mod;
 
     //在插入之前先进行一次查找
-    Node_M_inChainMap* p = getNodeByMKey(&(pMap->arr[index]), key);
+    Node_M_inChainMap* p = getNodeByMKey(&(pMap->buckets[index]), key);
     if (p) {
         //完全按照使用者的意思
         Entry_M_inChainMap newEntry = creatMEntryByMKeyAndMVal(key, isCopyKey, val, isCopyVal);
@@ -318,7 +318,7 @@ static InfoOfReturn addMEntryFunction(ChainMap_M* pMap, Data_M key, selectOfCopy
         //内存分配失败
         return Warning;
     }
-    if (insertMEntryInMList(&(pMap->arr[index]), newEntry) == Warning) {
+    if (insertMEntryInMList(&(pMap->buckets[index]), newEntry) == Warning) {
         //如果插入失败, 为防止调用者把isOwner设置无权且要求复制, 那么在释放的时候就要强行把她设置为有权
         if (isCopyKey == Data_Copy) {
             newEntry.key.isOwner = true;
@@ -344,7 +344,7 @@ static InfoOfReturn addMEntryForFreshMChainMap(ChainMap_M* pMap, Data_M key, Dat
     entry.isEmpty = false;
     entry.key = key;
     entry.val = val;
-    if (insertMEntryInMList(&(pMap->arr[index]), entry) == Warning) {
+    if (insertMEntryInMList(&(pMap->buckets[index]), entry) == Warning) {
         
         //内存分配失败
 
@@ -373,9 +373,9 @@ static void shallowFreeMList(List_M_inChainMap* plist) {
 
 static void shallowFreeMChainMap(ChainMap_M* pMap) {
     for (int i = 0; i < pMap->len; i++) {
-        shallowFreeMList(&(pMap->arr[i]));
+        shallowFreeMList(&(pMap->buckets[i]));
     }
-    free(pMap->arr);
+    free(pMap->buckets);
     initMChainMap(pMap);
 }
 
@@ -417,13 +417,13 @@ static InfoOfReturn freshMChainMap(ChainMap_M* pMap, int newLen) {
     }
 
 
-    newMap.arr = newArray;
+    newMap.buckets = newArray;
     newMap.len = newLen;
     newMap.mod = newMod;
     newMap.size = 0;    //再添加函数中会自动加,这里设置为0
 
     for (int i = 0; i < pMap->len; i++) {
-        Node_M_inChainMap* p = pMap->arr[i].head;
+        Node_M_inChainMap* p = pMap->buckets[i].head;
         
         /*
             将这个循环改为用p来进行判断
@@ -436,7 +436,7 @@ static InfoOfReturn freshMChainMap(ChainMap_M* pMap, int newLen) {
             }
             p = p->next;
         }
-        // for (int j = 0; j < pMap->arr[i].size; j++, p = p->next) {
+        // for (int j = 0; j < pMap->buckets[i].size; j++, p = p->next) {
         //     if (addMEntryForFreshMChainMap(&newMap, p->entry.key, p->entry.val) == Warning) {
         //         //内存分配失败
         //         return Warning;
@@ -502,9 +502,9 @@ InfoOfReturn insertMKeyAndMValInMChainMap(ChainMap_M* pMap, Data_M key, selectOf
 
 
 Data_M getMKeyByMKeyInMChainMap(ChainMap_M* pMap, Data_M key, selectOfCopy isCopyKey) {
-    if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return getEmptyMData();
+    if (pMap->len == 0 || pMap->size == 0 || pMap->buckets == NULL) return getEmptyMData();
     ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pMap->mod;
-    Node_M_inChainMap* p = getNodeByMKey(&(pMap->arr[index]), key);
+    Node_M_inChainMap* p = getNodeByMKey(&(pMap->buckets[index]), key);
     if (p == NULL) {
         return getEmptyMData();
     }
@@ -516,9 +516,9 @@ Data_M getMKeyByMKeyInMChainMap(ChainMap_M* pMap, Data_M key, selectOfCopy isCop
 }
 
 Data_M getMValByMKeyInMchainMap(ChainMap_M* pMap, Data_M key, selectOfCopy isCopyVal) {
-    if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return getEmptyMData();
+    if (pMap->len == 0 || pMap->size == 0 || pMap->buckets == NULL) return getEmptyMData();
     ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pMap->mod;
-    Node_M_inChainMap* p = getNodeByMKey(&(pMap->arr[index]), key);
+    Node_M_inChainMap* p = getNodeByMKey(&(pMap->buckets[index]), key);
     if (p == NULL) {
         return getEmptyMData();
     }
@@ -536,10 +536,10 @@ Data_M getMValByMKeyInMchainMap(ChainMap_M* pMap, Data_M key, selectOfCopy isCop
 
 
 Entry_M_inChainMap getMEntryByMKeyInMChainMap(ChainMap_M* pMap, Data_M key, selectOfCopy isCopyEntry) {
-    if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return getEmptyMEntry();
+    if (pMap->len == 0 || pMap->size == 0 || pMap->buckets == NULL) return getEmptyMEntry();
     ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pMap->mod;
     
-    Node_M_inChainMap* p = getNodeByMKey(&(pMap->arr[index]), key);
+    Node_M_inChainMap* p = getNodeByMKey(&(pMap->buckets[index]), key);
 
     if (p == NULL) {
         return getEmptyMEntry();
@@ -566,10 +566,10 @@ Entry_M_inChainMap getMEntryByMKeyInMChainMap(ChainMap_M* pMap, Data_M key, sele
 
 
 bool hasMKeyInMChainMap(ChainMap_M* pMap, Data_M key) {
-    if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return false;
+    if (pMap->len == 0 || pMap->size == 0 || pMap->buckets == NULL) return false;
     ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pMap->mod;
     
-    Node_M_inChainMap* p = getNodeByMKey(&(pMap->arr[index]), key);
+    Node_M_inChainMap* p = getNodeByMKey(&(pMap->buckets[index]), key);
     if (p == NULL) {
         return false;
     } else {
@@ -584,10 +584,10 @@ bool hasMKeyInMChainMap(ChainMap_M* pMap, Data_M key) {
 
 
 InfoOfReturn delMEntryByMKeyInMChainMap(ChainMap_M* pMap, Data_M key) {
-    if (pMap->len == 0 || pMap->size == 0 || pMap->arr == NULL) return Warning;
+    if (pMap->len == 0 || pMap->size == 0 || pMap->buckets == NULL) return Warning;
     ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pMap->mod;
     
-    if (delNodeByMKey(&(pMap->arr[index]), key) == None) {
+    if (delNodeByMKey(&(pMap->buckets[index]), key) == None) {
         //没找到
         return None;
     }
@@ -643,8 +643,8 @@ void printMChainMap(ChainMap_M* pMap) {
     int cnt = 0;
     printf("[");
     for (int i = 0; i < pMap->len; i++) {
-        Node_M_inChainMap* p = pMap->arr[i].head;
-        for (int j = 0; j < pMap->arr[i].size; j++, p = p->next) {
+        Node_M_inChainMap* p = pMap->buckets[i].head;
+        for (int j = 0; j < pMap->buckets[i].size; j++, p = p->next) {
             if (cnt != 0) {
                 printf(", ");
             }

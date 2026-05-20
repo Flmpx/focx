@@ -20,7 +20,7 @@ Entry_M_inOASet getEmptyMEntry() {
 
 
 void initMOASet(OASet_M* pSet) {
-    pSet->arr = NULL;
+    pSet->buckets = NULL;
     pSet->len = pSet->size = 0;
     pSet->mod = 2;
 }
@@ -49,22 +49,22 @@ static void freeMEntry(Entry_M_inOASet* entry) {
 
 void freeMOASet(OASet_M* pSet) {
     for (int i = 0; i < pSet->len; i++) {
-        if (pSet->arr[i].state == EXIST_IN_SET) {
-            freeMEntry(&(pSet->arr[i]));
+        if (pSet->buckets[i].state == EXIST_IN_SET) {
+            freeMEntry(&(pSet->buckets[i]));
         }
     }
-    free(pSet->arr);
+    free(pSet->buckets);
     initMOASet(pSet);
 }
 
 
 void clearMOASet(OASet_M* pSet) {
     for (int i = 0; i < pSet->len; i++) {
-        if (pSet->arr[i].state == EXIST_IN_SET) {
-            freeMEntry(&(pSet->arr[i]));
+        if (pSet->buckets[i].state == EXIST_IN_SET) {
+            freeMEntry(&(pSet->buckets[i]));
         }
         //全部设置为空, 无论del或者exist
-        pSet->arr[i].state = NONE_IN_SET;
+        pSet->buckets[i].state = NONE_IN_SET;
     }
     pSet->size = 0;
     
@@ -105,22 +105,22 @@ static InfoOfReturn addMEntryFunction(OASet_M* pSet, Data_M key, selectOfCopy is
     int flagFindDel = 0;
     ll firstDelIndex = pSet->len+10;
     //找到一个NONE或者DEl标记的位置
-    while (pSet->arr[index].state != NONE_IN_SET) {
-        if (pSet->arr[index].state == DEL_IN_SET && flagFindDel == 0) {
+    while (pSet->buckets[index].state != NONE_IN_SET) {
+        if (pSet->buckets[index].state == DEL_IN_SET && flagFindDel == 0) {
             firstDelIndex = index;
             flagFindDel = 1;
         }
         //如果发现是同一个key, 直接退出就行
-        if (compareMData(pSet->arr[index].key, key) == SAME) {
+        if (compareMData(pSet->buckets[index].key, key) == SAME) {
             Entry_M_inOASet newEntry = createMEntryByMKey(key, isCopyKey);
             if (newEntry.isEmpty) {
                 //内存分配失败
                 return Warning;
             }
             newEntry.state = EXIST_IN_SET;
-            freeMEntry(&(pSet->arr[index]));
+            freeMEntry(&(pSet->buckets[index]));
             
-            pSet->arr[index] = newEntry;
+            pSet->buckets[index] = newEntry;
 
             return None;
         }
@@ -137,8 +137,8 @@ static InfoOfReturn addMEntryFunction(OASet_M* pSet, Data_M key, selectOfCopy is
         //内存分配失败
         return Warning;
     }
-    pSet->arr[index] = newEntry;
-    pSet->arr[index].state = EXIST_IN_SET;
+    pSet->buckets[index] = newEntry;
+    pSet->buckets[index].state = EXIST_IN_SET;
     pSet->size++;
     return Success;
 }
@@ -149,13 +149,13 @@ static InfoOfReturn addMEntryFunction(OASet_M* pSet, Data_M key, selectOfCopy is
 //专门为重哈希做的软拷贝方式添加的Entry
 static InfoOfReturn addMEntryForFreshMOASet(OASet_M* pSet, Data_M key) {
     ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
-    while (pSet->arr[index].state != NONE_IN_SET) {
+    while (pSet->buckets[index].state != NONE_IN_SET) {
         index++;
         index %= pSet->len;
     }
-    pSet->arr[index].key = key;
-    pSet->arr[index].state = EXIST_IN_SET;
-    pSet->arr[index].isEmpty = false;
+    pSet->buckets[index].key = key;
+    pSet->buckets[index].state = EXIST_IN_SET;
+    pSet->buckets[index].isEmpty = false;
     pSet->size++;
     return Success;
 }
@@ -188,18 +188,18 @@ static InfoOfReturn freshMOASet(OASet_M* pSet, int newLen) {
         newArray[i].isEmpty = true;
     }
 
-    newSet.arr = newArray;
+    newSet.buckets = newArray;
     newSet.len = newLen;
     newSet.mod = newMod;
     newSet.size = 0;    //再添加函数中会自动加,这里设置为0
     for (int i = 0; i < pSet->len; i++) {
-        if (pSet->arr[i].state == EXIST_IN_SET) {
-            addMEntryForFreshMOASet(&newSet, pSet->arr[i].key);
+        if (pSet->buckets[i].state == EXIST_IN_SET) {
+            addMEntryForFreshMOASet(&newSet, pSet->buckets[i].key);
         }
     }
 
     //释放掉原有Entry数组
-    free(pSet->arr);
+    free(pSet->buckets);
 
     //给新址
     *pSet = newSet;
@@ -256,15 +256,15 @@ InfoOfReturn insertMKeyInMOASet(OASet_M* pSet, Data_M key, selectOfCopy isCopyKe
 
 //通过key返回key在Set中的位置
 static Position getIndexByMKey(OASet_M* pSet, Data_M key) {
-    if (pSet->len == 0 || pSet->size == 0 || pSet->arr == NULL) return NOT_FOUND;
+    if (pSet->len == 0 || pSet->size == 0 || pSet->buckets == NULL) return NOT_FOUND;
     ll index = (key.dataInfo->oper->hashdata(key.data, key.content))%pSet->mod;
     for (int i = 0; i < pSet->len; i++) {
-        if (pSet->arr[index].state == NONE_IN_SET) {
+        if (pSet->buckets[index].state == NONE_IN_SET) {
             return NOT_FOUND;
         }
         
         //这个也可以比较为空的情况
-        if (compareMData(pSet->arr[index].key, key) == SAME) {
+        if (compareMData(pSet->buckets[index].key, key) == SAME) {
             return index;
         }
         index++;
@@ -286,9 +286,9 @@ Data_M getMKeyByMKeyInMOASet(OASet_M* pSet, Data_M key, selectOfCopy isCopyKey) 
             那会自动返回空的Data_M类型,
             所有这里直接返回就行
         */
-        return copyMData(pSet->arr[index].key);
+        return copyMData(pSet->buckets[index].key);
     } else {
-        return pSet->arr[index].key;
+        return pSet->buckets[index].key;
     }
 }
 
@@ -312,8 +312,8 @@ InfoOfReturn delMKeyByMKeyInMOASet(OASet_M* pSet, Data_M key) {
     if (index == NOT_FOUND) {
         return None;
     } else {
-        freeMEntry(&(pSet->arr[index]));
-        pSet->arr[index].state = DEL_IN_SET;
+        freeMEntry(&(pSet->buckets[index]));
+        pSet->buckets[index].state = DEL_IN_SET;
         pSet->size--;
         return Success;
     }
@@ -343,11 +343,11 @@ void printMOASet(OASet_M* pSet) {
     int cnt = 0;
     printf("[");
     for (int i = 0; i < pSet->len; i++) {
-        if (pSet->arr[i].isEmpty == false) {
+        if (pSet->buckets[i].isEmpty == false) {
             if (cnt != 0) {
                 printf(", ");
             }
-            printMKeyInMOASet(pSet->arr[i].key);
+            printMKeyInMOASet(pSet->buckets[i].key);
             cnt++;
         }
         
