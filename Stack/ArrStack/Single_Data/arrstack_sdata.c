@@ -1,11 +1,11 @@
-#define DATA_M_OPER
+#define DATA_S_OPER
 
-#include "arrstack_mdata.h"
-#include "arrstack_mdata_private.h"
+#include "arrstack_sdata.h"
+#include "arrstack_sdata_private.h"
 #include <stdlib.h>
 
 
-InfoOfReturn initMArrStack(ArrStack_M* pStack, bool isUnlimited, int capacity) {
+InfoOfReturn initSArrStack(ArrStack_S* pStack, InfoOfData* valInfo, bool isUnlimited, int capacity) {
     if (capacity <= 0) {
         //数量异常
         return Warning;
@@ -14,7 +14,7 @@ InfoOfReturn initMArrStack(ArrStack_M* pStack, bool isUnlimited, int capacity) {
     pStack->capacity = capacity;
 
     //申请当前容量大小的空间
-    pStack->vals = (Data_M*)malloc((pStack->capacity)*sizeof(Data_M));
+    pStack->vals = (Data_S*)malloc((pStack->capacity)*sizeof(Data_S));
 
     if (pStack->vals == NULL) {
         //内存分配失败
@@ -24,40 +24,41 @@ InfoOfReturn initMArrStack(ArrStack_M* pStack, bool isUnlimited, int capacity) {
     //以防万一, 这里还是自动归零
     pStack->size = 0;
     pStack->top = -1;
+    pStack->valInfo = valInfo;
     return Success;
 }
 
-bool isFullMArrStack(ArrStack_M* pStack) {
+bool isFullSArrStack(ArrStack_S* pStack) {
     return pStack->capacity == pStack->size;
 }
 
-bool isEmptyMArrStack(ArrStack_M* pStack) {
+bool isEmptySArrStack(ArrStack_S* pStack) {
     return pStack->size == 0;
 }
 
-
-bool hasMValInMArrStack(ArrStack_M* pStack, Data_M val) {
+bool hasSValInSArrStack(ArrStack_S* pStack, Data_S val) {
     for (int i = 0; i < pStack->size; i++) {
-        if (compareMData(pStack->vals[i], val) == SAME) {
+        if (compareSData(pStack->vals[i], pStack->valInfo, val, pStack->valInfo) == SAME) {
             return true;
         }
     }
     return false;
 }
 
-InfoOfReturn pushMValInMArrStack(ArrStack_M* pStack, Data_M val, selectOfCopy isCopyVal) {
+
+InfoOfReturn pushSValInSArrStack(ArrStack_S* pStack, Data_S val, selectOfCopy isCopyVal) {
     //如果栈满了, 判断是否可以扩容
-    if (isFullMArrStack(pStack)) {
+    if (isFullSArrStack(pStack)) {
 
         if (pStack->isUnlimited) {
             //扩容
             
-            Data_M* newArr = (Data_M*)realloc(pStack->vals, (pStack->capacity*2)*sizeof(Data_M));
+            Data_S* newArr = (Data_S*)realloc(pStack->vals, (pStack->capacity*2)*sizeof(Data_S));
             if (newArr == NULL) {
                 return Warning;
             }
-            
             pStack->capacity *= 2;
+            
             pStack->vals = newArr;
         } else {
             //栈满
@@ -65,9 +66,9 @@ InfoOfReturn pushMValInMArrStack(ArrStack_M* pStack, Data_M val, selectOfCopy is
         }
     }
 
-    Data_M newVal;
+    Data_S newVal;
     if (isCopyVal == Data_Copy) {
-        newVal = copyMData(val);
+        newVal = copySData(val, pStack->valInfo);
         if (newVal.isEmpty) {
             //这里错误不必释放上面的数组
             return Warning;
@@ -83,30 +84,28 @@ InfoOfReturn pushMValInMArrStack(ArrStack_M* pStack, Data_M val, selectOfCopy is
     pStack->size++;
 
     return Success;
-
 }
 
-Data_M popMValInMArrStack(ArrStack_M* pStack) {
-    if (isEmptyMArrStack(pStack)) {
-        return getEmptyMData();
+
+Data_S popSValInSArrStack(ArrStack_S* pStack) {
+    if (isEmptySArrStack(pStack)) {
+        return getEmptySData();
     }
 
-    Data_M val = pStack->vals[pStack->top];
+    Data_S val = pStack->vals[pStack->top];
     pStack->top--;
     pStack->size--;
     return val;
 }
 
-void freeMValInMArrStack(Data_M* val) {
-
-    //对外接口
-    freeMData(val);
+void freeSValInSArrStack(ArrStack_S* pStack, Data_S* val) {
+    freeSData(val, pStack->valInfo);
 }
 
 
-void freeMArrStack(ArrStack_M* pStack) {
+void freeSArrStack(ArrStack_S* pStack) {
     for (int i = 0; i < pStack->size; i++) {
-        freeMData(&(pStack->vals[i]));
+        freeSData(&(pStack->vals[i]), pStack->valInfo);
     }
     free(pStack->vals);
 
@@ -116,39 +115,45 @@ void freeMArrStack(ArrStack_M* pStack) {
     pStack->size = 0;
     pStack->top = -1;
     pStack->isUnlimited = false;
+    //不处理valInfo, 没必要
 }
 
-void clearMArrStack(ArrStack_M* pStack) {
+
+void clearSArrStack(ArrStack_S* pStack) {
     for (int i = 0; i < pStack->size; i++) {
-        freeMData(&(pStack->vals[i]));
+        freeSData(&(pStack->vals[i]), pStack->valInfo);
     }
     pStack->size = 0;
     pStack->top = -1;
 }
 
 
+
+
 ////////////////////////////////////////////////////////////
 //一下是不公开函数, 用于调试, 存于private头文件中
 
-void printMValInMArrStack(Data_M val) {
+
+void printSValInSArrStack(ArrStack_S* pStack, Data_S val) {
     if (val.isEmpty) {
         printf("\nval is empty, cannot print\n");
         return;
     }
     printf("[val:");
-    val.dataInfo->oper->printdata(val.data, val.content);
+    pStack->valInfo->oper->printdata(val.data, val.content);
     printf("]");
 }
 
-void printMArrStack(ArrStack_M* pStack) {
+
+void printSArrStack(ArrStack_S* pStack) {
     printf("bottom[");
     int cnt = 0;
     for (int i = 0; i < pStack->size; i++) {
         if (cnt != 0) {
             printf("-->");
         }
-        Data_M val = pStack->vals[i];
-        val.dataInfo->oper->printdata(val.data, val.content);
+        Data_S val = pStack->vals[i];
+        pStack->valInfo->oper->printdata(val.data, val.content);
         cnt++;
     }
     printf("]top");

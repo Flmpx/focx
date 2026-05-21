@@ -1,6 +1,6 @@
 #ifndef CHAINSTACK_MDATA_PRIVATE_H
 #define CHAINSTACK_MDATA_PRIVATE_H
-
+#include "chainstack_mdata.h"
 
 
 /// @brief 打印多类型链表栈中的值

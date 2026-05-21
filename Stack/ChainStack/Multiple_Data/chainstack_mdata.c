@@ -71,8 +71,9 @@ Data_M popMValInMChainStack(ChainStack_M* pStack) {
 
     Data_M val = *pVal;
 
+    
     //强行改为无权释放, 防止数据丢失
-    (*pVal).isOwner = false;
+    setMDataToNoOwner(pVal);
 
     delStartNodeInMSList(&(pStack->list));
 

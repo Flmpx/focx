@@ -1,5 +1,6 @@
 #ifndef ARRSTACK_MDATA_PRIVATE_H
 #define ARRSTACK_MDATA_PRIVATE_H
+#include "arrstack_mdata.h"
 
 /// @brief 打印多类型数组栈中的值
 /// @param val 待打印的值

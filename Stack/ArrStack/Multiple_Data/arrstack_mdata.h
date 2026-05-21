@@ -5,24 +5,19 @@
 
 /// @brief ArrStack_M类型, 指可以存储任意类型的通过数组来实现的栈
 typedef struct {
-    Data_M* arr;
+    Data_M* vals;
     int top;
     int size;
     int capacity;
     bool isUnlimited;
 } ArrStack_M;
 
-/// @brief 初始化多类型数组栈
-/// @param pStack 栈指针
-/// @note 不会为其分配空间
-extern void initMArrStack(ArrStack_M* pStack);
-
-/// @brief 为多类型数组栈设置属性, 分配数组空间
+/// @brief 初始化多类型数组栈, 同时分配数组空间
 /// @param pStack 栈指针
 /// @param isUnlimited 是否无限制容量
 /// @param capacity 初始容量(>0)
 /// @return 操作状态码
-extern InfoOfReturn allocMArrStack(ArrStack_M* pStack, bool isUnlimited, int capacity);
+extern InfoOfReturn initMArrStack(ArrStack_M* pStack, bool isUnlimited, int capacity);
 
 /// @brief 判断多类型数组栈是否已满
 /// @param pStack 栈指针
@@ -57,7 +52,7 @@ extern Data_M popMValInMArrStack(ArrStack_M* pStack);
 
 
 /// @brief 释放多类型数组栈中的值
-/// @param val 带释放的值
+/// @param val 待释放的值的指针
 void freeMValInMArrStack(Data_M* val);
 
 

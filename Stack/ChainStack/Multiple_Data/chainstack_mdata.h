@@ -64,7 +64,7 @@ extern Data_M popMValInMChainStack(ChainStack_M* pStack);
 
 
 /// @brief 释放多类型链表栈中的值
-/// @param val 带释放的值
+/// @param val 带释放的值的指针
 extern void freeMValInMChainStack(Data_M* val);
 
 
